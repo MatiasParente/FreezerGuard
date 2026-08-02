@@ -1,58 +1,41 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistema de Monitoreo de Freezers - Componente de Hardware
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este repositorio alberga el código fuente de la aplicación web del proyecto FreezerGuard. El proyecto constituye el trabajo final de grado para la carrera de **Tecnólogo Informático** de la **Universidad Tecnológica (UTEC)**, en conjunto con la **Universidad de la República (UDELAR)** y la **Dirección General de Educación Técnico Profesional (DGETP-UTU)**, Sede Paysandú, Uruguay.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Información del Proyecto
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **Institución:** Universidad Tecnológica (UTEC) - Sede Paysandú
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+* **Carrera:** Tecnólogo Informático
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Autores:** Carlos Cardozo, Jhon Guimaraens, Matías Parente
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
-## Agentic Development
+* **Tutores:** Sonia Rocha, Marcelo Scotto
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
-```bash
-composer require laravel/boost --dev
+* **Fecha de presentación:** 05/11/2026
 
-php artisan boost:install
-```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Descripción General
 
-## Code of Conduct
+En contextos de investigación académica y profesional, la preservación de muestras biológicas y químicas se apoya en el control de ciertas variables ambientales. En entornos de laboratorios, las mencionadas muestras se deben mantener bajo estrictos rangos de temperatura y condiciones de almacenamiento controladas, resultando esto necesario para garantizar la integridad del material, y en consecuencia, la validez y continuidad de las investigaciones.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Ante las deficiencias de comunicación que presenta el equipamiento actual y la necesidad crítica de resguardar las investigaciones de la sede, se evidencia una clara oportunidad para el desarrollo de este proyecto final de carrera. La vulnerabilidad identificada y el riesgo sobre la posible pérdida del material justifican la intervención técnica.
 
-## Security Vulnerabilities
+Este repositorio específico aloja el código fuente implementado en Arduino IDE para el dispositivo físico encargado de:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+* Implementar un módulo de hardware embebido para la adquisición automatizada de datos térmicos y de estado del freezer, garantizando un método de lectura no intrusivo.
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+* Desarrollar un mecanismo de detección de fallas operativas, orientado a identificar interrupciones en el suministro eléctrico y pérdidas de conectividad de los dispositivos de campo.
+
+
+* Transmitir la información recolectada de manera inalámbrica para posibilitar una visualización remota y en tiempo real.
