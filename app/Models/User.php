@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'telefono'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,5 +28,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    //obtener las muestras asociadas con el usuario
+    public function muestras()
+    {
+        return $this->belongsToMany(Muestra::class);
+    }
+
+    //obtener los freezers asociados con el usuario
+    public function freezers()
+    {
+        return $this->belongsToMany(Freezer::class);
     }
 }
