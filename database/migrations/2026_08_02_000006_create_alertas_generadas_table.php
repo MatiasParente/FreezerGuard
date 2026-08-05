@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dispositivo_alerta', function (Blueprint $table) {
+        Schema::create('alertas_generadas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dispositivo_id')->constrained('dispositivos')->cascadeOnDelete();
             $table->foreignId('alerta_id')->constrained('alertas')->cascadeOnDelete();
-            $table->timestamp('fecha_y_hora');
+            $table->foreignId('dispositivo_id')->constrained('dispositivos')->cascadeOnDelete();
+            $table->dateTime('fecha_y_hora')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dispositivo_alerta');
+        Schema::dropIfExists('alertas_generadas');
     }
 };

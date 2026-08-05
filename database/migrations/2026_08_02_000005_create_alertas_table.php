@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('alertas', function (Blueprint $table) {
             $table->id();
-            $table->integer('codigo')->unique();
-            $table->string('tipo');
-            $table->string('descripcion');
-            $table->timestamps();
+            $table->string('tipo')->nullable();
+            $table->string('descripcion')->nullable();
         });
     }
 

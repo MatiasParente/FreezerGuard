@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Administrador',
                 'telefono' => '123456789',
+                'id_telegram' => '123456',
                 'password' => bcrypt('password123'),
             ]
         );

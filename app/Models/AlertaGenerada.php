@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DispositivoAlerta extends Pivot
+class AlertaGenerada extends Model
 {
-    protected $table = 'dispositivo_alerta';
-
-    public $incrementing = true;
+    protected $table = 'alertas_generadas';
 
     protected $fillable = [
         'dispositivo_id',

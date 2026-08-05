@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('muestra_user', function (Blueprint $table) {
+        Schema::create('mediciones', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('muestra_id')->constrained('muestras')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('dispositivo_id')->constrained('dispositivos')->cascadeOnDelete();
+            $table->decimal('temperatura', 5, 2);
+            $table->dateTime('fecha_y_hora');
+            $table->timestamps();
         });
     }
 
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('muestra_user');
+        Schema::dropIfExists('mediciones');
     }
 };

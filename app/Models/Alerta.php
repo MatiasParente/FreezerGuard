@@ -7,23 +7,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Alerta extends Model
 {
+    public $timestamps = false;
+
     protected $fillable = [
-        'codigo',
         'tipo',
         'descripcion',
     ];
 
-    //obtener los dispositivos que desencadenaron esta alerta
-    public function dispositivos()
+    //obtener las alertas generadas asociadas a este tipo
+    public function alertasGeneradas(): HasMany
     {
-        return $this->belongsToMany(Dispositivo::class, 'dispositivo_alerta')
-                    ->withPivot('fecha_y_hora')
-                    ->withTimestamps();
-    }
-
-    //obtener los registros de dispositivo_alerta para la alerta
-    public function dispositivoAlertas(): HasMany
-    {
-        return $this->hasMany(DispositivoAlerta::class);
+        return $this->hasMany(AlertaGenerada::class);
     }
 }

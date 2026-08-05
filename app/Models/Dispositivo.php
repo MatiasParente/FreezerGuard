@@ -10,14 +10,8 @@ class Dispositivo extends Model
 {
     protected $fillable = [
         'freezer_id',
-        'temperatura',
-        'corriente',
-        'fecha_y_hora',
-    ];
-
-    protected $casts = [
-        'fecha_y_hora' => 'datetime',
-        'corriente' => 'boolean',
+        'nombre',
+        'descripcion',
     ];
 
     //obtener el freezer asociado con el dispositivo
@@ -27,16 +21,14 @@ class Dispositivo extends Model
     }
 
     //obtener las alertas generadas por este dispositivo
-    public function alertas()
+    public function alertasGeneradas(): HasMany
     {
-        return $this->belongsToMany(Alerta::class, 'dispositivo_alerta')
-                    ->withPivot('fecha_y_hora')
-                    ->withTimestamps();
+        return $this->hasMany(AlertaGenerada::class);
     }
 
-    //obtener los registros de dispositivo_alerta para el dispositivo
-    public function dispositivoAlertas(): HasMany
+    //obtener las mediciones de este dispositivo
+    public function mediciones(): HasMany
     {
-        return $this->hasMany(DispositivoAlerta::class);
+        return $this->hasMany(Medicion::class);
     }
 }

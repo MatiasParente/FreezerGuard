@@ -17,10 +17,10 @@ class Freezer extends Model
         return $this->hasMany(Muestra::class);
     }
 
-    //obtener los dispositivos del freezer
-    public function dispositivos(): HasMany
+    //obtener el dispositivo del freezer
+    public function dispositivo()
     {
-        return $this->hasMany(Dispositivo::class);
+        return $this->hasOne(Dispositivo::class);
     }
 
     //obtener los usuarios (admins) asignados al freezer

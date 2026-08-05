@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('muestras', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('freezer_id')->constrained('freezers')->cascadeOnDelete();
-            $table->string('titulo');
-            $table->string('descripcion')->nullable();
-            $table->integer('lote')->nullable();
-            $table->integer('cantidad')->nullable();
-            $table->date('vencimiento')->nullable();
-            $table->float('temperatura_minima')->nullable();
-            $table->float('temperatura_maxima')->nullable();
-            $table->string('observacion')->nullable();
-            $table->dateTime('fecha_inicio');
+            $table->foreignId('freezer_id')->nullable()->constrained('freezers')->cascadeOnDelete();
+            $table->string('titulo')->nullable();
+            $table->text('descripcion')->nullable();
+            $table->float('cantidad')->nullable();
+            $table->dateTime('vencimiento')->nullable();
+            $table->decimal('temperatura_minima', 5, 2)->nullable();
+            $table->decimal('temperatura_maxima', 5, 2)->nullable();
+            $table->text('observaciones')->nullable();
+            $table->dateTime('fecha_inicio')->nullable();
             $table->dateTime('fecha_fin')->nullable();
             $table->timestamps();
         });

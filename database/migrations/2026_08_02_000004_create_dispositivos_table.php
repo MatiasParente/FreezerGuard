@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('dispositivos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('freezer_id')->constrained('freezers')->cascadeOnDelete();
-            $table->decimal('temperatura', 5, 2);
-            $table->boolean('corriente')->default(true);
-            $table->timestamp('fecha_y_hora');
+            $table->foreignId('freezer_id')->unique()->nullable()->constrained('freezers')->cascadeOnDelete();
+            $table->string('nombre')->nullable();
+            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
     }

@@ -10,11 +10,18 @@ class Muestra extends Model
     protected $fillable = [
         'freezer_id',
         'titulo',
+        'descripcion',
+        'cantidad',
+        'vencimiento',
+        'temperatura_minima',
+        'temperatura_maxima',
+        'observaciones',
         'fecha_inicio',
         'fecha_fin',
     ];
 
     protected $casts = [
+        'vencimiento' => 'datetime',
         'fecha_inicio' => 'datetime',
         'fecha_fin' => 'datetime',
     ];
