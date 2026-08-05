@@ -33,6 +33,12 @@ class MuestraSeeder extends Seeder
         $muestra1 = Muestra::create([
             'freezer_id' => $freezer1->id,
             'titulo' => 'Ensayo Biológico A (Solo Estudiantes)',
+            'descripcion' => 'Ensayo biológico de cepas tipo A para evaluación de resistencia térmica.',
+            'cantidad' => 50,
+            'vencimiento' => now()->addMonths(6),
+            'temperatura_minima' => -25.0,
+            'temperatura_maxima' => -15.0,
+            'observaciones' => 'Manipular con equipo de protección nivel 2.',
             'fecha_inicio' => now(),
         ]);
         
@@ -42,6 +48,12 @@ class MuestraSeeder extends Seeder
         $muestra2 = Muestra::create([
             'freezer_id' => $freezer1->id,
             'titulo' => 'Muestra de Referencia (Solo Admin)',
+            'descripcion' => 'Muestra de control y referencia para auditorías internas.',
+            'cantidad' => 10,
+            'vencimiento' => now()->addYears(2),
+            'temperatura_minima' => -30.0,
+            'temperatura_maxima' => -20.0,
+            'observaciones' => 'Acceso restringido únicamente para personal administrador.',
             'fecha_inicio' => now()->subDays(2),
         ]);
 
@@ -51,6 +63,12 @@ class MuestraSeeder extends Seeder
         $muestra3 = Muestra::create([
             'freezer_id' => $freezer1->id,
             'titulo' => 'Proyecto Final (Grupo Mixto)',
+            'descripcion' => 'Proyecto final de biotecnología sobre conservación a largo plazo.',
+            'cantidad' => 120,
+            'vencimiento' => now()->addMonths(3),
+            'temperatura_minima' => -22.0,
+            'temperatura_maxima' => -18.0,
+            'observaciones' => 'Revisar estado de congelación semanalmente.',
             'fecha_inicio' => now()->subWeek(),
         ]);
         

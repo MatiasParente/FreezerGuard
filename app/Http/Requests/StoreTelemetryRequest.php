@@ -27,10 +27,9 @@ class StoreTelemetryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'device_id' => ['required', 'integer'],
+            'device_id' => ['required', 'integer', 'exists:dispositivos,id'],
             'temperature' => ['required', 'numeric', 'between:-100,100'],
-            'alerts' => ['sometimes', 'array'],
-            'alerts.*' => ['integer'],
+            'corriente_activa' => ['sometimes', 'boolean'],
             'timestamp' => ['required', 'date'],
         ];
     }

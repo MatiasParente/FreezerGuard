@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\StoreTelemetryRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreTelemetryRequest;
+use App\Services\TelemetryService;
 
 class TelemetryController extends Controller
 {
+    public function __construct(
+        private TelemetryService $telemetryService
+    ) {}
+
     public function store(StoreTelemetryRequest $request)
     {
-        return response()->json([
-            'success' => true,
-            'message' => 'Datos recibidos correctamente',
-            'data' => $request->validated(),
-        ]);
+        $result = $this->telemetryService->handleData(
+            $request->validated()
+        );
+
+        return response()->json($result, 201);
     }
 }
