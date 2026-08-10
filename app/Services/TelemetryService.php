@@ -10,6 +10,7 @@ class TelemetryService
         $medicion = Medicion::create([
             'dispositivo_id' => $data['device_id'],
             'temperatura' => $data['temperature'],
+            'bateria' => $data['bateria'] ?? false,
             'fecha_y_hora' => $data['timestamp'],
         ]);
 
@@ -19,8 +20,8 @@ class TelemetryService
         $this->verificarTemperatura($medicion, $alertasGeneradas);
 
         //verificar corriente
-        if (isset($data['corriente_activa'])) {
-            $this->verificarCorriente($medicion, $data['corriente_activa'], $alertasGeneradas);
+        if (isset($data['bateria'])) {
+            $this->verificarCorriente($medicion, $data['bateria'], $alertasGeneradas);
         }
 
         $message = empty($alertasGeneradas) 
@@ -57,55 +58,45 @@ class TelemetryService
 
                 $alerta = \App\Models\Alerta::where('tipo', $tipoAlerta)->first();
 
-                if ($alerta && $this->debeEnviarAlerta($medicion->dispositivo_id, $alerta->id)) {
-                    $alertasGeneradas[] = $this->registrarYEnviarAlerta($medicion, $alerta, $muestra);
+                if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
+                    $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
                 }
             }
         }
     }
 
-    public function verificarCorriente(Medicion $medicion, bool $corrienteActiva, array &$alertasGeneradas)
+    public function verificarCorriente(Medicion $medicion, bool $bateria, array &$alertasGeneradas)
     {
-        if (!$corrienteActiva) {
+        // bateria == true significa que hubo corte de corriente y está usando la batería
+        if ($bateria) {
             $alerta = \App\Models\Alerta::where('tipo', 'Corte de Energía Eléctrica')->first();
-            
-            // Asumimos que notificamos sobre cualquier muestra en ese freezer, tomamos la primera
-            $muestra = $medicion->dispositivo->freezer->muestras->first();
 
-            if ($alerta && $muestra && $this->debeEnviarAlerta($medicion->dispositivo_id, $alerta->id)) {
-                $alertasGeneradas[] = $this->registrarYEnviarAlerta($medicion, $alerta, $muestra);
+            if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
+                $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
             }
         }
     }
 
-    private function debeEnviarAlerta($dispositivoId, $alertaId): bool
+    private function debeGenerarAlerta($dispositivoId, $alertaId): bool
     {
-        // Verificar si ya se envió esta misma alerta para este dispositivo en la última hora
-        $alertaExiste = \App\Models\AlertaGenerada::where('dispositivo_id', $dispositivoId)
+        // Verificar si ya existe una alerta de este tipo para este dispositivo que NO esté resuelta (estado < 2)
+        $alertaSinResolver = \App\Models\AlertaGenerada::where('dispositivo_id', $dispositivoId)
             ->where('alerta_id', $alertaId)
-            ->where('fecha_y_hora', '>=', now()->subHour())
+            ->where('estado', '<', 2)
             ->exists();
 
-        return !$alertaExiste;
+        return !$alertaSinResolver;
     }
 
-    private function registrarYEnviarAlerta(Medicion $medicion, $alerta, $muestra)
+    private function registrarAlerta(Medicion $medicion, $alerta)
     {
-        // Crear registro en alertas_generadas
-        $alertaGenerada = \App\Models\AlertaGenerada::create([
+        // Crear registro en alertas_generadas con estado = 0 (No enviado)
+        // El envío se manejará con una tarea programada (Cron Job)
+        return \App\Models\AlertaGenerada::create([
             'dispositivo_id' => $medicion->dispositivo_id,
             'alerta_id' => $alerta->id,
             'fecha_y_hora' => $medicion->fecha_y_hora,
+            'estado' => 0,
         ]);
-
-        // Enviar correo a los administradores de la muestra
-        $users = $muestra->users; // Administradores asignados a la muestra
-
-        foreach ($users as $user) {
-            \Illuminate\Support\Facades\Mail::to($user->email)
-                ->send(new \App\Mail\AlertaTemperaturaMail($muestra, $medicion, $alerta));
-        }
-
-        return $alertaGenerada;
     }
 }

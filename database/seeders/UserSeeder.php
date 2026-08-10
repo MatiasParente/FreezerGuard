@@ -13,9 +13,9 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@freezerguard.com'],
+            ['email' => 'matias.parente@estudiantes.utec.edu.uy'],
             [
-                'name' => 'Administrador',
+                'name' => 'Matias Parente',
                 'telefono' => '123456789',
                 'id_telegram' => '123456',
                 'password' => bcrypt('password123'),

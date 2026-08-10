@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('dispositivo_id')->constrained('dispositivos')->cascadeOnDelete();
             $table->decimal('temperatura', 5, 2);
+            $table->boolean('bateria');
             $table->dateTime('fecha_y_hora');
             $table->timestamps();
         });

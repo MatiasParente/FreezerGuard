@@ -17,6 +17,7 @@ class MedicionSeeder extends Seeder
             Medicion::create([
                 'dispositivo_id' => $dispositivo->id,
                 'temperatura' => -18.5,
+                'bateria' => false,
                 'fecha_y_hora' => now(),
             ]);
 

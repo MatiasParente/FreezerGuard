@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Usuario extends Model
 {
-    // If the table doesn't have timestamps, we disable them
+    //si la tabla no tiene timestamps, los deshabilitamos
     public $timestamps = false;
 
+    //campos que se pueden llenar
     protected $fillable = [
         'nombre',
         'email',

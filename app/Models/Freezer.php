@@ -23,7 +23,7 @@ class Freezer extends Model
         return $this->hasOne(Dispositivo::class);
     }
 
-    //obtener los usuarios (admins) asignados al freezer
+    //obtener los usuarios (admins) que son parte del freezer
     public function users()
     {
         return $this->belongsToMany(User::class);

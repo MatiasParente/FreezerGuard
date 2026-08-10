@@ -25,3 +25,16 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/alertas/resolver/{alertaGenerada}', function (\App\Models\AlertaGenerada $alertaGenerada) {
+    if ($alertaGenerada->estado == 2) {
+        return view('alertas.resuelta'); // O puedes crear una vista 'ya_resuelta' si prefieres algo distinto
+    }
+
+    $alertaGenerada->update([
+        'estado' => 2,
+        'fecha_y_hora_resuelto' => now(),
+    ]);
+
+    return view('alertas.resuelta');
+})->name('alertas.resolver')->middleware('signed');

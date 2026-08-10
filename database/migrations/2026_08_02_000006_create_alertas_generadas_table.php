@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('alerta_id')->constrained('alertas')->cascadeOnDelete();
             $table->foreignId('dispositivo_id')->constrained('dispositivos')->cascadeOnDelete();
             $table->dateTime('fecha_y_hora')->nullable();
+            //0 = no enviado, 1 = enviado, 2 = resuelto
+            $table->integer('estado')->nullable()->default(0);
+            $table->dateTime('fecha_y_hora_resuelto')->nullable();
+            $table->string('observacion')->nullable();
             $table->timestamps();
         });
     }

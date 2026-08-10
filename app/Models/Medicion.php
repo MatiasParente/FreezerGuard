@@ -12,16 +12,16 @@ class Medicion extends Model
     protected $fillable = [
         'dispositivo_id',
         'temperatura',
+        'bateria',
         'fecha_y_hora',
     ];
 
     protected $casts = [
         'fecha_y_hora' => 'datetime',
+        'bateria' => 'boolean',
     ];
 
-    /**
-     * Get the dispositivo associated with this medicion.
-     */
+    //relacion que une la medicion con el dispositivo
     public function dispositivo(): BelongsTo
     {
         return $this->belongsTo(Dispositivo::class);

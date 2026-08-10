@@ -1,20 +1,21 @@
 <x-mail::message>
-# ¡Alerta Crítica de Temperatura!
+# ¡Alerta Crítica Detectada!
 
-Se ha detectado una anomalía en la temperatura de una de sus muestras.
+Se ha detectado una anomalía en su sistema.
 
-**Muestra afectada:** {{ $muestra->titulo }}
-**Temperatura Actual:** {{ $medicion->temperatura }} °C
-**Rango Permitido:** {{ $muestra->temperatura_minima }} °C a {{ $muestra->temperatura_maxima }} °C
-**Fecha y Hora:** {{ $medicion->fecha_y_hora->format('d/m/Y H:i:s') }}
-**Tipo de Alerta:** {{ $alerta->tipo }}
+**Freezer afectado:** {{ $freezer->ubicacion ?? 'Desconocido' }}<br>
+**Dispositivo:** {{ $dispositivo->nombre ?? 'Desconocido' }}<br>
+**Fecha y Hora:** {{ $fechaYHora->format('d/m/Y H:i:s') }}<br>
+**Tipo de Alerta:** {{ $alerta->tipo }}<br>
 
 {{ $alerta->descripcion }}
 
-Por favor, revise el dispositivo **{{ $medicion->dispositivo->nombre ?? 'Desconocido' }}** inmediatamente para evitar la pérdida de la muestra.
+Por favor, revise el congelador inmediatamente para evitar la pérdida de las muestras.
 
-<x-mail::button :url="config('app.url')">
-Revisar Sistema
+Una vez que el problema haya sido solucionado, haga clic en el siguiente botón para marcar la alerta como RESUELTA y detener los envíos automáticos:
+
+<x-mail::button :url="$urlResolucion" color="success">
+Marcar como Resuelto
 </x-mail::button>
 
 Gracias,<br>

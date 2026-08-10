@@ -11,27 +11,27 @@ class CheckNodeRedApiKey
     public function handle(Request $request, Closure $next): Response
     {
         $header = $request->header('Authorization');
-
+        //si falta el header
         if (!$header) {
             return response()->json([
                 'success' => false,
-                'message' => 'Authorization header missing.'
+                'message' => 'falta autorizacion'
             ], 401);
         }
-
+        //si el header no es correcto
         if (!preg_match('/Bearer\s+(.*)$/i', $header, $matches)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid Authorization header.'
+                'message' => 'autorizacion incorrecta'
             ], 401);
         }
 
         $token = $matches[1];
-
+        //si la api key no es la correcta
         if (!hash_equals(env('NODERED_API_KEY'), $token)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid API key.'
+                'message' => 'api key invalida'
             ], 401);
         }
 
