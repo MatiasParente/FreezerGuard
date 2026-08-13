@@ -37,8 +37,10 @@ class ProcessPendingAlerts extends Command
             // Filtrar duplicados por si un admin está en ambas listas
             $users = $users->unique('id');
 
-            // Generar Signed URL para que el usuario pueda resolver la alerta
-            $urlResolucion = URL::signedRoute('alertas.resolver', ['alertaGenerada' => $alertaGenerada->id]);
+            // Generar firma usando ruta relativa para evitar problemas con Nginx Proxy Manager y cabeceras
+            $rutaRelativa = URL::signedRoute('alertas.resolver', ['alertaGenerada' => $alertaGenerada->id], null, false);
+            // Reconstruir la URL absoluta usando la URL de la aplicación definida en .env
+            $urlResolucion = rtrim(config('app.url'), '/') . $rutaRelativa;
 
             foreach ($users as $user) {
                 Mail::to($user->email)

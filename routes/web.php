@@ -24,11 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+
+
 require __DIR__.'/auth.php';
 
 Route::get('/alertas/resolver/{alertaGenerada}', function (\App\Models\AlertaGenerada $alertaGenerada) {
     if ($alertaGenerada->estado == 2) {
-        return view('alertas.resuelta'); // O puedes crear una vista 'ya_resuelta' si prefieres algo distinto
+        return view('alertas.resuelta');
     }
 
     $alertaGenerada->update([
@@ -37,4 +39,4 @@ Route::get('/alertas/resolver/{alertaGenerada}', function (\App\Models\AlertaGen
     ]);
 
     return view('alertas.resuelta');
-})->name('alertas.resolver')->middleware('signed');
+})->name('alertas.resolver')->middleware('signed:relative');
