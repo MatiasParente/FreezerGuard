@@ -44,7 +44,7 @@ class ProcessPendingAlerts extends Command
 
             foreach ($users as $user) {
                 Mail::to($user->email)
-                    ->send(new AlertaTemperaturaMail(
+                    ->queue(new AlertaTemperaturaMail(
                         $freezer, 
                         $dispositivo, 
                         $alerta, 
