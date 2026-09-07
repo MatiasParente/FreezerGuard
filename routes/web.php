@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MedicionesController;
+use App\Http\Controllers\MuestrasController;
+use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\AlertasController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,9 +19,9 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::controller(DashboardController::class)->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', 'index')->name('dashboard');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -24,7 +29,26 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::controller(MedicionesController::class)->group(function () {
+    Route::get('/mediciones', 'index')->name('mediciones.mediciones');
+    Route::get('/mediciones/{medicion}', 'show')->name('mediciones.show');
+});
 
+Route::controller(MuestrasController::class)->group(function () {
+    Route::get('/muestras', 'index')->name('muestras.muestras');
+    Route::get('/muestras/{muestra}', 'show')->name('muestras.show');
+});
+
+Route::controller(ConfiguracionController::class)->group(function () {
+    Route::get('/configuración', 'index')->name('configuración.configuracion');
+    Route::get('/configuración/{configuracion}', 'show')->name('configuración.show');
+});
+
+Route::controller(AlertasController::class)->group(function () {
+    Route::get('/alertas', 'index')->name('alertas.alertas');
+    Route::get('/alertas/{alerta}', 'show')->name('alertas.show');
+    Route::put('/alertas/{alertaGenerada}', 'update')->name('alertas.update');
+});
 
 require __DIR__.'/auth.php';
 
