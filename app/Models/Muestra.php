@@ -16,6 +16,7 @@ class Muestra extends Model
         'temperatura_minima',
         'temperatura_maxima',
         'observaciones',
+        'estado',
         'fecha_inicio',
         'fecha_fin',
     ];

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm } from '@inertiajs/react';
-import { AlertCircle, CheckCircle2, Edit2, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Edit2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import Pagination from '@/Components/Pagination';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -43,6 +43,25 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
             preserveScroll: true,
             replace: true,
         });
+    };
+
+    const eliminarAlerta = (id, e) => {
+        e.stopPropagation();
+        if (confirm("¿Estás seguro de que deseas eliminar permanentemente esta alerta?")) {
+            router.delete(route('alertas.destroy', id), {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const getDuracion = (inicio, fin) => {
+        if (!inicio || !fin) return 'N/A';
+        const diffMs = new Date(fin) - new Date(inicio);
+        const diffMins = Math.round(diffMs / 60000);
+        if (diffMins < 60) return `${diffMins} min`;
+        const diffHrs = Math.floor(diffMins / 60);
+        const remMins = diffMins % 60;
+        return `${diffHrs}h ${remMins}m`;
     };
     return (
         <AuthenticatedLayout
@@ -95,7 +114,7 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                             <th className="px-6 py-4">Estado</th>
                                             <th className="px-6 py-4">Fecha y Hora</th>
                                             <th className="px-6 py-4">Tipo</th>
-                                            <th className="px-6 py-4">Dispositivo / Lab</th>
+                                            <th className="px-6 py-4">Dispositivo / Laboratorio</th>
                                             <th className="px-6 py-4 text-right">Acciones</th>
                                             <th className="px-4 py-4 w-10"></th>
                                         </tr>
@@ -109,9 +128,14 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                                 >
                                                     <td className="px-6 py-4">
                                                         {alerta.estado === 2 ? (
-                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                                <CheckCircle2 className="w-4 h-4" /> Resuelta
-                                                            </span>
+                                                            <div className="flex flex-col items-start gap-1">
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                    <CheckCircle2 className="w-4 h-4" /> Resuelta
+                                                                </span>
+                                                                <span className="text-xs text-gray-500 ml-1">
+                                                                    {alerta.fecha_y_hora_resuelto ? new Date(alerta.fecha_y_hora_resuelto).toLocaleString() : new Date(alerta.updated_at).toLocaleString()}
+                                                                </span>
+                                                            </div>
                                                         ) : (
                                                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                                 <AlertCircle className="w-4 h-4" /> Pendiente
@@ -130,9 +154,14 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                                        <button onClick={() => openEditModal(alerta)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors">
-                                                            <Edit2 className="w-4 h-4" /> Editar Obs.
-                                                        </button>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button onClick={() => openEditModal(alerta)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors">
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={(e) => eliminarAlerta(alerta.id, e)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                     <td className="px-4 py-4 text-gray-400 w-10">
                                                         {expandedRows.includes(alerta.id) ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -141,9 +170,39 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                                 {expandedRows.includes(alerta.id) && (
                                                     <tr className="bg-gray-50/50">
                                                         <td colSpan="6" className="px-6 py-4 border-l-2 border-indigo-400">
-                                                            <div className="text-sm">
-                                                                <span className="font-medium text-gray-700 mr-2">Observación:</span>
-                                                                <span className="text-gray-600">{alerta.observacion || <span className="italic text-gray-400">Sin observación</span>}</span>
+                                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                                                <div>
+                                                                    <span className="font-medium text-gray-700 block mb-1">Muestras Afectadas:</span>
+                                                                    {alerta.dispositivo?.freezer?.muestras?.filter(m => m.estado === 'activo').length > 0 ? (
+                                                                        <ul className="list-disc pl-5 text-gray-600">
+                                                                            {alerta.dispositivo.freezer.muestras.filter(m => m.estado === 'activo').map(m => (
+                                                                                <li key={m.id} className="mb-2">
+                                                                                    <span className="font-medium text-gray-800">{m.titulo}</span>
+                                                                                    <div className="text-xs mt-1">
+                                                                                        <span className="font-semibold">Docentes: </span> 
+                                                                                        {m.users?.length ? m.users.map(u => u.name).join(', ') : 'Ninguno'}
+                                                                                    </div>
+                                                                                    <div className="text-xs">
+                                                                                        <span className="font-semibold">Alumnos: </span> 
+                                                                                        {m.usuarios?.length ? m.usuarios.map(u => u.nombre).join(', ') : 'Ninguno'}
+                                                                                    </div>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    ) : (
+                                                                        <span className="text-gray-400 italic">Ninguna muestra activa</span>
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-medium text-gray-700 block mb-1">Duración sin resolver:</span>
+                                                                    <span className="text-gray-600">
+                                                                        {alerta.estado === 2 ? getDuracion(alerta.fecha_y_hora, alerta.fecha_y_hora_resuelto || alerta.updated_at) : 'En progreso...'}
+                                                                    </span>
+                                                                </div>
+                                                                <div>
+                                                                    <span className="font-medium text-gray-700 block mb-1">Observación:</span>
+                                                                    <span className="text-gray-600">{alerta.observacion || <span className="italic text-gray-400">Sin observación</span>}</span>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -152,7 +211,7 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                         ))}
                                         {alertas.data.length === 0 && (
                                             <tr>
-                                                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
                                                     No hay alertas generadas registradas.
                                                 </td>
                                             </tr>

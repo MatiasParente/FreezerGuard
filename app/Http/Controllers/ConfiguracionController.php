@@ -20,6 +20,7 @@ class ConfiguracionController extends Controller
             'dispositivos' => $query->paginate(5)->withQueryString(),
             'filters' => $request->only(['freezer_id']),
             'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
+            'available_freezers' => \App\Models\Freezer::doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
         ]);
     }
 
@@ -30,5 +31,33 @@ class ConfiguracionController extends Controller
         return Inertia::render('Configuración/configuracion', [
             'dispositivo' => $dispositivo,
         ]);
+    }
+
+    public function storeDispositivo(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'is_new_freezer' => 'required|boolean',
+            'freezer_id' => 'required_if:is_new_freezer,false|nullable|exists:freezers,id|unique:dispositivos,freezer_id',
+            'nueva_ubicacion' => 'required_if:is_new_freezer,true|nullable|string|max:255',
+        ]);
+
+        if ($validated['is_new_freezer']) {
+            $freezer = \App\Models\Freezer::create([
+                'ubicacion' => $validated['nueva_ubicacion'],
+            ]);
+            $freezerId = $freezer->id;
+        } else {
+            $freezerId = $validated['freezer_id'];
+        }
+
+        Dispositivo::create([
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'] ?? null,
+            'freezer_id' => $freezerId,
+        ]);
+
+        return redirect()->back()->with('success', 'Dispositivo creado exitosamente.');
     }
 }

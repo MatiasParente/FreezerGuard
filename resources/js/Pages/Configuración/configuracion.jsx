@@ -1,9 +1,26 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { Cpu, Settings } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Cpu, Settings, Plus } from 'lucide-react';
 import Pagination from '@/Components/Pagination';
+import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import InputError from '@/Components/InputError';
+import { useState } from 'react';
 
-export default function configuracion({ dispositivos, filters, freezers }) {
+export default function configuracion({ dispositivos, filters, freezers, available_freezers }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        nombre: '',
+        descripcion: '',
+        freezer_id: '',
+        is_new_freezer: false,
+        nueva_ubicacion: '',
+    });
+
     const handleFilterChange = (e) => {
         router.get(route(route().current()), { ...filters, [e.target.name]: e.target.value }, {
             preserveState: true,
@@ -11,6 +28,24 @@ export default function configuracion({ dispositivos, filters, freezers }) {
             replace: true,
         });
     };
+
+    const openModal = () => {
+        reset();
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        reset();
+    };
+
+    const submitForm = (e) => {
+        e.preventDefault();
+        post(route('configuración.dispositivo.store'), {
+            onSuccess: () => closeModal(),
+        });
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -26,15 +61,20 @@ export default function configuracion({ dispositivos, filters, freezers }) {
                     <div className="overflow-hidden bg-white shadow-lg sm:rounded-xl border border-gray-100">
                         <div className="p-6 text-gray-900">
                             
-                            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Laboratorio</label>
+                            <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                <div className="w-full md:w-1/2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Laboratorio (Freezer)</label>
                                     <select name="freezer_id" defaultValue={filters?.freezer_id || ''} onChange={handleFilterChange} className="w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
                                         <option value="">Todos</option>
                                         {freezers?.map(f => (
                                             <option key={f.id} value={f.id}>{f.ubicacion}</option>
                                         ))}
                                     </select>
+                                </div>
+                                <div>
+                                    <PrimaryButton onClick={openModal} className="flex items-center gap-2">
+                                        <Plus className="w-4 h-4" /> Agregar Dispositivo
+                                    </PrimaryButton>
                                 </div>
                             </div>
 
@@ -91,6 +131,75 @@ export default function configuracion({ dispositivos, filters, freezers }) {
                     />
                 </div>
             </div>
+
+            <Modal show={isModalOpen} onClose={closeModal} maxWidth="md">
+                <form onSubmit={submitForm} className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">
+                        Agregar Dispositivo
+                    </h2>
+
+                    <div className="space-y-4">
+                        <div>
+                            <InputLabel htmlFor="nombre" value="Nombre del Dispositivo" />
+                            <TextInput id="nombre" type="text" className="mt-1 block w-full" value={data.nombre} onChange={e => setData('nombre', e.target.value)} required />
+                            <InputError message={errors.nombre} className="mt-2" />
+                        </div>
+                        
+                        <div>
+                            <InputLabel htmlFor="descripcion" value="Descripción" />
+                            <textarea id="descripcion" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3" value={data.descripcion} onChange={e => setData('descripcion', e.target.value)} />
+                            <InputError message={errors.descripcion} className="mt-2" />
+                        </div>
+
+                        <div className="flex items-center mt-4 mb-2">
+                            <input
+                                id="is_new_freezer"
+                                type="checkbox"
+                                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                checked={data.is_new_freezer}
+                                onChange={(e) => setData('is_new_freezer', e.target.checked)}
+                            />
+                            <label htmlFor="is_new_freezer" className="ml-2 block text-sm text-gray-900">
+                                Crear nuevo laboratorio (Freezer)
+                            </label>
+                        </div>
+
+                        {!data.is_new_freezer ? (
+                            <div>
+                                <InputLabel htmlFor="freezer_id" value="Ubicación Existente (Freezer)" />
+                                <select id="freezer_id" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={data.freezer_id} onChange={e => setData('freezer_id', e.target.value)} required={!data.is_new_freezer}>
+                                    <option value="">Seleccione...</option>
+                                    {available_freezers?.map(f => (
+                                        <option key={f.id} value={f.id}>{f.ubicacion}</option>
+                                    ))}
+                                </select>
+                                <InputError message={errors.freezer_id} className="mt-2" />
+                            </div>
+                        ) : (
+                            <div>
+                                <InputLabel htmlFor="nueva_ubicacion" value="Nueva Ubicación del Laboratorio" />
+                                <TextInput 
+                                    id="nueva_ubicacion" 
+                                    type="text" 
+                                    className="mt-1 block w-full" 
+                                    value={data.nueva_ubicacion} 
+                                    onChange={e => setData('nueva_ubicacion', e.target.value)} 
+                                    required={data.is_new_freezer} 
+                                    placeholder="Ej: Lab Central 1" 
+                                />
+                                <InputError message={errors.nueva_ubicacion} className="mt-2" />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                        <SecondaryButton onClick={closeModal}>Cancelar</SecondaryButton>
+                        <PrimaryButton disabled={processing}>
+                            Agregar
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

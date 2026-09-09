@@ -10,7 +10,7 @@ class AlertasController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AlertaGenerada::with(['dispositivo.freezer.muestras', 'alerta']);
+        $query = AlertaGenerada::with(['dispositivo.freezer.muestras.users', 'dispositivo.freezer.muestras.usuarios', 'alerta']);
 
         if ($request->filled('dispositivo_id')) {
             $query->where('dispositivo_id', $request->dispositivo_id);
@@ -34,7 +34,7 @@ class AlertasController extends Controller
 
     public function show(AlertaGenerada $alertaGenerada)
     {
-        $alertaGenerada->load(['dispositivo.freezer.muestras', 'alerta']);
+        $alertaGenerada->load(['dispositivo.freezer.muestras.users', 'dispositivo.freezer.muestras.usuarios', 'alerta']);
 
         return Inertia::render('Alertas/alertas', [
             'alerta' => $alertaGenerada,
@@ -52,5 +52,11 @@ class AlertasController extends Controller
         ]);
 
         return back()->with('success', 'Observación actualizada correctamente.');
+    }
+
+    public function destroy(AlertaGenerada $alertaGenerada)
+    {
+        $alertaGenerada->delete();
+        return redirect()->back()->with('success', 'Alerta eliminada permanentemente.');
     }
 }

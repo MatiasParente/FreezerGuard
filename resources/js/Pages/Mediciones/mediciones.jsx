@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { Thermometer, Battery, BatteryFull } from 'lucide-react';
+import { Thermometer, Battery, BatteryFull, Trash2 } from 'lucide-react';
 import Pagination from '@/Components/Pagination';
 
 export default function mediciones({ mediciones, filters, dispositivos }) {
@@ -10,6 +10,14 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
             preserveScroll: true,
             replace: true,
         });
+    };
+
+    const eliminarMedicion = (id) => {
+        if (confirm("¿Estás seguro de que deseas eliminar permanentemente esta medición?")) {
+            router.delete(route('mediciones.destroy', id), {
+                preserveScroll: true,
+            });
+        }
     };
 
     return (
@@ -63,6 +71,7 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                             <th className="px-6 py-4">Dispositivo / Lab</th>
                                             <th className="px-6 py-4">Temperatura</th>
                                             <th className="px-6 py-4">Batería</th>
+                                            <th className="px-6 py-4 text-right">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -92,11 +101,16 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                                         </span>
                                                     )}
                                                 </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button onClick={() => eliminarMedicion(medicion.id)} className="text-red-600 hover:text-red-900 p-1" title="Eliminar permanentemente">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                         {mediciones.data.length === 0 && (
                                             <tr>
-                                                <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
                                                     No hay mediciones registradas.
                                                 </td>
                                             </tr>

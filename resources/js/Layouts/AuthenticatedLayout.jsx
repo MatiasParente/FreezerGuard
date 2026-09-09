@@ -14,7 +14,7 @@ export default function AuthenticatedLayout({ header, children }) {
         <div className="min-h-screen bg-gray-100 sm:flex">
             <nav className="w-full bg-white border-b border-gray-200 sm:w-64 sm:h-screen sm:sticky sm:top-0 sm:overflow-y-auto sm:border-b-0 sm:border-r flex flex-col justify-between shrink-0">
                 <div>
-                    <div className="flex items-center justify-between h-16 px-4 sm:px-6 border-b border-gray-100">
+                    <div className="flex items-center justify-between h-[73px] px-3 sm:px-7 border-b border-gray-100">
                         <Link href={route('home')} className="flex items-center">
                             <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                             <span className="ml-2 text-lg font-semibold">FreezerGuard</span>
@@ -124,8 +124,8 @@ export default function AuthenticatedLayout({ header, children }) {
 
             <div className="flex-1 flex flex-col min-w-0">
                 {header && (
-                    <header className="bg-white shadow">
-                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    <header className="bg-white shadow h-[73px] flex items-center">
+                        <div className="w-full px-4 sm:px-6 lg:px-8">
                             {header}
                         </div>
                     </header>

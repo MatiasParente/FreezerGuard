@@ -32,15 +32,20 @@ Route::middleware('auth')->group(function () {
 Route::controller(MedicionesController::class)->group(function () {
     Route::get('/mediciones', 'index')->name('mediciones.mediciones');
     Route::get('/mediciones/{medicion}', 'show')->name('mediciones.show');
+    Route::delete('/mediciones/{medicion}', 'destroy')->name('mediciones.destroy');
 });
 
 Route::controller(MuestrasController::class)->group(function () {
     Route::get('/muestras', 'index')->name('muestras.muestras');
+    Route::post('/muestras', 'store')->name('muestras.store');
+    Route::put('/muestras/{muestra}', 'update')->name('muestras.update');
+    Route::delete('/muestras/{muestra}', 'destroy')->name('muestras.destroy');
     Route::get('/muestras/{muestra}', 'show')->name('muestras.show');
 });
 
 Route::controller(ConfiguracionController::class)->group(function () {
     Route::get('/configuración', 'index')->name('configuración.configuracion');
+    Route::post('/configuración/dispositivo', 'storeDispositivo')->name('configuración.dispositivo.store');
     Route::get('/configuración/{configuracion}', 'show')->name('configuración.show');
 });
 
@@ -48,6 +53,7 @@ Route::controller(AlertasController::class)->group(function () {
     Route::get('/alertas', 'index')->name('alertas.alertas');
     Route::get('/alertas/{alerta}', 'show')->name('alertas.show');
     Route::put('/alertas/{alertaGenerada}', 'update')->name('alertas.update');
+    Route::delete('/alertas/{alertaGenerada}', 'destroy')->name('alertas.destroy');
 });
 
 require __DIR__.'/auth.php';

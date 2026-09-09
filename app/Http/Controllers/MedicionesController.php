@@ -41,4 +41,10 @@ class MedicionesController extends Controller
             'medicion' => $medicion,
         ]);
     }
+
+    public function destroy(Medicion $medicion)
+    {
+        $medicion->delete();
+        return redirect()->back()->with('success', 'Medición eliminada permanentemente.');
+    }
 }
