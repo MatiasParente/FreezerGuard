@@ -14,6 +14,7 @@ export default function configuracion({ dispositivos, filters, freezers, availab
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingDispositivo, setEditingDispositivo] = useState(null);
+    const [showWifiFields, setShowWifiFields] = useState(false);
 
     // Form para agregar dispositivo
     const addForm = useForm({
@@ -367,24 +368,38 @@ export default function configuracion({ dispositivos, filters, freezers, availab
                             </div>
                         </div>
 
-                        {/* Sección 4: Wi-Fi Remoto */}
-                        <div className="space-y-4 md:col-span-2 bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
-                            <h3 className="font-semibold text-emerald-900 text-sm flex items-center gap-1.5">
-                                <Wifi className="w-4 h-4 text-emerald-600" /> Credenciales Wi-Fi Remotas
-                            </h3>
-                            <p className="text-xs text-emerald-700">
-                                Al guardar, estas credenciales se enviarán automáticamente en la respuesta HTTP hacia el ESP32.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel htmlFor="wifi_ssid" value="Wi-Fi SSID (Red)" />
-                                    <TextInput id="wifi_ssid" type="text" className="mt-1 block w-full" value={editForm.data.wifi_ssid} onChange={e => editForm.setData('wifi_ssid', e.target.value)} placeholder="Ej: MiRed_WiFi" />
-                                </div>
-                                <div>
-                                    <InputLabel htmlFor="wifi_password" value="Wi-Fi Password (Contraseña)" />
-                                    <TextInput id="wifi_password" type="password" className="mt-1 block w-full" value={editForm.data.wifi_password} onChange={e => editForm.setData('wifi_password', e.target.value)} placeholder="••••••••" />
-                                </div>
+                        {/* Sección 4: Wi-Fi Remoto (Oculto por defecto detras de un botón) */}
+                        <div className="md:col-span-2 bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-emerald-900 text-sm flex items-center gap-1.5">
+                                    <Wifi className="w-4 h-4 text-emerald-600" /> Credenciales Wi-Fi Remotas
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowWifiFields(!showWifiFields)}
+                                    className="text-xs font-medium px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"
+                                >
+                                    {showWifiFields ? 'Ocultar Credenciales Wi-Fi' : '🔒 Cambiar Credenciales Wi-Fi'}
+                                </button>
                             </div>
+
+                            {showWifiFields && (
+                                <div className="mt-4 space-y-3 pt-3 border-t border-emerald-200">
+                                    <p className="text-xs text-emerald-700">
+                                        Al guardar, estas credenciales se enviarán automáticamente cifradas vía HTTPS hacia el ESP32.
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <InputLabel htmlFor="wifi_ssid" value="Wi-Fi SSID (Red)" />
+                                            <TextInput id="wifi_ssid" type="text" className="mt-1 block w-full" value={editForm.data.wifi_ssid} onChange={e => editForm.setData('wifi_ssid', e.target.value)} placeholder="Ej: MiRed_WiFi" />
+                                        </div>
+                                        <div>
+                                            <InputLabel htmlFor="wifi_password" value="Wi-Fi Password (Contraseña)" />
+                                            <TextInput id="wifi_password" type="password" className="mt-1 block w-full" value={editForm.data.wifi_password} onChange={e => editForm.setData('wifi_password', e.target.value)} placeholder="••••••••" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                     </div>
