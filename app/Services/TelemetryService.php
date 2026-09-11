@@ -12,9 +12,8 @@ class TelemetryService
 {
     public function handleData(array $data): array
     {
-        $fechaYHora = !empty($data['timestamp']) 
-            ? Carbon::parse($data['timestamp'])->setTimezone('America/Montevideo') 
-            : now('America/Montevideo');
+        // Siempre usamos la hora oficial de Montevideo para evitar que timestamps desincronizados del ESP32 (ej: 1970) contaminen la BD
+        $fechaYHora = now('America/Montevideo');
 
         $medicion = Medicion::create([
             'dispositivo_id' => $data['device_id'],
@@ -140,6 +139,8 @@ class TelemetryService
         return [
             'temp_min' => (float)$tempMin,
             'temp_max' => (float)$tempMax,
+            'alerta_temperatura_activa' => (bool)($dispositivo->alerta_temperatura_activa ?? true),
+            'alerta_bateria_activa' => (bool)($dispositivo->alerta_bateria_activa ?? true),
             'wifi_ssid' => $dispositivo->wifi_ssid,
             'wifi_password' => $dispositivo->wifi_password,
         ];
