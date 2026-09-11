@@ -18,8 +18,8 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
             $table->float('cantidad')->nullable();
             $table->dateTime('vencimiento')->nullable();
-            $table->decimal('temperatura_minima', 5, 2)->default(-25.0)->nullable();
-            $table->decimal('temperatura_maxima', 5, 2)->default(-10.0)->nullable();
+            $table->decimal('temperatura_minima', 5, 2)->nullable();
+            $table->decimal('temperatura_maxima', 5, 2)->nullable();
             $table->text('observaciones')->nullable();
             $table->enum('estado', ['activo', 'inactivo'])->default('activo')->nullable();
             $table->dateTime('fecha_inicio')->nullable();

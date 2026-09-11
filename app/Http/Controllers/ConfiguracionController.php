@@ -60,4 +60,24 @@ class ConfiguracionController extends Controller
 
         return redirect()->back()->with('success', 'Dispositivo creado exitosamente.');
     }
+
+    public function updateDispositivo(Request $request, Dispositivo $dispositivo)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'alerta_temperatura_activa' => 'required|boolean',
+            'alerta_bateria_activa' => 'required|boolean',
+            'alerta_vencimiento_activa' => 'required|boolean',
+            'alerta_inactividad_activa' => 'required|boolean',
+            'temp_min_default' => 'required|numeric|between:-100,100',
+            'temp_max_default' => 'required|numeric|between:-100,100',
+            'wifi_ssid' => 'nullable|string|max:255',
+            'wifi_password' => 'nullable|string|max:255',
+        ]);
+
+        $dispositivo->update($validated);
+
+        return redirect()->back()->with('success', 'Configuración del dispositivo actualizada.');
+    }
 }

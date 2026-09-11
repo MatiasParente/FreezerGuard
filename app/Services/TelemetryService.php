@@ -1,28 +1,43 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\Medicion;
+use App\Models\Dispositivo;
+use App\Models\Alerta;
+use App\Models\AlertaGenerada;
+use Carbon\Carbon;
 
 class TelemetryService
 {
     public function handleData(array $data): array
     {
+        $fechaYHora = !empty($data['timestamp']) 
+            ? Carbon::parse($data['timestamp'])->setTimezone('America/Montevideo') 
+            : now('America/Montevideo');
+
         $medicion = Medicion::create([
             'dispositivo_id' => $data['device_id'],
             'temperatura' => $data['temperature'],
             'bateria' => $data['bateria'] ?? false,
-            'fecha_y_hora' => $data['timestamp'],
+            'fecha_y_hora' => $fechaYHora,
         ]);
 
+        $dispositivo = Dispositivo::with('freezer.muestras')->find($data['device_id']);
         $alertasGeneradas = [];
 
-        //verificar temperatura
-        $this->verificarTemperatura($medicion, $alertasGeneradas);
+        // Verificar temperatura (respetando toggle)
+        if ($dispositivo && $dispositivo->alerta_temperatura_activa) {
+            $this->verificarTemperatura($medicion, $dispositivo, $alertasGeneradas);
+        }
 
-        //verificar corriente
-        if (isset($data['bateria'])) {
+        // Verificar corriente (respetando toggle)
+        if ($dispositivo && $dispositivo->alerta_bateria_activa && isset($data['bateria'])) {
             $this->verificarCorriente($medicion, $data['bateria'], $alertasGeneradas);
         }
+
+        // Calcular configuración segura para enviar al ESP32
+        $configuracionCalculada = $this->obtenerConfiguracionSegura($dispositivo);
 
         $message = empty($alertasGeneradas) 
             ? 'Medición guardada correctamente' 
@@ -33,30 +48,48 @@ class TelemetryService
             'message' => $message,
             'data' => $medicion,
             'alertas' => $alertasGeneradas,
+            'server_time' => $fechaYHora->toIso8601String(),
+            'configuracion' => $configuracionCalculada,
         ];
     }
 
-    public function verificarTemperatura(Medicion $medicion, array &$alertasGeneradas)
+    public function verificarTemperatura(Medicion $medicion, Dispositivo $dispositivo, array &$alertasGeneradas)
     {
-        $muestras = $medicion
-            ->dispositivo
-            ->freezer
-            ->muestras;
+        $muestrasActivasConRango = collect();
+        if ($dispositivo->freezer) {
+            $muestrasActivasConRango = $dispositivo->freezer->muestras
+                ->where('estado', 'activo')
+                ->filter(fn($m) => !is_null($m->temperatura_minima) && !is_null($m->temperatura_maxima));
+        }
 
-        foreach($muestras as $muestra)
-        {
-            $temp = $medicion->temperatura;
+        $temp = $medicion->temperatura;
 
-            if (
-                $temp < $muestra->temperatura_minima ||
-                $temp > $muestra->temperatura_maxima
-            ) {
-                //Determinar el tipo de alerta
-                $tipoAlerta = $temp > $muestra->temperatura_maxima
+        if ($muestrasActivasConRango->count() > 0) {
+            // Verificar contra cada muestra individual
+            foreach ($muestrasActivasConRango as $muestra) {
+                if ($temp < $muestra->temperatura_minima || $temp > $muestra->temperatura_maxima) {
+                    $tipoAlerta = $temp > $muestra->temperatura_maxima
+                        ? 'Temperatura Fuera de Rango Superior'
+                        : 'Temperatura Fuera de Rango Inferior';
+
+                    $alerta = Alerta::where('tipo', $tipoAlerta)->first();
+
+                    if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
+                        $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
+                    }
+                }
+            }
+        } else {
+            // Si no hay muestras activas con rango definido, evaluar contra los defaults del dispositivo
+            $tempMin = $dispositivo->temp_min_default ?? -25.0;
+            $tempMax = $dispositivo->temp_max_default ?? -10.0;
+
+            if ($temp < $tempMin || $temp > $tempMax) {
+                $tipoAlerta = $temp > $tempMax
                     ? 'Temperatura Fuera de Rango Superior'
                     : 'Temperatura Fuera de Rango Inferior';
 
-                $alerta = \App\Models\Alerta::where('tipo', $tipoAlerta)->first();
+                $alerta = Alerta::where('tipo', $tipoAlerta)->first();
 
                 if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
                     $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
@@ -69,7 +102,7 @@ class TelemetryService
     {
         // bateria == true significa que hubo corte de corriente y está usando la batería
         if ($bateria) {
-            $alerta = \App\Models\Alerta::where('tipo', 'Corte de Energía Eléctrica')->first();
+            $alerta = Alerta::where('tipo', 'Corte de Energía Eléctrica')->first();
 
             if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
                 $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
@@ -77,10 +110,44 @@ class TelemetryService
         }
     }
 
+    private function obtenerConfiguracionSegura(?Dispositivo $dispositivo): array
+    {
+        if (!$dispositivo) {
+            return [
+                'temp_min' => -25.0,
+                'temp_max' => -10.0,
+                'wifi_ssid' => null,
+                'wifi_password' => null,
+            ];
+        }
+
+        $muestrasActivasConRango = collect();
+        if ($dispositivo->freezer) {
+            $muestrasActivasConRango = $dispositivo->freezer->muestras
+                ->where('estado', 'activo')
+                ->filter(fn($m) => !is_null($m->temperatura_minima) && !is_null($m->temperatura_maxima));
+        }
+
+        if ($muestrasActivasConRango->count() > 0) {
+            // Para proteger todas las muestras: el mínimo más alto y el máximo más bajo
+            $tempMin = $muestrasActivasConRango->max('temperatura_minima');
+            $tempMax = $muestrasActivasConRango->min('temperatura_maxima');
+        } else {
+            $tempMin = $dispositivo->temp_min_default ?? -25.0;
+            $tempMax = $dispositivo->temp_max_default ?? -10.0;
+        }
+
+        return [
+            'temp_min' => (float)$tempMin,
+            'temp_max' => (float)$tempMax,
+            'wifi_ssid' => $dispositivo->wifi_ssid,
+            'wifi_password' => $dispositivo->wifi_password,
+        ];
+    }
+
     private function debeGenerarAlerta($dispositivoId, $alertaId): bool
     {
-        // Verificar si ya existe una alerta de este tipo para este dispositivo que NO esté resuelta (estado < 2)
-        $alertaSinResolver = \App\Models\AlertaGenerada::where('dispositivo_id', $dispositivoId)
+        $alertaSinResolver = AlertaGenerada::where('dispositivo_id', $dispositivoId)
             ->where('alerta_id', $alertaId)
             ->where('estado', '<', 2)
             ->exists();
@@ -90,9 +157,7 @@ class TelemetryService
 
     private function registrarAlerta(Medicion $medicion, $alerta)
     {
-        // Crear registro en alertas_generadas con estado = 0 (No enviado)
-        // El envío se manejará con una tarea programada (Cron Job)
-        return \App\Models\AlertaGenerada::create([
+        return AlertaGenerada::create([
             'dispositivo_id' => $medicion->dispositivo_id,
             'alerta_id' => $alerta->id,
             'fecha_y_hora' => $medicion->fecha_y_hora,
@@ -100,3 +165,4 @@ class TelemetryService
         ]);
     }
 }
+

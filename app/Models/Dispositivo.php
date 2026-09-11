@@ -12,6 +12,23 @@ class Dispositivo extends Model
         'freezer_id',
         'nombre',
         'descripcion',
+        'alerta_temperatura_activa',
+        'alerta_bateria_activa',
+        'alerta_vencimiento_activa',
+        'alerta_inactividad_activa',
+        'temp_min_default',
+        'temp_max_default',
+        'wifi_ssid',
+        'wifi_password',
+    ];
+
+    protected $casts = [
+        'alerta_temperatura_activa' => 'boolean',
+        'alerta_bateria_activa' => 'boolean',
+        'alerta_vencimiento_activa' => 'boolean',
+        'alerta_inactividad_activa' => 'boolean',
+        'temp_min_default' => 'float',
+        'temp_max_default' => 'float',
     ];
 
     //obtener el freezer asociado con el dispositivo

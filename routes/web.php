@@ -46,6 +46,7 @@ Route::controller(MuestrasController::class)->group(function () {
 Route::controller(ConfiguracionController::class)->group(function () {
     Route::get('/configuración', 'index')->name('configuración.configuracion');
     Route::post('/configuración/dispositivo', 'storeDispositivo')->name('configuración.dispositivo.store');
+    Route::put('/configuración/dispositivo/{dispositivo}', 'updateDispositivo')->name('configuración.dispositivo.update');
     Route::get('/configuración/{configuracion}', 'show')->name('configuración.show');
 });
 

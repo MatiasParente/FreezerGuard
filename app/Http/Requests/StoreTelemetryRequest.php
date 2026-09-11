@@ -30,7 +30,7 @@ class StoreTelemetryRequest extends FormRequest
             'device_id' => ['required', 'integer', 'exists:dispositivos,id'],
             'temperature' => ['required', 'numeric', 'between:-100,100'],
             'bateria' => ['required', 'boolean'],
-            'timestamp' => ['required', 'date'],
+            'timestamp' => ['nullable'],
         ];
     }
 
@@ -40,7 +40,6 @@ class StoreTelemetryRequest extends FormRequest
             'device_id.required' => 'El ID del dispositivo es requerido.',
             'temperature.required' => 'La temperatura es requerida.',
             'bateria.required' => 'El estado de la bateria es requerido.',
-            'timestamp.required' => 'La fecha y hora son requeridas.',
         ];
     }
 }

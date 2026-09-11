@@ -29,6 +29,14 @@ class AlertaSeeder extends Seeder
                 'tipo' => 'Restablecimiento de Energía Eléctrica',
                 'descripcion' => 'El suministro de corriente ha sido restablecido (Corriente = true tras un corte).',
             ],
+            [
+                'tipo' => 'Muestra Vencida',
+                'descripcion' => 'Una o más muestras activas han superado su fecha límite de vencimiento.',
+            ],
+            [
+                'tipo' => 'Dispositivo Inactivo',
+                'descripcion' => 'El dispositivo ha dejado de enviar mediciones por un período prolongado.',
+            ],
         ];
 
         foreach ($alertas as $alerta) {
