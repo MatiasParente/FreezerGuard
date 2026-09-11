@@ -139,10 +139,10 @@ class TelemetryService
         return [
             'temp_min' => (float)$tempMin,
             'temp_max' => (float)$tempMax,
-            'alerta_temperatura_activa' => (bool)($dispositivo->alerta_temperatura_activa ?? true),
-            'alerta_bateria_activa' => (bool)($dispositivo->alerta_bateria_activa ?? true),
-            'wifi_ssid' => $dispositivo->wifi_ssid,
-            'wifi_password' => $dispositivo->wifi_password,
+            'alerta_temperatura_activa' => $dispositivo->alerta_temperatura_activa ? true : false,
+            'alerta_bateria_activa' => $dispositivo->alerta_bateria_activa ? true : false,
+            'wifi_ssid' => $dispositivo->wifi_ssid ?? "",
+            'wifi_password' => $dispositivo->wifi_password ?? "",
         ];
     }
 
