@@ -15,7 +15,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
 
     return (
         <div className="space-y-3">
-            {/* Selector de Dispositivo para Tarjetas */}
+            {/* Selector de Dispositivo*/}
             {dispositivosConEstado.length > 0 && (
                 <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
                     <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
@@ -36,14 +36,12 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                 </div>
             )}
 
-            {/* 3 Tarjetas Superiores Compactas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                {/* TARJETA 1: TEMPERATURA (AZUL, PEQUEÑA, SIN HORA) */}
+                {/* TARJETA 1: TEMPERATURA */}
                 <div className="bg-blue-600 text-white p-3.5 rounded-xl shadow-md border border-blue-500 flex flex-col justify-between h-24">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-blue-100">Temperatura</span>
-                        <Thermometer className="w-3.5 h-3.5 text-blue-200" />
                     </div>
                     <div>
                         <div className="text-2xl font-black font-mono tracking-tight text-white">
@@ -55,7 +53,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                     </div>
                 </div>
 
-                {/* TARJETA 2: CORRIENTE ELÉCTRICA (PEQUEÑA, SIN LOGO, VERDE=OK / ROJO=BATERÍA) */}
+                {/* TARJETA 2: CORRIENTE ELÉCTRICA */}
                 <div className={`p-3.5 rounded-xl shadow-md border flex flex-col justify-between h-24 transition-colors ${
                     estaEnBateria 
                         ? 'bg-red-600 text-white border-red-500' 
@@ -72,7 +70,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                     </div>
                 </div>
 
-                {/* TARJETA 3: ESTADO ALERTAS WEB (VERDE SI ACTIVA, ROJO SI DESACTIVADA) */}
+                {/* TARJETA 3: ESTADO ALERTAS WEB */}
                 <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-800 flex flex-col justify-between h-24">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Estado Alertas Web</span>

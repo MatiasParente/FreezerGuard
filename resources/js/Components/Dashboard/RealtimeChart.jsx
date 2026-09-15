@@ -4,9 +4,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function RealtimeChart({ ultimasMediciones = [] }) {
     const [mostrarEnVivo, setMostrarEnVivo] = useState(true);
-    const [rangoMediciones, setRangoMediciones] = useState(5); // Default: 5 (5 | 30 | 100)
+    const [rangoMediciones, setRangoMediciones] = useState(5);
 
-    // Process dataset based on selected range: 5, 30 or 100
     const datasetSlice = ultimasMediciones.slice(-rangoMediciones);
     const chartData = datasetSlice.map(m => {
         const d = new Date(m.fecha_y_hora);
@@ -23,7 +22,6 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
         };
     });
 
-    // Custom X-Axis multiline tick
     const CustomXAxisTick = ({ x, y, payload }) => {
         if (!payload.value) return null;
         const [time, date] = payload.value.split('\n');
@@ -37,7 +35,6 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
         );
     };
 
-    // Custom Dot rendering: RED dot if measurement generated or had an alert!
     const CustomDot = (props) => {
         const { cx, cy, payload } = props;
         if (!cx || !cy) return null;
@@ -64,7 +61,7 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
                     </h3>
                 </div>
 
-                {/* Controles de Selección de Rango: 5 vs 30 vs 100 */}
+                {/*Selección de Rango: 5 vs 30 vs 100 */}
                 <div className="flex items-center gap-3">
                     <div className="flex bg-slate-200/70 p-1 rounded-lg border border-slate-300/40 text-xs font-semibold">
                         <button
@@ -129,7 +126,7 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
                                                     <p className="text-slate-400">Hora: {new Date(data.raw_time).toLocaleString()}</p>
                                                     {data.tiene_alerta && (
                                                         <p className="text-red-400 font-semibold flex items-center gap-1 pt-1">
-                                                            ⚠️ Alerta activa en esta lectura
+                                                            Alerta activa en esta lectura
                                                         </p>
                                                     )}
                                                 </div>
