@@ -16,11 +16,19 @@ class ConfiguracionController extends Controller
             $query->where('freezer_id', $request->freezer_id);
         }
 
+        $dispositivosInactivos = Dispositivo::onlyTrashed()
+            ->with(['freezer', 'mediciones'])
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(5, ['*'], 'inactivos_page')
+            ->withQueryString();
+
         return Inertia::render('Configuración/configuracion', [
-            'dispositivos' => $query->paginate(5)->withQueryString(),
+            'dispositivos' => $query->paginate(5, ['*'], 'activos_page')->withQueryString(),
+            'dispositivosInactivos' => $dispositivosInactivos,
             'filters' => $request->only(['freezer_id']),
             'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
             'available_freezers' => \App\Models\Freezer::doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
+            'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
         ]);
     }
 
@@ -30,6 +38,7 @@ class ConfiguracionController extends Controller
 
         return Inertia::render('Configuración/configuracion', [
             'dispositivo' => $dispositivo,
+            'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
         ]);
     }
 
@@ -72,6 +81,7 @@ class ConfiguracionController extends Controller
             'alerta_inactividad_activa' => 'required|boolean',
             'temp_min_default' => 'required|numeric|between:-100,100',
             'temp_max_default' => 'required|numeric|between:-100,100',
+            'intervalo_telemetria' => 'required|integer|min:1|max:3600',
             'wifi_ssid' => 'nullable|string|max:255',
             'wifi_password' => 'nullable|string|max:255',
         ]);
@@ -79,5 +89,46 @@ class ConfiguracionController extends Controller
         $dispositivo->update($validated);
 
         return redirect()->back()->with('success', 'Configuración del dispositivo actualizada.');
+    }
+
+    public function destroyDispositivo(Dispositivo $dispositivo)
+    {
+        $dispositivo->delete(); // SoftDelete
+
+        return redirect()->back()->with('success', 'Dispositivo movido al historial de inactivos (desactivado).');
+    }
+
+    public function restoreDispositivo($id)
+    {
+        $dispositivo = Dispositivo::onlyTrashed()->findOrFail($id);
+        $dispositivo->restore();
+
+        return redirect()->back()->with('success', 'Dispositivo restaurado exitosamente.');
+    }
+
+    public function forceDeleteDispositivo($id)
+    {
+        $dispositivo = Dispositivo::onlyTrashed()->findOrFail($id);
+        
+        // Opcional: borrar mediciones y alertas asociadas
+        $dispositivo->mediciones()->delete();
+        $dispositivo->alertasGeneradas()->delete();
+        $dispositivo->forceDelete();
+
+        return redirect()->back()->with('success', 'Dispositivo y sus datos eliminados permanentemente.');
+    }
+
+    public function updateSistemaConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'intervalo_correos' => 'required|integer|min:1|max:1440',
+            'plantilla_email_asunto' => 'required|string|max:255',
+            'plantilla_email_cuerpo' => 'required|string',
+        ]);
+
+        $config = \App\Models\ConfiguracionSistema::getSolo();
+        $config->update($validated);
+
+        return redirect()->back()->with('success', 'Configuración del sistema y plantilla de email actualizada.');
     }
 }

@@ -23,6 +23,11 @@ class TelemetryService
         ]);
 
         $dispositivo = Dispositivo::with('freezer.muestras')->find($data['device_id']);
+
+        if ($dispositivo && isset($data['wifi_status'])) {
+            $dispositivo->update(['wifi_status' => (int)$data['wifi_status']]);
+        }
+
         $alertasGeneradas = [];
 
         // Verificar temperatura (respetando toggle)
@@ -141,6 +146,7 @@ class TelemetryService
             'temp_max' => (float)$tempMax,
             'alerta_temperatura_activa' => $dispositivo->alerta_temperatura_activa ? true : false,
             'alerta_bateria_activa' => $dispositivo->alerta_bateria_activa ? true : false,
+            'intervalo_telemetria' => (int)($dispositivo->intervalo_telemetria ?? 5),
             'wifi_ssid' => $dispositivo->wifi_ssid ?? "",
             'wifi_password' => $dispositivo->wifi_password ?? "",
         ];

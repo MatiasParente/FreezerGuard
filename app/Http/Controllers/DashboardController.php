@@ -7,13 +7,20 @@ use Illuminate\Http\Request;
 use App\Models\Muestra;
 use App\Models\Medicion;
 use App\Models\AlertaGenerada;
+use App\Models\Dispositivo;
+use App\Models\Freezer;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        //muestras por vencer
-        $muestras = Muestra::with('freezer.dispositivo')->get()->map(function($muestra) {
+        // Muestras por vencer (filtrables por freezer si se requiere)
+        $muestrasQuery = Muestra::with('freezer.dispositivo');
+        if ($request->filled('freezer_id')) {
+            $muestrasQuery->where('freezer_id', $request->freezer_id);
+        }
+
+        $muestras = $muestrasQuery->get()->map(function($muestra) {
             $dias = $muestra->vencimiento ? now()->diffInDays($muestra->vencimiento, false) : null;
             if ($dias === null) {
                 $estado = 'Sin Vencimiento';
@@ -28,46 +35,64 @@ class DashboardController extends Controller
             return $muestra;
         });
 
-        // promedios diarios de los ultimos 7 dias de la temperatura
-        $promediosDb = Medicion::selectRaw('DATE(fecha_y_hora) as date, AVG(temperatura) as avg_temp, dispositivo_id')
-            ->where('fecha_y_hora', '>=', now()->subDays(7))
-            ->groupBy('date', 'dispositivo_id')
-            ->with('dispositivo')
-            ->orderBy('date')
-            ->get();
-            
-        //Transformar para Recharts
-        $promedios = [];
-        foreach ($promediosDb as $p) {
-            $date = $p->date;
-            if (!isset($promedios[$date])) {
-                $promedios[$date] = ['date' => $date];
-            }
-            $nombreDispositivo = $p->dispositivo ? $p->dispositivo->nombre : 'Desconocido';
-            $promedios[$date][$nombreDispositivo] = round($p->avg_temp, 2);
-        }
-        $promedios = array_values($promedios);
+        // Lista de dispositivos con su última medición y estado de alertas para las Tarjetas Superiores
+        $dispositivosConEstado = Dispositivo::with('freezer')->get()->map(function($disp) {
+            $ultimaMedicion = Medicion::where('dispositivo_id', $disp->id)
+                ->orderBy('fecha_y_hora', 'desc')
+                ->first();
 
-        //5 mediciones de temperatura ultimas
+            return [
+                'id' => $disp->id,
+                'nombre' => $disp->nombre,
+                'freezer_ubicacion' => $disp->freezer ? $disp->freezer->ubicacion : 'Sin Freezer',
+                'ultima_medicion' => $ultimaMedicion,
+                'estado_alertas' => [
+                    'temperatura' => (bool)$disp->alerta_temperatura_activa,
+                    'bateria' => (bool)$disp->alerta_bateria_activa,
+                    'vencimiento' => (bool)$disp->alerta_vencimiento_activa,
+                    'inactividad' => (bool)$disp->alerta_inactividad_activa,
+                ],
+            ];
+        });
+
+        // Alertas sin resolver (conteo total)
+        $alertasSinResolverCount = AlertaGenerada::where('estado', '!=', 2)->count();
+
+        // Últimas 100 mediciones para gráfico en tiempo real
         $ultimasMediciones = Medicion::with('dispositivo')
             ->orderBy('fecha_y_hora', 'desc')
-            ->take(5)
+            ->take(100)
             ->get()
             ->reverse()
-            ->values();
+            ->values()
+            ->map(function ($medicion) {
+                $tempMin = $medicion->dispositivo->temp_min_default ?? -20.0;
+                $tempMax = $medicion->dispositivo->temp_max_default ?? 30.0;
+                $tieneAlerta = ($medicion->bateria === true) 
+                    || ($medicion->temperatura < $tempMin) 
+                    || ($medicion->temperatura > $tempMax);
+                $medicion->tiene_alerta = $tieneAlerta;
+                return $medicion;
+            });
 
-        // 4. Alertas (Pendientes o Resueltas en últimos 30 días)
+        // Alertas paginadas (Sin resolver + resueltas de últimos 30 días)
         $alertas = AlertaGenerada::with(['dispositivo.freezer', 'alerta'])
             ->where('estado', '!=', 2)
             ->orWhere('fecha_y_hora', '>=', now()->subDays(30))
             ->orderBy('fecha_y_hora', 'desc')
             ->paginate(5, ['*'], 'alertas_page')->withQueryString();
 
+        // Freezers para desplegable de muestras
+        $freezers = Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get();
+
         return Inertia::render('Dashboard', [
             'muestras' => $muestras,
-            'promedios' => $promedios,
+            'dispositivosConEstado' => $dispositivosConEstado,
             'ultimasMediciones' => $ultimasMediciones,
+            'alertasSinResolverCount' => $alertasSinResolverCount,
             'alertas' => $alertas,
+            'freezers' => $freezers,
+            'filters' => $request->only(['freezer_id']),
         ]);
     }
 }

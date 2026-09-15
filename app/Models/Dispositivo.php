@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dispositivo extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'freezer_id',
         'nombre',
@@ -20,6 +22,8 @@ class Dispositivo extends Model
         'temp_max_default',
         'wifi_ssid',
         'wifi_password',
+        'intervalo_telemetria',
+        'wifi_status',
     ];
 
     protected $casts = [
@@ -29,6 +33,8 @@ class Dispositivo extends Model
         'alerta_inactividad_activa' => 'boolean',
         'temp_min_default' => 'float',
         'temp_max_default' => 'float',
+        'intervalo_telemetria' => 'integer',
+        'wifi_status' => 'integer',
     ];
 
     //obtener el freezer asociado con el dispositivo

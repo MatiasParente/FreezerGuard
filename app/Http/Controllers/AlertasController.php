@@ -24,8 +24,21 @@ class AlertasController extends Controller
             });
         }
 
+        $paginatedAlertas = $query->orderBy('fecha_y_hora', 'desc')->paginate(5)->withQueryString();
+
+        $paginatedAlertas->getCollection()->transform(function ($alerta) {
+            $medicionCercana = \App\Models\Medicion::where('dispositivo_id', $alerta->dispositivo_id)
+                ->where('fecha_y_hora', '<=', $alerta->fecha_y_hora->copy()->addSeconds(30))
+                ->orderBy('fecha_y_hora', 'desc')
+                ->first();
+            
+            $alerta->temperatura_origen = $medicionCercana ? $medicionCercana->temperatura : null;
+
+            return $alerta;
+        });
+
         return Inertia::render('Alertas/alertas', [
-            'alertas' => $query->orderBy('fecha_y_hora', 'desc')->paginate(5)->withQueryString(),
+            'alertas' => $paginatedAlertas,
             'filters' => $request->only(['dispositivo_id', 'estado', 'tipo']),
             'dispositivos' => \App\Models\Dispositivo::select('id', 'nombre')->orderBy('nombre')->get(),
             'tipos' => \App\Models\Alerta::select('id', 'tipo as nombre')->get(),

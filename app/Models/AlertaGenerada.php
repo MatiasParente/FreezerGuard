@@ -21,6 +21,7 @@ class AlertaGenerada extends Model
     //cast para que la fecha y hora sea un datetime y la bateria sea un booleano
     protected $casts = [
         'fecha_y_hora' => 'datetime',
+        'fecha_y_hora_resuelto' => 'datetime',
     ];
 
     //relacion que une la alerta generada con el dispositivo que genero la alerta

@@ -47,6 +47,10 @@ Route::controller(ConfiguracionController::class)->group(function () {
     Route::get('/configuración', 'index')->name('configuración.configuracion');
     Route::post('/configuración/dispositivo', 'storeDispositivo')->name('configuración.dispositivo.store');
     Route::put('/configuración/dispositivo/{dispositivo}', 'updateDispositivo')->name('configuración.dispositivo.update');
+    Route::delete('/configuración/dispositivo/{dispositivo}', 'destroyDispositivo')->name('configuración.dispositivo.destroy');
+    Route::post('/configuración/dispositivo/{id}/restore', 'restoreDispositivo')->name('configuración.dispositivo.restore');
+    Route::delete('/configuración/dispositivo/{id}/force', 'forceDeleteDispositivo')->name('configuración.dispositivo.forceDelete');
+    Route::put('/configuración/sistema', 'updateSistemaConfig')->name('configuración.sistema.update');
     Route::get('/configuración/{configuracion}', 'show')->name('configuración.show');
 });
 
