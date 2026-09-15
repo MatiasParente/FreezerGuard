@@ -26,8 +26,16 @@ class TelemetryService
 
         if ($dispositivo && isset($data['wifi_status'])) {
             $wifiStatus = (int)$data['wifi_status'];
-            if ($wifiStatus === 1 || $wifiStatus === 2) {
-                $dispositivo->update(['wifi_status' => $wifiStatus]);
+            if ($wifiStatus === 1) {
+                $dispositivo->update(['wifi_status' => 1]);
+            } else if ($wifiStatus === 2) {
+                // Al fallar el cambio de Wi-Fi, registramos el error y limpiamos el wifi_ssid en la BD 
+                // para evitar que el servidor le siga exigiendo reintentar una red que no funciona/no soporta (ej: 5GHz).
+                $dispositivo->update([
+                    'wifi_status' => 2,
+                    'wifi_ssid' => null,
+                    'wifi_password' => null,
+                ]);
             }
         }
 
