@@ -17,7 +17,7 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
 
     const submitAddForm = (e) => {
         e.preventDefault();
-        addForm.post(route('configuración.dispositivo.store'), {
+        addForm.post(route('configuracion.dispositivo.store'), {
             onSuccess: () => {
                 addForm.reset();
                 onClose();

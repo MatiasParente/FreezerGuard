@@ -7,29 +7,29 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTelemetryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-
-    //para determinar si recibimos o no datos externos
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    protected function prepareForValidation()
+    {
+        // Normalizar alias para soportar tanto device_id como dispositivo_id, y temperature como temperatura
+        if (!$this->has('device_id') && $this->has('dispositivo_id')) {
+            $this->merge(['device_id' => $this->input('dispositivo_id')]);
+        }
+        if (!$this->has('temperature') && $this->has('temperatura')) {
+            $this->merge(['temperature' => $this->input('temperatura')]);
+        }
+    }
 
-    //validamos que los datos que nos envien sean correctos antes de enviarlos a la base de datos para evitar que manden valores falsos o corrupted data
     public function rules(): array
     {
         return [
             'device_id' => ['required', 'integer', 'exists:dispositivos,id'],
             'temperature' => ['required', 'numeric', 'between:-100,100'],
             'bateria' => ['required', 'boolean'],
+            'wifi_status' => ['nullable', 'integer', 'between:0,2'],
             'timestamp' => ['nullable'],
         ];
     }
@@ -39,7 +39,7 @@ class StoreTelemetryRequest extends FormRequest
         return [
             'device_id.required' => 'El ID del dispositivo es requerido.',
             'temperature.required' => 'La temperatura es requerida.',
-            'bateria.required' => 'El estado de la bateria es requerido.',
+            'bateria.required' => 'El estado de la batería es requerido.',
         ];
     }
 }

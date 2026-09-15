@@ -44,14 +44,15 @@ Route::controller(MuestrasController::class)->group(function () {
 });
 
 Route::controller(ConfiguracionController::class)->group(function () {
-    Route::get('/configuración', 'index')->name('configuración.configuracion');
-    Route::post('/configuración/dispositivo', 'storeDispositivo')->name('configuración.dispositivo.store');
-    Route::put('/configuración/dispositivo/{dispositivo}', 'updateDispositivo')->name('configuración.dispositivo.update');
-    Route::delete('/configuración/dispositivo/{dispositivo}', 'destroyDispositivo')->name('configuración.dispositivo.destroy');
-    Route::post('/configuración/dispositivo/{id}/restore', 'restoreDispositivo')->name('configuración.dispositivo.restore');
-    Route::delete('/configuración/dispositivo/{id}/force', 'forceDeleteDispositivo')->name('configuración.dispositivo.forceDelete');
-    Route::put('/configuración/sistema', 'updateSistemaConfig')->name('configuración.sistema.update');
-    Route::get('/configuración/{configuracion}', 'show')->name('configuración.show');
+    Route::get('/configuracion', 'index')->name('configuracion.configuracion');
+    Route::get('/configuración', 'index'); // Alias for legacy/browser URL with accent
+    Route::post('/configuracion/dispositivo', 'storeDispositivo')->name('configuracion.dispositivo.store');
+    Route::put('/configuracion/dispositivo/{dispositivo}', 'updateDispositivo')->name('configuracion.dispositivo.update');
+    Route::delete('/configuracion/dispositivo/{dispositivo}', 'destroyDispositivo')->name('configuracion.dispositivo.destroy');
+    Route::post('/configuracion/dispositivo/{id}/restore', 'restoreDispositivo')->name('configuracion.dispositivo.restore');
+    Route::delete('/configuracion/dispositivo/{id}/force', 'forceDeleteDispositivo')->name('configuracion.dispositivo.forceDelete');
+    Route::put('/configuracion/sistema', 'updateSistemaConfig')->name('configuracion.sistema.update');
+    Route::get('/configuracion/{configuracion}', 'show')->name('configuracion.show');
 });
 
 Route::controller(AlertasController::class)->group(function () {

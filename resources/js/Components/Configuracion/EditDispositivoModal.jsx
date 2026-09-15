@@ -48,7 +48,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
         e.preventDefault();
         if (!dispositivo) return;
 
-        editForm.put(route('configuración.dispositivo.update', dispositivo.id), {
+        editForm.put(route('configuracion.dispositivo.update', dispositivo.id), {
             onSuccess: () => onClose(),
         });
     };

@@ -21,7 +21,7 @@ export default function DispositivosTable({
 
     const handleSoftDelete = (dispositivo) => {
         if (confirm(`¿Estás seguro de mover el dispositivo "${dispositivo.nombre}" al historial de inactivos?`)) {
-            router.delete(route('configuración.dispositivo.destroy', dispositivo.id), {
+            router.delete(route('configuracion.dispositivo.destroy', dispositivo.id), {
                 preserveScroll: true,
             });
         }

@@ -5,16 +5,16 @@ import { router } from '@inertiajs/react';
 export default function HistorialDispositivosTable({ dispositivosInactivos = { data: [], links: [] } }) {
     
     const handleRestore = (id, nombre) => {
-        if (confirm(`¿Deseas restaurar el dispositivo "${nombre}" a la lista de activos?`)) {
-            router.post(route('configuración.dispositivo.restore', id), {}, {
+        if (confirm(`¿Deseas restaurar el dispositivo "${nombre || 'inactivo'}" a la lista de activos?`)) {
+            router.post(route('configuracion.dispositivo.restore', id), {}, {
                 preserveScroll: true,
             });
         }
     };
 
     const handleForceDelete = (id, nombre) => {
-        if (confirm(`¿Estás seguro de eliminar definitivamente el dispositivo "${nombre}"? Se borrarán permanentemente sus mediciones y registros.`)) {
-            router.delete(route('configuración.dispositivo.forceDelete', id), {
+        if (confirm(`¿Estás seguro de eliminar definitivamente el dispositivo "${nombre || 'inactivo'}"? Se borrarán permanentemente sus mediciones y registros.`)) {
+            router.delete(route('configuracion.dispositivo.forceDelete', id), {
                 preserveScroll: true,
             });
         }

@@ -14,7 +14,7 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
 
     const submitSistemaForm = (e) => {
         e.preventDefault();
-        sistemaForm.put(route('configuración.sistema.update'), {
+        sistemaForm.put(route('configuracion.sistema.update'), {
             preserveScroll: true,
         });
     };

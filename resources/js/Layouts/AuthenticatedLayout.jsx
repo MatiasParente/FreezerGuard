@@ -94,8 +94,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <span className='ml-2'>Muestras</span>
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
-                                href={route('configuración.configuracion')}
-                                active={route().current('configuración.configuracion')}
+                                href={route('configuracion.configuracion')}
+                                active={route().current('configuracion.configuracion')}
                             >
                                 <Settings className="w-5 h-5" />
                                 <span className='ml-2'>Configuración</span>

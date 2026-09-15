@@ -146,6 +146,7 @@ class TelemetryService
             'temp_max' => (float)$tempMax,
             'alerta_temperatura_activa' => $dispositivo->alerta_temperatura_activa ? true : false,
             'alerta_bateria_activa' => $dispositivo->alerta_bateria_activa ? true : false,
+            'alerta_vencimiento_activa' => $dispositivo->alerta_vencimiento_activa ? true : false,
             'intervalo_telemetria' => (int)($dispositivo->intervalo_telemetria ?? 5),
             'wifi_ssid' => $dispositivo->wifi_ssid ?? "",
             'wifi_password' => $dispositivo->wifi_password ?? "",
