@@ -25,7 +25,10 @@ class TelemetryService
         $dispositivo = Dispositivo::with('freezer.muestras')->find($data['device_id']);
 
         if ($dispositivo && isset($data['wifi_status'])) {
-            $dispositivo->update(['wifi_status' => (int)$data['wifi_status']]);
+            $wifiStatus = (int)$data['wifi_status'];
+            if ($wifiStatus === 1 || $wifiStatus === 2) {
+                $dispositivo->update(['wifi_status' => $wifiStatus]);
+            }
         }
 
         $alertasGeneradas = [];

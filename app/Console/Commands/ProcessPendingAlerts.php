@@ -51,6 +51,8 @@ class ProcessPendingAlerts extends Command
             // Reconstruir la URL absoluta usando la URL de la aplicación definida en .env
             $urlResolucion = rtrim(config('app.url'), '/') . $rutaRelativa;
 
+            $ultimaMedicion = $dispositivo->mediciones()->latest('fecha_y_hora')->first();
+
             foreach ($users as $user) {
                 Mail::to($user->email)
                     ->queue(new AlertaTemperaturaMail(
@@ -58,7 +60,8 @@ class ProcessPendingAlerts extends Command
                         $dispositivo, 
                         $alerta, 
                         $urlResolucion, 
-                        $alertaGenerada->fecha_y_hora
+                        $alertaGenerada->fecha_y_hora,
+                        $ultimaMedicion?->temperatura
                     ));
             }
 

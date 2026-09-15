@@ -86,6 +86,10 @@ class ConfiguracionController extends Controller
             'wifi_password' => 'nullable|string|max:255',
         ]);
 
+        if (!empty($validated['wifi_ssid'])) {
+            $validated['wifi_status'] = 0;
+        }
+
         $dispositivo->update($validated);
 
         return redirect()->back()->with('success', 'Configuración del dispositivo actualizada.');

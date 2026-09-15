@@ -20,28 +20,52 @@ class AlertaTemperaturaMail extends Mailable
     public $alerta;
     public $urlResolucion;
     public $fechaYHora;
+    public $temperatura;
+    public $cuerpoRenderizado;
+    public $asuntoRenderizado;
 
-    //recibe los datos de la muestra, la medicion, la alerta y la bateria
-    public function __construct($freezer, $dispositivo, $alerta, $urlResolucion, $fechaYHora)
+    public function __construct($freezer, $dispositivo, $alerta, $urlResolucion, $fechaYHora, $temperatura = null)
     {
         $this->freezer = $freezer;
         $this->dispositivo = $dispositivo;
         $this->alerta = $alerta;
         $this->urlResolucion = $urlResolucion;
         $this->fechaYHora = $fechaYHora;
+        $this->temperatura = $temperatura;
+        $this->evaluarPlantilla();
     }
 
-    //definimos el sobre del email con el asunto
+    private function evaluarPlantilla()
+    {
+        $config = \App\Models\ConfiguracionSistema::getSolo();
+        
+        $fechaStr = $this->fechaYHora 
+            ? (is_string($this->fechaYHora) ? $this->fechaYHora : $this->fechaYHora->format('d/m/Y H:i:s')) 
+            : now()->format('d/m/Y H:i:s');
+
+        $remplazos = [
+            '{dispositivo}' => $this->dispositivo->nombre ?? 'Desconocido',
+            '{freezer}' => $this->freezer->ubicacion ?? 'Desconocido',
+            '{tipo_alerta}' => $this->alerta->tipo ?? 'Anomalía',
+            '{temperatura}' => $this->temperatura !== null ? number_format((float)$this->temperatura, 2) : 'N/A',
+            '{fecha}' => $fechaStr,
+        ];
+
+        $this->asuntoRenderizado = strtr($config->plantilla_email_asunto, $remplazos);
+        $this->cuerpoRenderizado = strtr($config->plantilla_email_cuerpo, $remplazos);
+    }
+
     public function envelope(): Envelope
     {
+        $this->evaluarPlantilla();
         return new Envelope(
-            subject: '¡Alerta Crítica! - FreezerGuard',
+            subject: $this->asuntoRenderizado,
         );
     }
 
-    //definimos el contenido del email con los datos de la muestra, la medicion, la alerta y la bateria
     public function content(): Content
     {
+        $this->evaluarPlantilla();
         return new Content(
             markdown: 'emails.alerta_temperatura',
             with: [
@@ -50,11 +74,12 @@ class AlertaTemperaturaMail extends Mailable
                 'alerta' => $this->alerta,
                 'urlResolucion' => $this->urlResolucion,
                 'fechaYHora' => $this->fechaYHora,
+                'cuerpoRenderizado' => $this->cuerpoRenderizado,
+                'asuntoRenderizado' => $this->asuntoRenderizado,
             ],
         );
     }
 
-    //adjuntos
     public function attachments(): array
     {
         return [];
