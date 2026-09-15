@@ -82,13 +82,7 @@ class ConfiguracionController extends Controller
             'temp_min_default' => 'required|numeric|between:-100,100',
             'temp_max_default' => 'required|numeric|between:-100,100',
             'intervalo_telemetria' => 'required|integer|min:1|max:3600',
-            'wifi_ssid' => 'nullable|string|max:255',
-            'wifi_password' => 'nullable|string|max:255',
         ]);
-
-        if (!empty($validated['wifi_ssid'])) {
-            $validated['wifi_status'] = 0;
-        }
 
         $dispositivo->update($validated);
 

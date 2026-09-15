@@ -24,21 +24,6 @@ class TelemetryService
 
         $dispositivo = Dispositivo::with('freezer.muestras')->find($data['device_id']);
 
-        if ($dispositivo && isset($data['wifi_status'])) {
-            $wifiStatus = (int)$data['wifi_status'];
-            if ($wifiStatus === 1) {
-                $dispositivo->update(['wifi_status' => 1]);
-            } else if ($wifiStatus === 2) {
-                // Al fallar el cambio de Wi-Fi, registramos el error y limpiamos el wifi_ssid en la BD 
-                // para evitar que el servidor le siga exigiendo reintentar una red que no funciona/no soporta (ej: 5GHz).
-                $dispositivo->update([
-                    'wifi_status' => 2,
-                    'wifi_ssid' => null,
-                    'wifi_password' => null,
-                ]);
-            }
-        }
-
         $alertasGeneradas = [];
 
         // Verificar temperatura (respetando toggle)
@@ -159,8 +144,6 @@ class TelemetryService
             'alerta_bateria_activa' => $dispositivo->alerta_bateria_activa ? true : false,
             'alerta_vencimiento_activa' => $dispositivo->alerta_vencimiento_activa ? true : false,
             'intervalo_telemetria' => (int)($dispositivo->intervalo_telemetria ?? 5),
-            'wifi_ssid' => $dispositivo->wifi_ssid ?? "",
-            'wifi_password' => $dispositivo->wifi_password ?? "",
         ];
     }
 

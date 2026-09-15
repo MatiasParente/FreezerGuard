@@ -27,27 +27,6 @@ export default function DispositivosTable({
         }
     };
 
-    const renderWifiStatusBadge = (status) => {
-        if (status === 1) {
-            return (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Wi-Fi Conectado
-                </span>
-            );
-        } else if (status === 2) {
-            return (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200" title="Error al aplicar nuevas credenciales Wi-Fi (ESP32 mantuvo Wi-Fi anterior)">
-                    <XCircle className="w-3.5 h-3.5 text-red-600" /> Error Wi-Fi
-                </span>
-            );
-        }
-        return (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                <Wifi className="w-3.5 h-3.5 text-gray-400" /> Sin cambios
-            </span>
-        );
-    };
-
     return (
         <div>
             <div className="overflow-hidden bg-white sm:rounded-xl border border-gray-100">
@@ -97,7 +76,6 @@ export default function DispositivosTable({
                                 <tr>
                                     <th className="px-6 py-4">Dispositivo / Laboratorio</th>
                                     <th className="px-6 py-4">Intervalo Telemetría</th>
-                                    <th className="px-6 py-4">Estado Wi-Fi</th>
                                     <th className="px-6 py-4">Alertas Activas</th>
                                     <th className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
@@ -121,9 +99,6 @@ export default function DispositivosTable({
                                                 <Clock className="w-3.5 h-3.5 text-slate-500" />
                                                 Cada {dispositivo.intervalo_telemetria ?? 5} seg
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {renderWifiStatusBadge(dispositivo.wifi_status)}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-1.5 flex-wrap">

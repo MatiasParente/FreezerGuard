@@ -9,8 +9,6 @@ import { useState, useEffect } from 'react';
 import { Settings, Cpu, Bell, Thermometer, Wifi } from 'lucide-react';
 
 export default function EditDispositivoModal({ isOpen, onClose, dispositivo = null }) {
-    const [showWifiFields, setShowWifiFields] = useState(false);
-
     const editForm = useForm({
         nombre: '',
         descripcion: '',
@@ -21,8 +19,6 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
         temp_min_default: -25.0,
         temp_max_default: -10.0,
         intervalo_telemetria: 5,
-        wifi_ssid: '',
-        wifi_password: '',
     });
 
     useEffect(() => {
@@ -37,10 +33,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 temp_min_default: dispositivo.temp_min_default ?? -25.0,
                 temp_max_default: dispositivo.temp_max_default ?? -10.0,
                 intervalo_telemetria: dispositivo.intervalo_telemetria ?? 5,
-                wifi_ssid: dispositivo.wifi_ssid || '',
-                wifi_password: dispositivo.wifi_password || '',
             });
-            setShowWifiFields(false);
         }
     }, [dispositivo]);
 
@@ -152,40 +145,6 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                             <InputLabel htmlFor="temp_max_default" value="Temperatura Máxima (°C)" />
                             <TextInput id="temp_max_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_max_default} onChange={e => editForm.setData('temp_max_default', e.target.value)} required />
                         </div>
-                    </div>
-
-                    {/* Wi-Fi Remoto */}
-                    <div className="md:col-span-2 bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-emerald-900 text-sm flex items-center gap-1.5">
-                                <Wifi className="w-4 h-4 text-emerald-600" /> Credenciales Wi-Fi Remotas
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setShowWifiFields(!showWifiFields)}
-                                className="text-xs font-medium px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-700 transition-colors"
-                            >
-                                {showWifiFields ? 'Ocultar Credenciales Wi-Fi' : 'Cambiar Credenciales Wi-Fi'}
-                            </button>
-                        </div>
-
-                        {showWifiFields && (
-                            <div className="mt-4 space-y-3 pt-3 border-t border-emerald-200">
-                                <p className="text-xs text-emerald-700">
-                                    Al guardar, estas credenciales se enviarán automáticamente cifradas vía HTTPS hacia el ESP32. Si la conexión falla tras 5 intentos, el ESP32 restaurará la red anterior y reportará error.
-                                </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <InputLabel htmlFor="wifi_ssid" value="Wi-Fi SSID (Red)" />
-                                        <TextInput id="wifi_ssid" type="text" className="mt-1 block w-full" value={editForm.data.wifi_ssid} onChange={e => editForm.setData('wifi_ssid', e.target.value)} placeholder="Ej: MiRed_WiFi" />
-                                    </div>
-                                    <div>
-                                        <InputLabel htmlFor="wifi_password" value="Wi-Fi Password (Contraseña)" />
-                                        <TextInput id="wifi_password" type="password" className="mt-1 block w-full" value={editForm.data.wifi_password} onChange={e => editForm.setData('wifi_password', e.target.value)} placeholder="••••••••" />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                 </div>
