@@ -211,15 +211,15 @@ class AlertNotificationService
                     ->latest('fecha_y_hora')
                     ->first();
 
-                if ($ultimaMedicion && Carbon::parse($ultimaMedicion->fecha_y_hora)->gte($hace5Minutos)) {
-                    $mediciones5minCount = Medicion::where('dispositivo_id', $dispositivo->id)
-                        ->where('fecha_y_hora', '>=', $hace5Minutos)
-                        ->count();
+                // Para auto-resolver inactividad: la última medición debe ser POSTERIOR a la creación de la alerta
+                if ($ultimaMedicion && Carbon::parse($ultimaMedicion->fecha_y_hora)->gt(Carbon::parse($alertaGenerada->fecha_y_hora))) {
+                    $minutosInactividad = (int)($dispositivo->minutos_inactividad ?? 30);
+                    $limiteReciente = $ahora->copy()->subMinutes($minutosInactividad);
 
-                    if ($mediciones5minCount >= 1) {
+                    if (Carbon::parse($ultimaMedicion->fecha_y_hora)->gte($limiteReciente)) {
                         self::resolverAlertaYNotificar(
                             $alertaGenerada,
-                            'Resuelto automáticamente: El dispositivo volvió a transmitir telemetría continuamente durante 5 minutos.'
+                            'Resuelto automáticamente: El dispositivo volvió a transmitir telemetría correctamente.'
                         );
                     }
                 }

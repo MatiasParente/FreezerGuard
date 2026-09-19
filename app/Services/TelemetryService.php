@@ -20,8 +20,8 @@ class TelemetryService
         $medicion = Medicion::create([
             'dispositivo_id' => $data['device_id'],
             'temperatura' => $data['temperature'],
-            'bateria' => $data['bateria'] ?? false,
-            'modem_ok' => $data['modem_ok'] ?? true,
+            'bateria' => filter_var($data['bateria'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'modem_ok' => filter_var($data['modem_ok'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'fecha_y_hora' => $fechaYHora,
         ]);
 
@@ -122,11 +122,15 @@ class TelemetryService
 
     public function verificarModem(Medicion $medicion, Dispositivo $dispositivo, array $data, array &$alertasGeneradas)
     {
-        if (isset($data['modem_ok']) && $data['modem_ok'] === false) {
-            $alerta = Alerta::where('tipo', 'Fallo de Módulo SMS')->first();
+        if (isset($data['modem_ok'])) {
+            $modemOk = filter_var($data['modem_ok'], FILTER_VALIDATE_BOOLEAN);
 
-            if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
-                $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
+            if ($modemOk === false) {
+                $alerta = Alerta::where('tipo', 'Fallo de Módulo SMS')->first();
+
+                if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
+                    $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
+                }
             }
         }
     }
