@@ -13,12 +13,14 @@ class Medicion extends Model
         'dispositivo_id',
         'temperatura',
         'bateria',
+        'modem_ok',
         'fecha_y_hora',
     ];
 
     protected $casts = [
         'fecha_y_hora' => 'datetime',
         'bateria' => 'boolean',
+        'modem_ok' => 'boolean',
     ];
 
     //relacion que une la medicion con el dispositivo

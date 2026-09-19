@@ -73,17 +73,17 @@ class ProcessPendingAlerts extends Command
         if (!$alertaInactividad) return;
 
         $ahora = now('America/Montevideo');
-        $limiteInactividad = $ahora->copy()->subMinutes(30);
-
-        // Dispositivos que tienen activa la alerta de inactividad
         $dispositivos = Dispositivo::where('alerta_inactividad_activa', true)
             ->with('mediciones')
             ->get();
 
         foreach ($dispositivos as $dispositivo) {
+            $minutos = (int)($dispositivo->minutos_inactividad ?? 30);
+            $limiteInactividad = $ahora->copy()->subMinutes($minutos);
+
             $ultimaMedicion = $dispositivo->mediciones()->latest('fecha_y_hora')->first();
 
-            // Si nunca envió datos o la última medición es más antigua que 30 minutos
+            // Si nunca envió datos o la última medición es más antigua que los minutos configurados
             if (!$ultimaMedicion || Carbon::parse($ultimaMedicion->fecha_y_hora)->lt($limiteInactividad)) {
                 $sinResolver = AlertaGenerada::where('dispositivo_id', $dispositivo->id)
                     ->where('alerta_id', $alertaInactividad->id)

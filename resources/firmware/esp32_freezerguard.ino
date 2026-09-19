@@ -197,13 +197,11 @@ void conectarWiFi() {
     Serial.print("Intentando conectar a Wi-Fi: ");
     Serial.println(WIFI_SSID);
 
-    WiFi.disconnect(true);
-    delay(200);
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     int intentos = 0;
-    while (WiFi.status() != WL_CONNECTED && intentos < 10) {
+    while (WiFi.status() != WL_CONNECTED && intentos < 25) {
         delay(500);
         Serial.print(".");
         intentos++;
@@ -214,7 +212,7 @@ void conectarWiFi() {
         Serial.print("Dirección IP: ");
         Serial.println(WiFi.localIP());
     } else {
-        Serial.println("\nError: No se pudo conectar a la red Wi-Fi.");
+        Serial.println("\nError: No se pudo conectar a la red Wi-Fi en este intento.");
     }
     Serial.println("----------------------------------\n");
 }
@@ -280,9 +278,13 @@ void procesarRespuestaServidor(String jsonRespuesta) {
 }
 
 void enviarTelemetriaNodeRed(String payload) {
+    if (WiFi.status() != WL_CONNECTED) {
+        conectarWiFi();
+    }
+
     if (WiFi.status() == WL_CONNECTED) {
         HTTPClient http;
-        http.setTimeout(5000);
+        http.setTimeout(8000);
         http.begin(SERVER_URL);
         http.addHeader("Content-Type", "application/json");
         http.addHeader("X-API-Key", API_KEY);

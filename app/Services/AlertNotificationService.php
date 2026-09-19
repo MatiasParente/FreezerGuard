@@ -247,15 +247,19 @@ class AlertNotificationService
 
             // 5. Fallo de Módulo SMS
             elseif ($tipo === 'Fallo de Módulo SMS') {
-                $ultimaMedicion = Medicion::where('dispositivo_id', $dispositivo->id)
-                    ->latest('fecha_y_hora')
-                    ->first();
+                $mediciones5min = Medicion::where('dispositivo_id', $dispositivo->id)
+                    ->where('fecha_y_hora', '>=', $hace5Minutos)
+                    ->get();
 
-                if ($ultimaMedicion && Carbon::parse($ultimaMedicion->fecha_y_hora)->gte($hace5Minutos)) {
-                    self::resolverAlertaYNotificar(
-                        $alertaGenerada,
-                        'Resuelto automáticamente: El módulo celular reanudó su operación normal.'
-                    );
+                if ($mediciones5min->count() > 0) {
+                    $huboFalloModemEn5Min = $mediciones5min->contains('modem_ok', false);
+
+                    if (!$huboFalloModemEn5Min) {
+                        self::resolverAlertaYNotificar(
+                            $alertaGenerada,
+                            'Resuelto automáticamente: El módulo celular reanudó su operación normal durante 5 minutos continuos.'
+                        );
+                    }
                 }
             }
         }

@@ -17,6 +17,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
         alerta_vencimiento_activa: true,
         alerta_inactividad_activa: false,
         alerta_modem_activa: true,
+        minutos_inactividad: 30,
         temp_min_default: -25.0,
         temp_max_default: -10.0,
         intervalo_telemetria: 5,
@@ -34,6 +35,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 alerta_vencimiento_activa: dispositivo.alerta_vencimiento_activa ?? true,
                 alerta_inactividad_activa: dispositivo.alerta_inactividad_activa ?? false,
                 alerta_modem_activa: dispositivo.alerta_modem_activa ?? true,
+                minutos_inactividad: dispositivo.minutos_inactividad ?? 30,
                 temp_min_default: dispositivo.temp_min_default ?? -25.0,
                 temp_max_default: dispositivo.temp_max_default ?? -10.0,
                 intervalo_telemetria: dispositivo.intervalo_telemetria ?? 5,
@@ -145,15 +147,33 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                             Alerta por Vencimiento de Muestra
                         </label>
 
-                        <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
-                            <input
-                                type="checkbox"
-                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                checked={editForm.data.alerta_inactividad_activa}
-                                onChange={e => editForm.setData('alerta_inactividad_activa', e.target.checked)}
-                            />
-                            Alerta por Inactividad (&gt;30 min sin datos)
-                        </label>
+                        <div className="space-y-1 border-t border-red-100/50 pt-1 mt-1">
+                            <div className="flex items-center justify-between gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        checked={editForm.data.alerta_inactividad_activa}
+                                        onChange={e => editForm.setData('alerta_inactividad_activa', e.target.checked)}
+                                    />
+                                    <span>Alerta por Inactividad sin telemetría</span>
+                                </label>
+                                <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-gray-200">
+                                    <span className="text-[11px] text-gray-500 font-medium">Límite:</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="10080"
+                                        title="Minutos de inactividad"
+                                        className="w-14 py-0.5 px-1 text-xs text-center rounded border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                                        value={editForm.data.minutos_inactividad}
+                                        onChange={e => editForm.setData('minutos_inactividad', e.target.value)}
+                                    />
+                                    <span className="text-[11px] text-gray-500 font-medium">min</span>
+                                </div>
+                            </div>
+                            <InputError message={editForm.errors.minutos_inactividad} className="mt-1" />
+                        </div>
 
                         <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
                             <input

@@ -21,6 +21,7 @@ class TelemetryService
             'dispositivo_id' => $data['device_id'],
             'temperatura' => $data['temperature'],
             'bateria' => $data['bateria'] ?? false,
+            'modem_ok' => $data['modem_ok'] ?? true,
             'fecha_y_hora' => $fechaYHora,
         ]);
 

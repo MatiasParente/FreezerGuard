@@ -80,6 +80,7 @@ class ConfiguracionController extends Controller
             'alerta_vencimiento_activa' => 'required|boolean',
             'alerta_inactividad_activa' => 'required|boolean',
             'alerta_modem_activa' => 'required|boolean',
+            'minutos_inactividad' => 'nullable|integer|min:1|max:10080',
             'temp_min_default' => 'required|numeric|between:-100,100',
             'temp_max_default' => 'required|numeric|between:-100,100',
             'intervalo_telemetria' => 'required|integer|min:1|max:3600',
