@@ -95,6 +95,12 @@ bool esperarPromptOOk(const char* objetivo, unsigned long timeoutMs) {
     return false;
 }
 
+bool verificarModemAT() {
+    while (Serial2.available()) Serial2.read();
+    Serial2.println("AT");
+    return esperarPromptOOk("OK", 800);
+}
+
 void inicializarModemSMS() {
     Serial.println("\n--- INICIALIZANDO MÓDEM A7670G PARA ALERTA SMS ---");
     
@@ -109,7 +115,12 @@ void inicializarModemSMS() {
     Serial2.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
     delay(1000);
 
-    enviarComandoAT("AT", 300);
+    bool respondeAT = verificarModemAT();
+    if (!respondeAT) {
+        Serial.println("--- [ERROR: MÓDEM NO RESPONDE (SIN ENERGÍA O NO CONECTADO)] ---");
+        modemOk = false;
+        return;
+    }
 
     String cmdPin = "AT+CPIN=\"";
     cmdPin += SIM_PIN;
@@ -121,9 +132,16 @@ void inicializarModemSMS() {
     enviarComandoAT("AT+CGSMS=1", 300);
     enviarComandoAT("AT+CEREG?", 1000);
 
-    // Verificar si responde adecuadamente
-    modemOk = true;
-    Serial.println("--- MÓDEM CONFIGURADO Y SIM DESBLOQUEADA ---\n");
+    while (Serial2.available()) Serial2.read();
+    Serial2.println("AT+CPIN?");
+    bool simReady = esperarPromptOOk("READY", 2000);
+
+    modemOk = simReady;
+    if (modemOk) {
+        Serial.println("--- MÓDEM CONFIGURADO Y SIM DESBLOQUEADA ---\n");
+    } else {
+        Serial.println("--- [ERROR: MÓDEM O SIM NO LISTA / SIN SALDO O PIN EN ERROR] ---\n");
+    }
 }
 
 bool enviarSMSAlertaCorte(bool hayCorte) {
@@ -285,6 +303,11 @@ void enviarTelemetriaNodeRed(String payload) {
 }
 
 void ejecutarEnvioTelemetria(const char* motivo) {
+    // Comprobar si el módem responde a los comandos AT
+    if (modemOk) {
+        modemOk = verificarModemAT();
+    }
+
     Serial.println("\n-----------------------------------------");
     Serial.printf("Motivo Envío: %s\n", motivo);
     Serial.printf("Temperatura Actual: %.2f °C\n", temperaturaActual);
