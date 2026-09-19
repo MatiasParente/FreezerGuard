@@ -18,12 +18,15 @@ class Dispositivo extends Model
         'alerta_bateria_activa',
         'alerta_vencimiento_activa',
         'alerta_inactividad_activa',
+        'alerta_modem_activa',
         'temp_min_default',
         'temp_max_default',
         'wifi_ssid',
         'wifi_password',
         'intervalo_telemetria',
         'wifi_status',
+        'telefonos_sms',
+        'sim_pin',
     ];
 
     protected $casts = [
@@ -31,6 +34,7 @@ class Dispositivo extends Model
         'alerta_bateria_activa' => 'boolean',
         'alerta_vencimiento_activa' => 'boolean',
         'alerta_inactividad_activa' => 'boolean',
+        'alerta_modem_activa' => 'boolean',
         'temp_min_default' => 'float',
         'temp_max_default' => 'float',
         'intervalo_telemetria' => 'integer',

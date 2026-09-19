@@ -37,6 +37,10 @@ class AlertaSeeder extends Seeder
                 'tipo' => 'Dispositivo Inactivo',
                 'descripcion' => 'El dispositivo ha dejado de enviar mediciones por un período prolongado.',
             ],
+            [
+                'tipo' => 'Fallo de Módulo SMS',
+                'descripcion' => 'Se ha detectado un fallo en el módulo celular A7670G (tarjeta SIM, señal, saldo o envío de SMS).',
+            ],
         ];
 
         foreach ($alertas as $alerta) {

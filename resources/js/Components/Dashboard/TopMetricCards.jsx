@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Thermometer, Cpu } from 'lucide-react';
 
-export default function TopMetricCards({ dispositivosConEstado = [], alertasSinResolverCount = 0 }) {
+export default function TopMetricCards({ dispositivosConEstado = [], alertasSinResolverCount = 0, configuracionSistema = {} }) {
     const [selectedDeviceId, setSelectedDeviceId] = useState(
         dispositivosConEstado.length > 0 ? dispositivosConEstado[0].id : null
     );
@@ -12,6 +12,9 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
     const ultimaMedicion = activeDisp?.ultima_medicion;
     const estaEnBateria = ultimaMedicion ? (ultimaMedicion.bateria === true) : false;
     const estadoAlertasWeb = activeDisp?.estado_alertas || { temperatura: true, bateria: true, vencimiento: true, inactividad: false };
+
+    const envioEmailActivo = configuracionSistema?.envio_email_activo ?? true;
+    const envioSmsActivo = configuracionSistema?.envio_sms_activo ?? true;
 
     return (
         <div className="space-y-3">
@@ -39,7 +42,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* TARJETA 1: TEMPERATURA */}
-                <div className="bg-blue-600 text-white p-3.5 rounded-xl shadow-md border border-blue-500 flex flex-col justify-between h-24">
+                <div className="bg-blue-600 text-white p-3.5 rounded-xl shadow-md border border-blue-500 flex flex-col justify-between h-28">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-blue-100">Temperatura</span>
                     </div>
@@ -54,7 +57,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                 </div>
 
                 {/* TARJETA 2: CORRIENTE ELÉCTRICA */}
-                <div className={`p-3.5 rounded-xl shadow-md border flex flex-col justify-between h-24 transition-colors ${
+                <div className={`p-3.5 rounded-xl shadow-md border flex flex-col justify-between h-28 transition-colors ${
                     estaEnBateria 
                         ? 'bg-red-600 text-white border-red-500' 
                         : 'bg-emerald-600 text-white border-emerald-500'
@@ -70,28 +73,44 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                     </div>
                 </div>
 
-                {/* TARJETA 3: ESTADO ALERTAS WEB */}
-                <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-800 flex flex-col justify-between h-24">
+                {/* TARJETA 3: ESTADO CANALES Y ALERTAS */}
+                <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-800 flex flex-col justify-between h-28">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Estado Alertas Web</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canales & Alertas Web</span>
                         {alertasSinResolverCount > 0 && (
                             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" title={`${alertasSinResolverCount} alertas pendientes`}></span>
                         )}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px] font-bold">
-                        <span className={`px-2 py-0.5 rounded text-center truncate ${estadoAlertasWeb.temperatura ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                            Temp: {estadoAlertasWeb.temperatura ? 'ON' : 'OFF'}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded text-center truncate ${estadoAlertasWeb.bateria ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                            Batería: {estadoAlertasWeb.bateria ? 'ON' : 'OFF'}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded text-center truncate ${estadoAlertasWeb.vencimiento ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                            Venc: {estadoAlertasWeb.vencimiento ? 'ON' : 'OFF'}
-                        </span>
-                        <span className={`px-2 py-0.5 rounded text-center truncate ${estadoAlertasWeb.inactividad ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                            Inact: {estadoAlertasWeb.inactividad ? 'ON' : 'OFF'}
-                        </span>
+                    <div className="space-y-1.5">
+                        {/* Canales globales SMS / Email */}
+                        <div className="flex gap-1 text-[9px] font-bold pb-1 border-b border-slate-800">
+                            <span className={`px-2 py-0.5 rounded flex-1 text-center truncate ${envioEmailActivo ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
+                                Email: {envioEmailActivo ? 'ON' : 'OFF'}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded flex-1 text-center truncate ${envioSmsActivo ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
+                                SMS: {envioSmsActivo ? 'ON' : 'OFF'}
+                            </span>
+                        </div>
+
+                        {/* Triggers individuales del dispositivo */}
+                        <div className="grid grid-cols-3 gap-1 text-[8.5px] font-bold">
+                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.temperatura ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                Temp: {estadoAlertasWeb.temperatura ? 'ON' : 'OFF'}
+                            </span>
+                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.bateria ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                Bat: {estadoAlertasWeb.bateria ? 'ON' : 'OFF'}
+                            </span>
+                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.vencimiento ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                Venc: {estadoAlertasWeb.vencimiento ? 'ON' : 'OFF'}
+                            </span>
+                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.inactividad ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                Inact: {estadoAlertasWeb.inactividad ? 'ON' : 'OFF'}
+                            </span>
+                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.modem !== false ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                Módem: {estadoAlertasWeb.modem !== false ? 'ON' : 'OFF'}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

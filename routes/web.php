@@ -69,10 +69,10 @@ Route::get('/alertas/resolver/{alertaGenerada}', function (\App\Models\AlertaGen
         return view('alertas.resuelta');
     }
 
-    $alertaGenerada->update([
-        'estado' => 2,
-        'fecha_y_hora_resuelto' => now(),
-    ]);
+    \App\Services\AlertNotificationService::resolverAlertaYNotificar(
+        $alertaGenerada,
+        'Resuelto manualmente por el usuario a través de enlace firmado de correo.'
+    );
 
     return view('alertas.resuelta');
 })->name('alertas.resolver')->middleware('signed:relative');

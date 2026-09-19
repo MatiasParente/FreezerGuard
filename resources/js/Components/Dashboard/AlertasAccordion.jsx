@@ -11,7 +11,7 @@ export default function AlertasAccordion({ alertas = { data: [], links: [], curr
                 <div className="flex items-center gap-3">
                     <h3 className="text-lg font-medium text-slate-900">Alertas Recientes</h3>
                     {alertasSinResolverCount > 0 ? (
-                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white animate-pulse">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-600 text-white">
                             {alertasSinResolverCount} sin resolver
                         </span>
                     ) : (

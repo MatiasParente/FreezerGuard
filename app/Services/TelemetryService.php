@@ -6,13 +6,15 @@ use App\Models\Medicion;
 use App\Models\Dispositivo;
 use App\Models\Alerta;
 use App\Models\AlertaGenerada;
+use App\Models\ConfiguracionSistema;
+use App\Services\AlertNotificationService;
 use Carbon\Carbon;
 
 class TelemetryService
 {
     public function handleData(array $data): array
     {
-        // Siempre usamos la hora oficial de Montevideo para evitar que timestamps desincronizados del ESP32 (ej: 1970) contaminen la BD
+        // Siempre usamos la hora oficial de Montevideo para evitar que timestamps desincronizados del ESP32 contaminen la BD
         $fechaYHora = now('America/Montevideo');
 
         $medicion = Medicion::create([
@@ -36,7 +38,17 @@ class TelemetryService
             $this->verificarCorriente($medicion, $data['bateria'], $alertasGeneradas);
         }
 
-        // Calcular configuración segura para enviar al ESP32
+        // Verificar módulo SMS (respetando toggle)
+        if ($dispositivo && $dispositivo->alerta_modem_activa) {
+            $this->verificarModem($medicion, $dispositivo, $data, $alertasGeneradas);
+        }
+
+        // Ejecutar verificación de auto-resolución si las condiciones volvieron a la normalidad durante 5+ min
+        if ($dispositivo) {
+            AlertNotificationService::procesarAutoResoluciones($dispositivo->id);
+        }
+
+        // Calcular configuración segura para enviar al ESP32 vía Node-RED
         $configuracionCalculada = $this->obtenerConfiguracionSegura($dispositivo);
 
         $message = empty($alertasGeneradas) 
@@ -65,7 +77,6 @@ class TelemetryService
         $temp = $medicion->temperatura;
 
         if ($muestrasActivasConRango->count() > 0) {
-            // Verificar contra cada muestra individual
             foreach ($muestrasActivasConRango as $muestra) {
                 if ($temp < $muestra->temperatura_minima || $temp > $muestra->temperatura_maxima) {
                     $tipoAlerta = $temp > $muestra->temperatura_maxima
@@ -80,7 +91,6 @@ class TelemetryService
                 }
             }
         } else {
-            // Si no hay muestras activas con rango definido, evaluar contra los defaults del dispositivo
             $tempMin = $dispositivo->temp_min_default ?? -25.0;
             $tempMax = $dispositivo->temp_max_default ?? -10.0;
 
@@ -100,7 +110,6 @@ class TelemetryService
 
     public function verificarCorriente(Medicion $medicion, bool $bateria, array &$alertasGeneradas)
     {
-        // bateria == true significa que hubo corte de corriente y está usando la batería
         if ($bateria) {
             $alerta = Alerta::where('tipo', 'Corte de Energía Eléctrica')->first();
 
@@ -110,14 +119,33 @@ class TelemetryService
         }
     }
 
+    public function verificarModem(Medicion $medicion, Dispositivo $dispositivo, array $data, array &$alertasGeneradas)
+    {
+        if (isset($data['modem_ok']) && $data['modem_ok'] === false) {
+            $alerta = Alerta::where('tipo', 'Fallo de Módulo SMS')->first();
+
+            if ($alerta && $this->debeGenerarAlerta($medicion->dispositivo_id, $alerta->id)) {
+                $alertasGeneradas[] = $this->registrarAlerta($medicion, $alerta);
+            }
+        }
+    }
+
     private function obtenerConfiguracionSegura(?Dispositivo $dispositivo): array
     {
+        $configSistema = ConfiguracionSistema::getSolo();
+
         if (!$dispositivo) {
             return [
                 'temp_min' => -25.0,
                 'temp_max' => -10.0,
                 'wifi_ssid' => null,
                 'wifi_password' => null,
+                'sim_pin' => '4877',
+                'telefonos_sms' => '',
+                'alerta_modem_activa' => true,
+                'envio_email_activo' => (bool)$configSistema->envio_email_activo,
+                'envio_sms_activo' => (bool)$configSistema->envio_sms_activo,
+                'plantilla_sms_cuerpo' => $configSistema->plantilla_sms_cuerpo,
             ];
         }
 
@@ -129,7 +157,6 @@ class TelemetryService
         }
 
         if ($muestrasActivasConRango->count() > 0) {
-            // Para proteger todas las muestras: el mínimo más alto y el máximo más bajo
             $tempMin = $muestrasActivasConRango->max('temperatura_minima');
             $tempMax = $muestrasActivasConRango->min('temperatura_maxima');
         } else {
@@ -143,7 +170,13 @@ class TelemetryService
             'alerta_temperatura_activa' => $dispositivo->alerta_temperatura_activa ? true : false,
             'alerta_bateria_activa' => $dispositivo->alerta_bateria_activa ? true : false,
             'alerta_vencimiento_activa' => $dispositivo->alerta_vencimiento_activa ? true : false,
+            'alerta_modem_activa' => $dispositivo->alerta_modem_activa ? true : false,
             'intervalo_telemetria' => (int)($dispositivo->intervalo_telemetria ?? 5),
+            'sim_pin' => $dispositivo->sim_pin ?? '4877',
+            'telefonos_sms' => $dispositivo->telefonos_sms ?? '',
+            'envio_email_activo' => (bool)$configSistema->envio_email_activo,
+            'envio_sms_activo' => (bool)$configSistema->envio_sms_activo,
+            'plantilla_sms_cuerpo' => $configSistema->plantilla_sms_cuerpo,
         ];
     }
 
@@ -159,12 +192,15 @@ class TelemetryService
 
     private function registrarAlerta(Medicion $medicion, $alerta)
     {
-        return AlertaGenerada::create([
+        $alertaGenerada = AlertaGenerada::create([
             'dispositivo_id' => $medicion->dispositivo_id,
             'alerta_id' => $alerta->id,
             'fecha_y_hora' => $medicion->fecha_y_hora,
             'estado' => 0,
         ]);
+
+        AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);
+
+        return $alertaGenerada;
     }
 }
-

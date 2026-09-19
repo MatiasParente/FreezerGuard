@@ -7,68 +7,27 @@ use App\Models\AlertaGenerada;
 use App\Models\Alerta;
 use App\Models\Dispositivo;
 use App\Models\Muestra;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\AlertaTemperaturaMail;
+use App\Services\AlertNotificationService;
 use Carbon\Carbon;
 
 class ProcessPendingAlerts extends Command
 {
     protected $signature = 'app:process-pending-alerts';
-    protected $description = 'Evaluate device inactivity and sample expiration, and process pending alert emails';
+    protected $description = 'Evaluate device inactivity, sample expiration, auto-resolution (5 min stability), and process pending alert emails';
 
     public function handle()
     {
         $this->verificarMuestrasVencidas();
         $this->verificarDispositivosInactivos();
 
-        // Buscar alertas que no hayan sido resueltas (estado 0 = nuevo, 1 = enviado)
+        // 1. Procesar auto-resoluciones de alertas por retorno a estado normal (5 min)
+        AlertNotificationService::procesarAutoResoluciones();
+
+        // 2. Buscar alertas pendientes de envío (estado 0 = nuevo, 1 = enviado)
         $alertas = AlertaGenerada::where('estado', '<', 2)->get();
         
         foreach ($alertas as $alertaGenerada) {
-            $dispositivo = $alertaGenerada->dispositivo;
-            $freezer = $dispositivo?->freezer;
-            $alerta = $alertaGenerada->alerta;
-
-            if (!$dispositivo) continue;
-
-            // Recolectar administradores
-            $users = collect();
-            if ($freezer) {
-                // Admins del freezer
-                $users = $users->merge($freezer->users);
-                
-                // Admins de las muestras del freezer
-                foreach ($freezer->muestras as $muestra) {
-                    $users = $users->merge($muestra->users);
-                }
-            }
-            // Filtrar duplicados por si un admin está en ambas listas
-            $users = $users->unique('id');
-
-            // Generar firma usando ruta relativa para evitar problemas con Nginx Proxy Manager y cabeceras
-            $rutaRelativa = URL::signedRoute('alertas.resolver', ['alertaGenerada' => $alertaGenerada->id], null, false);
-            // Reconstruir la URL absoluta usando la URL de la aplicación definida en .env
-            $urlResolucion = rtrim(config('app.url'), '/') . $rutaRelativa;
-
-            $ultimaMedicion = $dispositivo->mediciones()->latest('fecha_y_hora')->first();
-
-            foreach ($users as $user) {
-                Mail::to($user->email)
-                    ->queue(new AlertaTemperaturaMail(
-                        $freezer, 
-                        $dispositivo, 
-                        $alerta, 
-                        $urlResolucion, 
-                        $alertaGenerada->fecha_y_hora,
-                        $ultimaMedicion?->temperatura
-                    ));
-            }
-
-            // Cambiar estado a 1 (Enviado) si estaba en 0
-            if ($alertaGenerada->estado == 0) {
-                $alertaGenerada->update(['estado' => 1]);
-            }
+            AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);
         }
     }
 
@@ -95,12 +54,14 @@ class ProcessPendingAlerts extends Command
                     ->exists();
 
                 if (!$sinResolver) {
-                    AlertaGenerada::create([
+                    $alertaGenerada = AlertaGenerada::create([
                         'dispositivo_id' => $dispositivo->id,
                         'alerta_id' => $alertaVencimiento->id,
                         'fecha_y_hora' => $ahora,
                         'estado' => 0,
                     ]);
+
+                    AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);
                 }
             }
         }
@@ -130,15 +91,16 @@ class ProcessPendingAlerts extends Command
                     ->exists();
 
                 if (!$sinResolver) {
-                    AlertaGenerada::create([
+                    $alertaGenerada = AlertaGenerada::create([
                         'dispositivo_id' => $dispositivo->id,
                         'alerta_id' => $alertaInactividad->id,
                         'fecha_y_hora' => $ahora,
                         'estado' => 0,
                     ]);
+
+                    AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);
                 }
             }
         }
     }
 }
-

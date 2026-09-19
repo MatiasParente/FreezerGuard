@@ -13,6 +13,7 @@ export default function Dashboard({
     alertasSinResolverCount = 0, 
     alertas = { data: [], links: [], current_page: 1, last_page: 1 },
     freezers = [],
+    configuracionSistema = {},
     filters = {}
 }) {
 
@@ -38,23 +39,24 @@ export default function Dashboard({
             <div className="py-6">
                 <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
                     
-                    {/* 1. Tarjetas Superiores Compactas con Selector de Dispositivo */}
+                    {/*Tarjetas Superiores Compactas con Selector de Dispositivo */}
                     <TopMetricCards 
                         dispositivosConEstado={dispositivosConEstado} 
                         alertasSinResolverCount={alertasSinResolverCount} 
+                        configuracionSistema={configuracionSistema}
                     />
 
-                    {/* 2. Gráfico en Tiempo Real con Opciones 5/30/100 */}
+                    {/* Gráfico en Tiempo Real con Opciones 5/30/100 */}
                     <RealtimeChart ultimasMediciones={ultimasMediciones} />
 
-                    {/* 3. Acordeón Muestras por Vencer con Filtro por Freezer */}
+                    {/* Acordeón Muestras por Vencer con Filtro por Freezer */}
                     <MuestrasAccordion 
                         muestras={muestras} 
                         freezers={freezers} 
                         filters={filters} 
                     />
 
-                    {/* 4. Acordeón Alertas Recientes */}
+                    {/*Acordeón Alertas Recientes */}
                     <AlertasAccordion 
                         alertas={alertas} 
                         alertasSinResolverCount={alertasSinResolverCount} 

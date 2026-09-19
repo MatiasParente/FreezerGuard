@@ -29,6 +29,8 @@ class StoreTelemetryRequest extends FormRequest
             'device_id' => ['required', 'integer', 'exists:dispositivos,id'],
             'temperature' => ['required', 'numeric', 'between:-100,100'],
             'bateria' => ['required', 'boolean'],
+            'modem_ok' => ['nullable', 'boolean'],
+            'modem_status' => ['nullable', 'string'],
             'timestamp' => ['nullable'],
         ];
     }

@@ -51,6 +51,7 @@ class DashboardController extends Controller
                     'bateria' => (bool)$disp->alerta_bateria_activa,
                     'vencimiento' => (bool)$disp->alerta_vencimiento_activa,
                     'inactividad' => (bool)$disp->alerta_inactividad_activa,
+                    'modem' => (bool)$disp->alerta_modem_activa,
                 ],
             ];
         });
@@ -92,6 +93,7 @@ class DashboardController extends Controller
             'alertasSinResolverCount' => $alertasSinResolverCount,
             'alertas' => $alertas,
             'freezers' => $freezers,
+            'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
             'filters' => $request->only(['freezer_id']),
         ]);
     }

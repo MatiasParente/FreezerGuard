@@ -79,9 +79,12 @@ class ConfiguracionController extends Controller
             'alerta_bateria_activa' => 'required|boolean',
             'alerta_vencimiento_activa' => 'required|boolean',
             'alerta_inactividad_activa' => 'required|boolean',
+            'alerta_modem_activa' => 'required|boolean',
             'temp_min_default' => 'required|numeric|between:-100,100',
             'temp_max_default' => 'required|numeric|between:-100,100',
             'intervalo_telemetria' => 'required|integer|min:1|max:3600',
+            'telefonos_sms' => 'nullable|string|max:500',
+            'sim_pin' => 'nullable|string|max:10',
         ]);
 
         $dispositivo->update($validated);
@@ -120,13 +123,17 @@ class ConfiguracionController extends Controller
     {
         $validated = $request->validate([
             'intervalo_correos' => 'required|integer|min:1|max:1440',
+            'email_default' => 'nullable|email|max:255',
+            'envio_email_activo' => 'required|boolean',
+            'envio_sms_activo' => 'required|boolean',
             'plantilla_email_asunto' => 'required|string|max:255',
             'plantilla_email_cuerpo' => 'required|string',
+            'plantilla_sms_cuerpo' => 'required|string|max:1000',
         ]);
 
         $config = \App\Models\ConfiguracionSistema::getSolo();
         $config->update($validated);
 
-        return redirect()->back()->with('success', 'Configuración del sistema y plantilla de email actualizada.');
+        return redirect()->back()->with('success', 'Configuración del sistema, canales y plantillas de alerta actualizadas.');
     }
 }
