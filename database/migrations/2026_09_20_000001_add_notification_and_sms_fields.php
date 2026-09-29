@@ -24,6 +24,9 @@ return new class extends Migration
             if (!Schema::hasColumn('configuraciones_sistema', 'plantilla_sms_cuerpo')) {
                 $table->text('plantilla_sms_cuerpo')->nullable()->after('plantilla_email_cuerpo');
             }
+            if (!Schema::hasColumn('configuraciones_sistema', 'plantilla_sms_resuelta')) {
+                $table->text('plantilla_sms_resuelta')->nullable()->after('plantilla_sms_cuerpo');
+            }
         });
 
         Schema::table('dispositivos', function (Blueprint $table) {
@@ -50,6 +53,7 @@ return new class extends Migration
                 'envio_email_activo',
                 'envio_sms_activo',
                 'plantilla_sms_cuerpo',
+                'plantilla_sms_resuelta',
             ]);
         });
 
