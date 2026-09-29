@@ -27,7 +27,7 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
     });
     const dispositivosUnicos = Array.from(dispositivosUnicosMap.values());
 
-    // Agrupar/Pivotear mediciones por punto en el tiempo
+    // Agrupar mediciones por punto en el tiempo
     const timeMap = new Map();
     const slice = ultimasMediciones.slice(-rangoMediciones * 10);
 
@@ -74,17 +74,17 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
     };
 
     return (
-        <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-100">
+        <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-200">
             {/* Header del Acordeón y Filtros */}
-            <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/80 border-b border-slate-100 gap-4">
+            <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/80 border-b border-slate-200 gap-4">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => setMostrarEnVivo(!mostrarEnVivo)}>
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <Thermometer className="w-5 h-5 text-indigo-600" /> Monitoreo de Temperatura en Tiempo Real
+                        <Thermometer className="w-5 h-5 text-indigo-600" /> Monitoreo de temperatura en tiempo real
                     </h3>
                 </div>
 
                 <div className="flex items-center gap-3 flex-wrap">
-                    {/* Botones de Rango (5, 30, 100) */}
+                    {/* Botones de Rango */}
                     <div className="flex bg-slate-200/70 p-1 rounded-lg border border-slate-300/40 text-xs font-semibold">
                         <button
                             onClick={() => setRangoMediciones(5)}
@@ -120,7 +120,7 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
 
             {mostrarEnVivo && (
                 <div className="p-6 space-y-4">
-                    {/* Selector interactivo de dispositivos (Mostrar / Ocultar líneas) */}
+                    {/* Selector interactivo de dispositivos */}
                     {dispositivosUnicos.length > 0 && (
                         <div className="flex items-center gap-2 flex-wrap text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
                             <span className="font-bold text-slate-700 mr-1">Visibilidad por Dispositivo:</span>
@@ -147,7 +147,7 @@ export default function RealtimeChart({ ultimasMediciones = [] }) {
                         </div>
                     )}
 
-                    {/* Gráfica de Temperatura */}
+                    {/*gráfica de temperatura */}
                     <div className="h-[380px] w-full">
                         {chartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">

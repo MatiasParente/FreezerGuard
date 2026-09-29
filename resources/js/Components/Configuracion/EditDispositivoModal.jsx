@@ -22,7 +22,6 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
         temp_max_default: -10.0,
         intervalo_telemetria: 5,
         telefonos_sms: '',
-        sim_pin: '',
     });
 
     useEffect(() => {
@@ -40,7 +39,6 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 temp_max_default: dispositivo.temp_max_default ?? -10.0,
                 intervalo_telemetria: dispositivo.intervalo_telemetria ?? 5,
                 telefonos_sms: dispositivo.telefonos_sms || '',
-                sim_pin: dispositivo.sim_pin || '',
             });
         }
     }, [dispositivo]);
@@ -60,20 +58,20 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
                     <Settings className="w-6 h-6 text-indigo-600" />
                     <h2 className="text-xl font-semibold text-gray-900">
-                        Configuración de Dispositivo: <span className="text-indigo-600">{dispositivo?.nombre}</span>
+                        Configuración de dispositivo: <span className="text-indigo-600">{dispositivo?.nombre}</span>
                     </h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    {/* Datos Básicos & Telemetría */}
+                    {/* Datos Básicos */}
                     <div className="space-y-4 md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-200">
                         <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-1.5">
-                            <Cpu className="w-4 h-4 text-slate-600" /> Datos principales
+                            <Cpu className="w-4 h-4 text-purple-600" /> Datos principales
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="md:col-span-1">
-                                <InputLabel htmlFor="edit_nombre" value="Nombre del Dispositivo" />
+                                <InputLabel htmlFor="edit_nombre" value="Nombre del dispositivo" />
                                 <TextInput id="edit_nombre" type="text" className="mt-1 block w-full" value={editForm.data.nombre} onChange={e => editForm.setData('nombre', e.target.value)} required />
                                 <InputError message={editForm.errors.nombre} className="mt-2" />
                             </div>
@@ -83,38 +81,30 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                 <InputError message={editForm.errors.descripcion} className="mt-2" />
                             </div>
                             <div className="md:col-span-1">
-                                <InputLabel htmlFor="intervalo_telemetria" value="Envío Mediciones (Seg)" />
+                                <InputLabel htmlFor="intervalo_telemetria" value="Envío mediciones (Seg)" />
                                 <TextInput id="intervalo_telemetria" type="number" min="1" max="3600" className="mt-1 block w-full" value={editForm.data.intervalo_telemetria} onChange={e => editForm.setData('intervalo_telemetria', e.target.value)} required />
                                 <InputError message={editForm.errors.intervalo_telemetria} className="mt-2" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Configuración SMS & Módem Celular */}
+                    {/* Configuración SMS*/}
                     <div className="space-y-4 md:col-span-2 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
                         <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
-                            <PhoneCall className="w-4 h-4 text-purple-600" /> Configuración Módem Celular & SMS
+                            <PhoneCall className="w-4 h-4 text-purple-600" /> Configuración SMS
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-2">
-                                <InputLabel htmlFor="telefonos_sms" value="Número(s) de Teléfono para SMS" />
-                                <TextInput id="telefonos_sms" type="text" placeholder="+59898485023, +59899123456" className="mt-1 block w-full text-xs" value={editForm.data.telefonos_sms} onChange={e => editForm.setData('telefonos_sms', e.target.value)} />
-                                <p className="text-[11px] text-purple-700 mt-1">Si son varios, sepáralos por comas. El ESP32 recibirá este número vía API.</p>
-                                <InputError message={editForm.errors.telefonos_sms} className="mt-1" />
-                            </div>
-                            <div className="md:col-span-1">
-                                <InputLabel htmlFor="sim_pin" value="PIN de Tarjeta SIM" />
-                                <TextInput id="sim_pin" type="text" maxLength="8" placeholder="4877" className="mt-1 block w-full text-xs font-mono" value={editForm.data.sim_pin} onChange={e => editForm.setData('sim_pin', e.target.value)} />
-                                <p className="text-[11px] text-purple-700 mt-1">PIN de desbloqueo del chip SIM.</p>
-                                <InputError message={editForm.errors.sim_pin} className="mt-1" />
-                            </div>
+                        <div>
+                            <InputLabel htmlFor="telefonos_sms" value="Número(s) de teléfono para SMS" />
+                            <TextInput id="telefonos_sms" type="text" placeholder="+59898485023, +59899123456" className="mt-1 block w-full text-xs" value={editForm.data.telefonos_sms} onChange={e => editForm.setData('telefonos_sms', e.target.value)} />
+                            <p className="text-[11px] text-purple-700 mt-1">Si son varios números de teléfono, sepáralos por comas.</p>
+                            <InputError message={editForm.errors.telefonos_sms} className="mt-1" />
                         </div>
                     </div>
 
-                    {/* Control de Alertas */}
-                    <div className="space-y-3 bg-red-50/50 p-4 rounded-lg border border-red-100">
-                        <h3 className="font-semibold text-red-900 text-sm flex items-center gap-1.5">
-                            <Bell className="w-4 h-4 text-red-600" /> Estado de Alertas (Activas)
+                    {/* Control de alertas */}
+                    <div className="space-y-3 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
+                        <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
+                            <Bell className="w-4 h-4 text-purple-600" /> Estado de alertas
                         </h3>
 
                         <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
@@ -124,7 +114,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                 checked={editForm.data.alerta_temperatura_activa}
                                 onChange={e => editForm.setData('alerta_temperatura_activa', e.target.checked)}
                             />
-                            Alerta por Temperatura Fuera de Rango
+                            Temperatura Fuera de Rango
                         </label>
 
                         <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
@@ -134,7 +124,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                 checked={editForm.data.alerta_bateria_activa}
                                 onChange={e => editForm.setData('alerta_bateria_activa', e.target.checked)}
                             />
-                            Alerta por Corte de Energía
+                            Corte de Energía
                         </label>
 
                         <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
@@ -144,7 +134,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                 checked={editForm.data.alerta_vencimiento_activa}
                                 onChange={e => editForm.setData('alerta_vencimiento_activa', e.target.checked)}
                             />
-                            Alerta por Vencimiento de Muestra
+                            Vencimiento de Muestra
                         </label>
 
                         <div className="space-y-1 border-t border-red-100/50 pt-1 mt-1">
@@ -156,7 +146,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                         checked={editForm.data.alerta_inactividad_activa}
                                         onChange={e => editForm.setData('alerta_inactividad_activa', e.target.checked)}
                                     />
-                                    <span>Alerta por Inactividad sin telemetría</span>
+                                    <span>Inactividad sin telemetría</span>
                                 </label>
                                 <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-gray-200">
                                     <span className="text-[11px] text-gray-500 font-medium">Límite:</span>
@@ -182,7 +172,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                 checked={editForm.data.alerta_modem_activa}
                                 onChange={e => editForm.setData('alerta_modem_activa', e.target.checked)}
                             />
-                            Alerta por Fallo en Módulo SMS (A7670G)
+                            Fallo en módulo SMS
                         </label>
                     </div>
 
@@ -195,11 +185,11 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                             Se aplican sólo cuando no hay muestras activas con rango termico definido.
                         </p>
                         <div>
-                            <InputLabel htmlFor="temp_min_default" value="Temperatura Mínima (°C)" />
+                            <InputLabel htmlFor="temp_min_default" value="Temperatura mínima (°C)" />
                             <TextInput id="temp_min_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_min_default} onChange={e => editForm.setData('temp_min_default', e.target.value)} required />
                         </div>
                         <div>
-                            <InputLabel htmlFor="temp_max_default" value="Temperatura Máxima (°C)" />
+                            <InputLabel htmlFor="temp_max_default" value="Temperatura máxima (°C)" />
                             <TextInput id="temp_max_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_max_default} onChange={e => editForm.setData('temp_max_default', e.target.value)} required />
                         </div>
                     </div>
@@ -209,7 +199,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
                     <SecondaryButton onClick={onClose}>Cancelar</SecondaryButton>
                     <PrimaryButton disabled={editForm.processing} className="bg-indigo-500 hover:bg-indigo-600 text-white">
-                        Guardar Configuración
+                        Guardar configuración
                     </PrimaryButton>
                 </div>
             </form>

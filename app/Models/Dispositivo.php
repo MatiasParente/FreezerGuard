@@ -27,7 +27,6 @@ class Dispositivo extends Model
         'intervalo_telemetria',
         'wifi_status',
         'telefonos_sms',
-        'sim_pin',
     ];
 
     protected $casts = [

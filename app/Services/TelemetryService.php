@@ -14,7 +14,7 @@ class TelemetryService
 {
     public function handleData(array $data): array
     {
-        // Siempre usamos la hora oficial de Montevideo para evitar que timestamps desincronizados del ESP32 contaminen la BD
+        //usamos la hora de montevideo
         $fechaYHora = now('America/Montevideo');
 
         $medicion = Medicion::create([
@@ -29,17 +29,17 @@ class TelemetryService
 
         $alertasGeneradas = [];
 
-        // Verificar temperatura (respetando toggle)
+        // Verificar temperatura
         if ($dispositivo && $dispositivo->alerta_temperatura_activa) {
             $this->verificarTemperatura($medicion, $dispositivo, $alertasGeneradas);
         }
 
-        // Verificar corriente (respetando toggle)
+        // Verificar corriente
         if ($dispositivo && $dispositivo->alerta_bateria_activa && isset($data['bateria'])) {
             $this->verificarCorriente($medicion, $data['bateria'], $alertasGeneradas);
         }
 
-        // Verificar módulo SMS (respetando toggle)
+        // Verificar módulo SMS
         if ($dispositivo && $dispositivo->alerta_modem_activa) {
             $this->verificarModem($medicion, $dispositivo, $data, $alertasGeneradas);
         }
@@ -145,7 +145,6 @@ class TelemetryService
                 'temp_max' => -10.0,
                 'wifi_ssid' => null,
                 'wifi_password' => null,
-                'sim_pin' => '4877',
                 'telefonos_sms' => '',
                 'alerta_modem_activa' => true,
                 'envio_email_activo' => (bool)$configSistema->envio_email_activo,
@@ -177,7 +176,6 @@ class TelemetryService
             'alerta_vencimiento_activa' => $dispositivo->alerta_vencimiento_activa ? true : false,
             'alerta_modem_activa' => $dispositivo->alerta_modem_activa ? true : false,
             'intervalo_telemetria' => (int)($dispositivo->intervalo_telemetria ?? 5),
-            'sim_pin' => $dispositivo->sim_pin ?? '4877',
             'telefonos_sms' => $dispositivo->telefonos_sms ?? '',
             'envio_email_activo' => (bool)$configSistema->envio_email_activo,
             'envio_sms_activo' => (bool)$configSistema->envio_sms_activo,

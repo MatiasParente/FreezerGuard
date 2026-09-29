@@ -10,22 +10,30 @@ class ConfiguracionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Dispositivo::with(['freezer', 'mediciones']);
+        $estado = $request->input('estado', 'activo');
+
+        $query = Dispositivo::query();
+
+        if ($estado === 'inactivo') {
+            $query->onlyTrashed();
+        }
+
+        $query->with(['freezer', 'mediciones']);
 
         if ($request->filled('freezer_id')) {
             $query->where('freezer_id', $request->freezer_id);
         }
 
-        $dispositivosInactivos = Dispositivo::onlyTrashed()
-            ->with(['freezer', 'mediciones'])
-            ->orderBy('deleted_at', 'desc')
-            ->paginate(5, ['*'], 'inactivos_page')
+        $dispositivos = $query->latest($estado === 'inactivo' ? 'deleted_at' : 'created_at')
+            ->paginate(5)
             ->withQueryString();
 
         return Inertia::render('Configuración/configuracion', [
-            'dispositivos' => $query->paginate(5, ['*'], 'activos_page')->withQueryString(),
-            'dispositivosInactivos' => $dispositivosInactivos,
-            'filters' => $request->only(['freezer_id']),
+            'dispositivos' => $dispositivos,
+            'filters' => [
+                'estado' => $estado,
+                'freezer_id' => $request->input('freezer_id'),
+            ],
             'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
             'available_freezers' => \App\Models\Freezer::doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
             'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
@@ -85,7 +93,6 @@ class ConfiguracionController extends Controller
             'temp_max_default' => 'required|numeric|between:-100,100',
             'intervalo_telemetria' => 'required|integer|min:1|max:3600',
             'telefonos_sms' => 'nullable|string|max:500',
-            'sim_pin' => 'nullable|string|max:10',
         ]);
 
         $dispositivo->update($validated);

@@ -12,7 +12,6 @@
 #define MODEM_RX 16 // Conectado a TX del Módem
 #define MODEM_TX 17 // Conectado a RX del Módem
 String NUMERO_DESTINO_SMS = "+59898485023"; 
-String SIM_PIN = "4877";                   
 bool modemOk = true; // Estado de salud del módulo celular SMS
 
 // -------------------------------------------------------------------
@@ -122,11 +121,6 @@ void inicializarModemSMS() {
         return;
     }
 
-    String cmdPin = "AT+CPIN=\"";
-    cmdPin += SIM_PIN;
-    cmdPin += "\"";
-    enviarComandoAT(cmdPin.c_str(), 2000);
-
     enviarComandoAT("AT+CMEE=2", 300);
     enviarComandoAT("AT+CMGF=1", 300);
     enviarComandoAT("AT+CGSMS=1", 300);
@@ -138,9 +132,9 @@ void inicializarModemSMS() {
 
     modemOk = simReady;
     if (modemOk) {
-        Serial.println("--- MÓDEM CONFIGURADO Y SIM DESBLOQUEADA ---\n");
+        Serial.println("--- MÓDEM CONFIGURADO ---\n");
     } else {
-        Serial.println("--- [ERROR: MÓDEM O SIM NO LISTA / SIN SALDO O PIN EN ERROR] ---\n");
+        Serial.println("--- [ERROR: MÓDEM O SIM NO LISTA / SIN SALDO] ---\n");
     }
 }
 
@@ -272,7 +266,6 @@ void procesarRespuestaServidor(String jsonRespuesta) {
         if (config.containsKey("alerta_vencimiento_activa")) alerta_vencimiento_activa = config["alerta_vencimiento_activa"].as<bool>();
         if (config.containsKey("alerta_modem_activa")) alerta_modem_activa = config["alerta_modem_activa"].as<bool>();
         if (config.containsKey("intervalo_telemetria")) intervalo_telemetria = config["intervalo_telemetria"].as<int>();
-        if (config.containsKey("sim_pin")) SIM_PIN = config["sim_pin"].as<String>();
         if (config.containsKey("telefonos_sms")) NUMERO_DESTINO_SMS = config["telefonos_sms"].as<String>();
     }
 }

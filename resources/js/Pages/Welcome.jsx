@@ -32,21 +32,12 @@ export default function Welcome({ auth }) {
                                 Ir al Dashboard
                             </Link>
                         ) : (
-                            <>
-                                <Link
-                                    href={route('login')}
-                                    className="w-full inline-flex justify-center items-center px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-900/20"
-                                >
-                                    Ingresar
-                                </Link>
-                                
-                                <Link
-                                    href={route('register')}
-                                    className="w-full inline-flex justify-center items-center px-4 py-3 bg-transparent hover:bg-slate-100 text-slate-700 border border-slate-700 font-semibold rounded-xl transition-all"
-                                >
-                                    Registrarse
-                                </Link>
-                            </>
+                            <Link
+                                href={route('login')}
+                                className="w-full inline-flex justify-center items-center px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+                            >
+                                Ingresar
+                            </Link>
                         )}
                     </div>
                 </div>

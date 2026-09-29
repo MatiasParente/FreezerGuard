@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         
         $middleware->alias([
             'nodered' => \App\Http\Middleware\CheckNodeRedApiKey::class,
+            'admin.general' => \App\Http\Middleware\EnsureIsGeneralAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

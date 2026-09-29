@@ -1,4 +1,4 @@
-import { Cpu, RefreshCw, Trash2 } from 'lucide-react';
+import { Cpu, RotateCcw, Trash2 } from 'lucide-react';
 import Pagination from '@/Components/Pagination';
 import { router } from '@inertiajs/react';
 
@@ -22,53 +22,55 @@ export default function HistorialDispositivosTable({ dispositivosInactivos = { d
 
     return (
         <div>
-            <div className="overflow-hidden bg-white shadow-lg sm:rounded-xl border border-gray-100">
-                <div className="p-6 text-gray-900">
+            <div className="overflow-hidden bg-white shadow-sm sm:rounded-xl border border-slate-200">
+                <div className="p-6 text-slate-900">
                     <div className="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-900">
                         <strong>Los dispositivos inactivos no procesan alertas.</strong>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full whitespace-nowrap text-left text-sm">
-                            <thead className="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                        <table className="w-full whitespace-nowrap text-left text-sm text-slate-600">
+                            <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
                                 <tr>
                                     <th className="px-6 py-4">Dispositivo Inactivo</th>
                                     <th className="px-6 py-4">Laboratorio</th>
                                     <th className="px-6 py-4">Fecha Desactivación</th>
-                                    <th className="px-6 py-4 text-right">Acciones de Historial</th>
+                                    <th className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-slate-200">
                                 {dispositivosInactivos.data.map((dispositivo) => (
-                                    <tr key={dispositivo.id} className="hover:bg-gray-50 transition-colors bg-gray-50/50">
+                                    <tr key={dispositivo.id} className="hover:bg-slate-50 transition-colors bg-slate-50/50">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 text-slate-500 rounded-lg">
                                                     <Cpu className="w-5 h-5" />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-700 line-through">{dispositivo.nombre}</span>
+                                                    <span className="font-semibold text-slate-700 line-through">{dispositivo.nombre}</span>
                                                     <span className="text-xs text-slate-400">{dispositivo.descripcion || 'Sin descripción'}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600">
+                                        <td className="px-6 py-4 text-slate-600">
                                             {dispositivo.freezer?.ubicacion || 'Sin asignar'}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 text-xs font-mono">
+                                        <td className="px-6 py-4 text-slate-500 text-xs font-mono">
                                             {dispositivo.deleted_at ? new Date(dispositivo.deleted_at).toLocaleString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end items-center gap-2">
                                                 <button
                                                     onClick={() => handleRestore(dispositivo.id, dispositivo.nombre)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition-colors"
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm hover:scale-105"
+                                                    title="Restaurar Dispositivo"
                                                 >
-                                                    <RefreshCw className="w-4 h-4" />
+                                                    <RotateCcw className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleForceDelete(dispositivo.id, dispositivo.nombre)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-colors"
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105"
+                                                    title="Eliminar permanentemente"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>

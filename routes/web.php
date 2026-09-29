@@ -62,6 +62,15 @@ Route::controller(AlertasController::class)->group(function () {
     Route::delete('/alertas/{alertaGenerada}', 'destroy')->name('alertas.destroy');
 });
 
+Route::middleware(['auth', 'admin.general'])->controller(\App\Http\Controllers\UsuariosController::class)->group(function () {
+    Route::get('/usuarios', 'index')->name('usuarios.index');
+    Route::post('/usuarios', 'store')->name('usuarios.store');
+    Route::post('/usuarios/{id}/reset-password', 'resetPassword')->name('usuarios.reset-password');
+    Route::delete('/usuarios/{user}', 'destroy')->name('usuarios.destroy');
+    Route::post('/usuarios/{id}/restore', 'restore')->name('usuarios.restore');
+    Route::delete('/usuarios/{id}/force-delete', 'forceDelete')->name('usuarios.force-delete');
+});
+
 require __DIR__.'/auth.php';
 
 Route::get('/alertas/resolver/{alertaGenerada}', function (\App\Models\AlertaGenerada $alertaGenerada) {

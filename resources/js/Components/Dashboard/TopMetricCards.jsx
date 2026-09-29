@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Thermometer, Cpu } from 'lucide-react';
 
-export default function TopMetricCards({ dispositivosConEstado = [], alertasSinResolverCount = 0, configuracionSistema = {} }) {
-    const [selectedDeviceId, setSelectedDeviceId] = useState(
-        dispositivosConEstado.length > 0 ? dispositivosConEstado[0].id : null
-    );
-
+export default function TopMetricCards({ 
+    dispositivosConEstado = [], 
+    alertasSinResolverCount = 0, 
+    configuracionSistema = {},
+    selectedDeviceId = null 
+}) {
     const activeDisp = dispositivosConEstado.find(d => String(d.id) === String(selectedDeviceId)) 
         || (dispositivosConEstado.length > 0 ? dispositivosConEstado[0] : null);
 
@@ -18,30 +19,9 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
 
     return (
         <div className="space-y-3">
-            {/* Selector de Dispositivo*/}
-            {dispositivosConEstado.length > 0 && (
-                <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                        <Cpu className="w-4 h-4 text-indigo-600" />
-                        <span>Inspeccionar Dispositivo:</span>
-                    </div>
-                    <select
-                        value={selectedDeviceId || ''}
-                        onChange={(e) => setSelectedDeviceId(e.target.value)}
-                        className="text-xs font-medium border-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-1"
-                    >
-                        {dispositivosConEstado.map(d => (
-                            <option key={d.id} value={d.id}>
-                                {d.nombre} ({d.freezer_ubicacion})
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
-                {/* TARJETA 1: TEMPERATURA */}
+                {/* temperatura */}
                 <div className="bg-blue-600 text-white p-3.5 rounded-xl shadow-md border border-blue-500 flex flex-col justify-between h-28">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-blue-100">Temperatura</span>
@@ -56,7 +36,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                     </div>
                 </div>
 
-                {/* TARJETA 2: CORRIENTE ELÉCTRICA */}
+                {/* corriente eléctrica */}
                 <div className={`p-3.5 rounded-xl shadow-md border flex flex-col justify-between h-28 transition-colors ${
                     estaEnBateria 
                         ? 'bg-red-600 text-white border-red-500' 
@@ -73,17 +53,17 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                     </div>
                 </div>
 
-                {/* TARJETA 3: ESTADO CANALES Y ALERTAS */}
+                {/* estado canales y alertas */}
                 <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-800 flex flex-col justify-between h-28">
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canales & Alertas Web</span>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canales y alertas Web</span>
                         {alertasSinResolverCount > 0 && (
                             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" title={`${alertasSinResolverCount} alertas pendientes`}></span>
                         )}
                     </div>
                     
                     <div className="space-y-1.5">
-                        {/* Canales globales SMS / Email */}
+                        {/* Canales SMS / Email */}
                         <div className="flex gap-1 text-[9px] font-bold pb-1 border-b border-slate-800">
                             <span className={`px-2 py-0.5 rounded flex-1 text-center truncate ${envioEmailActivo ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
                                 Email: {envioEmailActivo ? 'ON' : 'OFF'}
@@ -93,7 +73,7 @@ export default function TopMetricCards({ dispositivosConEstado = [], alertasSinR
                             </span>
                         </div>
 
-                        {/* Triggers individuales del dispositivo */}
+                        {/* Triggers del dispositivo */}
                         <div className="grid grid-cols-3 gap-1 text-[8.5px] font-bold">
                             <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.temperatura ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
                                 Temp: {estadoAlertasWeb.temperatura ? 'ON' : 'OFF'}

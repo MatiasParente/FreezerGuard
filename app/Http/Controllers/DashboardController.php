@@ -14,13 +14,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Muestras por vencer (filtrables por freezer si se requiere)
-        $muestrasQuery = Muestra::with('freezer.dispositivo');
-        if ($request->filled('freezer_id')) {
-            $muestrasQuery->where('freezer_id', $request->freezer_id);
-        }
-
-        $muestras = $muestrasQuery->get()->map(function($muestra) {
+        // Muestras por vencer
+        $muestras = Muestra::with('freezer.dispositivo')->get()->map(function($muestra) {
             $dias = $muestra->vencimiento ? now()->diffInDays($muestra->vencimiento, false) : null;
             if ($dias === null) {
                 $estado = 'Sin Vencimiento';
@@ -76,12 +71,15 @@ class DashboardController extends Controller
                 return $medicion;
             });
 
-        // Alertas paginadas (Sin resolver + resueltas de últimos 30 días)
+        // Alertas paginadas
         $alertas = AlertaGenerada::with(['dispositivo.freezer', 'alerta'])
-            ->where('estado', '!=', 2)
-            ->orWhere('fecha_y_hora', '>=', now()->subDays(30))
+            ->where(function($q) {
+                $q->where('estado', '!=', 2)
+                  ->orWhere('fecha_y_hora', '>=', now()->subDays(30));
+            })
             ->orderBy('fecha_y_hora', 'desc')
-            ->paginate(5, ['*'], 'alertas_page')->withQueryString();
+            ->paginate(10, ['*'], 'alertas_page')
+            ->withQueryString();
 
         // Freezers para desplegable de muestras
         $freezers = Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get();
@@ -94,7 +92,7 @@ class DashboardController extends Controller
             'alertas' => $alertas,
             'freezers' => $freezers,
             'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
-            'filters' => $request->only(['freezer_id']),
+            'filters' => $request->only(['freezer_id', 'dispositivo_id']),
         ]);
     }
 }

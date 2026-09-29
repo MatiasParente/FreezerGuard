@@ -24,10 +24,10 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
     };
 
     return (
-        <div className="bg-white shadow-lg sm:rounded-xl border border-gray-100 p-6">
+        <div className="bg-white sm:rounded-xl p-6">
             <form onSubmit={submitSistemaForm} className="space-y-6">
                 
-                {/* CONFIGURACIÓN GENERAL DE NOTIFICACIONES */}
+                {/* configuracion de notificaciones */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100">
                     <div>
                         <InputLabel htmlFor="intervalo_correos" value="Frecuencia de envío de correos" className="font-semibold text-gray-800 text-xs" />
@@ -42,9 +42,9 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="email_default" value="Email por Defecto del Sistema" className="font-semibold text-gray-800 text-xs" />
+                        <InputLabel htmlFor="email_default" value="Email por defecto del sistema" className="font-semibold text-gray-800 text-xs" />
                         <p className="text-[11px] text-gray-600 mb-1.5">
-                            Correo al que SIEMPRE se enviará copia además de las muestras.
+                            Correo al que <strong>SIEMPRE</strong> se enviará copia.
                         </p>
                         <TextInput 
                             id="email_default" 
@@ -58,14 +58,14 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                     </div>
                 </div>
 
-                {/* SECCIONES CONTIGUAS: EMAIL VS SMS */}
+                {/* Canales de notificación de alertas */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     
-                    {/* COLUMNA 1: CORREO ELECTRÓNICO */}
+                    {/* Canal correo electrónico */}
                     <div className="space-y-4 bg-blue-50/30 p-4 rounded-xl border border-blue-100">
                         <div className="flex justify-between items-center border-b border-blue-100 pb-2">
                             <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-indigo-600" /> Canal Correo Electrónico
+                                <Mail className="w-4 h-4 text-indigo-600" /> Canal correo electrónico
                             </h4>
                             <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-indigo-900 bg-white px-2.5 py-1 rounded-md border border-indigo-200">
                                 <input
@@ -74,13 +74,13 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                                     checked={sistemaForm.data.envio_email_activo}
                                     onChange={e => sistemaForm.setData('envio_email_activo', e.target.checked)}
                                 />
-                                Activar Emails
+                                Activar correos
                             </label>
                         </div>
 
                         {/* Asunto Email */}
                         <div>
-                            <InputLabel htmlFor="plantilla_email_asunto" value="Asunto del Correo" className="font-semibold text-gray-800 text-xs" />
+                            <InputLabel htmlFor="plantilla_email_asunto" value="Asunto del correo" className="font-semibold text-gray-800 text-xs" />
                             <TextInput id="plantilla_email_asunto" type="text" className="mt-1 block w-full text-xs" value={sistemaForm.data.plantilla_email_asunto} onChange={e => sistemaForm.setData('plantilla_email_asunto', e.target.value)} required />
                             <InputError message={sistemaForm.errors.plantilla_email_asunto} className="mt-1" />
                         </div>
@@ -93,11 +93,11 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                         </div>
                     </div>
 
-                    {/* COLUMNA 2: MENSAJES DE TEXTO (SMS) */}
+                    {/* Canal mensajes de texto (SMS) */}
                     <div className="space-y-4 bg-purple-50/30 p-4 rounded-xl border border-purple-100">
                         <div className="flex justify-between items-center border-b border-purple-100 pb-2">
                             <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                <MessageSquare className="w-4 h-4 text-purple-600" /> Canal Mensajes de Texto (SMS)
+                                <MessageSquare className="w-4 h-4 text-purple-600" /> Canal mensajes de texto (SMS)
                             </h4>
                             <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-900 bg-white px-2.5 py-1 rounded-md border border-purple-200">
                                 <input
@@ -114,14 +114,14 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                         <div>
                             <InputLabel htmlFor="plantilla_sms_cuerpo" value="Mensaje SMS de Alerta" className="font-semibold text-gray-800 text-xs" />
                             <textarea id="plantilla_sms_cuerpo" rows="4" className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm font-mono text-xs focus:border-purple-500 focus:ring-purple-500" value={sistemaForm.data.plantilla_sms_cuerpo} onChange={e => sistemaForm.setData('plantilla_sms_cuerpo', e.target.value)} required></textarea>
-                            <p className="text-[11px] text-purple-700 mt-1">El aviso de resolución por SMS avisará automáticamente con la red/corriente restaurada.</p>
+                            <p className="text-[11px] text-purple-700 mt-1">El aviso de resolución por SMS se enviara automáticamente cuando se resuelva la alerta</p>
                             <InputError message={sistemaForm.errors.plantilla_sms_cuerpo} className="mt-1" />
                         </div>
                     </div>
 
                 </div>
 
-                {/* VARIABLES DISPONIBLES REUTILIZABLES */}
+                {/* variables disponibles */}
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-700">
                     <strong className="block font-semibold mb-1">Variables dinámicas para Email y SMS:</strong>
                     <div className="flex flex-wrap gap-2 font-mono text-[11px]">
@@ -133,9 +133,9 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                     </div>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex justify-end">
+                <div className="pt-3 flex justify-end">
                     <PrimaryButton disabled={sistemaForm.processing} className="px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
-                        Guardar Configuración de Alertas & Mensajes
+                        Guardar configuración de alertas y mensajes
                     </PrimaryButton>
                 </div>
             </form>

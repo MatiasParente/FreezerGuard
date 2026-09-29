@@ -1,8 +1,9 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import NotificationModal from '@/Components/NotificationModal';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { LayoutDashboard, Bell, Activity, FlaskConical, Settings, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, Bell, Activity, FlaskConical, Settings, User, LogOut, Users } from 'lucide-react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -100,6 +101,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Settings className="w-5 h-5" />
                                 <span className='ml-2'>Configuración</span>
                             </ResponsiveNavLink>
+                            {user?.is_general_admin && (
+                                <ResponsiveNavLink
+                                    href={route('usuarios.index')}
+                                    active={route().current('usuarios.*')}
+                                >
+                                    <Users className="w-5 h-5" />
+                                    <span className='ml-2'>Usuarios</span>
+                                </ResponsiveNavLink>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -123,6 +133,7 @@ export default function AuthenticatedLayout({ header, children }) {
             </nav>
 
             <div className="flex-1 flex flex-col min-w-0">
+                <NotificationModal />
                 {header && (
                     <header className="bg-white shadow h-[73px] flex items-center">
                         <div className="w-full px-4 sm:px-6 lg:px-8">

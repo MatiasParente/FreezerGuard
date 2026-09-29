@@ -51,7 +51,7 @@ class AlertNotificationService
         // Limpiar espacios y quitar duplicados
         $emails = $emails->map(fn($e) => trim($e))->filter()->unique()->values();
 
-        // Fallback: Si no hay correos ni en muestra ni en default, avisar al usuario del sistema
+        // Si no hay correos ni en muestra ni en default, avisar al usuario del sistema
         if ($emails->isEmpty()) {
             $firstUserEmail = User::first()?->email;
             if ($firstUserEmail) {

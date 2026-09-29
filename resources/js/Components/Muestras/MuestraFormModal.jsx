@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
+import { Edit } from 'lucide-react';
 
 export default function MuestraFormModal({ isOpen, onClose, editingMuestra = null, freezers = [], users = [], usuarios = [] }) {
     const { data, setData, post, put, processing, errors, reset } = useForm({
@@ -45,7 +46,7 @@ export default function MuestraFormModal({ isOpen, onClose, editingMuestra = nul
     const submitForm = (e) => {
         e.preventDefault();
         if (data.users_ids.length === 0) {
-            alert("No has asignado ningún docente. Se te asignará a ti por defecto (si eres docente).");
+            alert("No has asignado ningún usuario. Se te asignará a ti por defecto.");
         }
 
         if (editingMuestra) {
@@ -62,38 +63,41 @@ export default function MuestraFormModal({ isOpen, onClose, editingMuestra = nul
     return (
         <Modal show={isOpen} onClose={onClose}>
             <form onSubmit={submitForm} className="p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
-                    {editingMuestra ? 'Modificar Muestra' : 'Agregar Muestra'}
-                </h2>
+                <div className="flex items-center gap-2">
+                    <Edit className="w-4 h-4 text-indigo-600" />
+                    <span className="p-2"><h2 className="text-lg font-medium text-indigo-800 uppercase tracking-wider">
+                        {editingMuestra ? 'Modificar muestra' : 'Agregar muestra'}
+                    </h2></span>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <InputLabel htmlFor="titulo" value="Nombre" />
+                        <InputLabel htmlFor="titulo" value="Nombre" className='text-indigo-800' />
                         <TextInput id="titulo" type="text" className="mt-1 block w-full" value={data.titulo} onChange={e => setData('titulo', e.target.value)} required />
                         <InputError message={errors.titulo} className="mt-2" />
                     </div>
                     <div>
-                        <InputLabel htmlFor="cantidad" value="Cantidad" />
+                        <InputLabel htmlFor="cantidad" value="Cantidad" className='text-indigo-800' />
                         <TextInput id="cantidad" type="number" className="mt-1 block w-full" value={data.cantidad} onChange={e => setData('cantidad', e.target.value)} />
                         <InputError message={errors.cantidad} className="mt-2" />
                     </div>
                     <div className="md:col-span-2">
-                        <InputLabel htmlFor="descripcion" value="Descripción" />
+                        <InputLabel htmlFor="descripcion" value="Descripción" className='text-indigo-800' />
                         <TextInput id="descripcion" type="text" className="mt-1 block w-full" value={data.descripcion} onChange={e => setData('descripcion', e.target.value)} />
                         <InputError message={errors.descripcion} className="mt-2" />
                     </div>
                     <div>
-                        <InputLabel htmlFor="temperatura_minima" value="Temperatura Mínima (°C)" />
+                        <InputLabel htmlFor="temperatura_minima" value="Temperatura mínima (°C)" className='text-indigo-800' />
                         <TextInput id="temperatura_minima" type="number" step="0.1" className="mt-1 block w-full" value={data.temperatura_minima} onChange={e => setData('temperatura_minima', e.target.value)} />
                         <InputError message={errors.temperatura_minima} className="mt-2" />
                     </div>
                     <div>
-                        <InputLabel htmlFor="temperatura_maxima" value="Temperatura Máxima (°C)" />
+                        <InputLabel htmlFor="temperatura_maxima" value="Temperatura máxima (°C)" className='text-indigo-800' />
                         <TextInput id="temperatura_maxima" type="number" step="0.1" className="mt-1 block w-full" value={data.temperatura_maxima} onChange={e => setData('temperatura_maxima', e.target.value)} />
                         <InputError message={errors.temperatura_maxima} className="mt-2" />
                     </div>
                     <div>
-                        <InputLabel htmlFor="freezer_id" value="Ubicación (Freezer)" />
+                        <InputLabel htmlFor="freezer_id" value="Ubicación (Freezer)" className='text-indigo-800' />
                         <select id="freezer_id" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value={data.freezer_id} onChange={e => setData('freezer_id', e.target.value)} required>
                             <option value="">Seleccione...</option>
                             {freezers?.map(f => (
@@ -103,14 +107,14 @@ export default function MuestraFormModal({ isOpen, onClose, editingMuestra = nul
                         <InputError message={errors.freezer_id} className="mt-2" />
                     </div>
                     <div>
-                        <InputLabel htmlFor="vencimiento" value="Fecha de Vencimiento" />
+                        <InputLabel htmlFor="vencimiento" value="Fecha de vencimiento" className='text-indigo-800' />
                         <TextInput id="vencimiento" type="date" className="mt-1 block w-full" value={data.vencimiento} onChange={e => setData('vencimiento', e.target.value)} />
                         <InputError message={errors.vencimiento} className="mt-2" />
                     </div>
                     
-                    {/* Selección de Docentes (Checkboxes táctiles para móviles) */}
+                    {/* Selección de docentes*/}
                     <div>
-                        <InputLabel value="Docentes Responsables (Emails)" />
+                        <InputLabel value="Docentes responsables (Emails)" className='text-indigo-800' />
                         <div className="mt-1 max-h-36 overflow-y-auto border border-gray-300 rounded-md p-2 space-y-1.5 bg-white">
                             {users?.map(u => {
                                 const isChecked = data.users_ids.includes(u.id) || data.users_ids.includes(String(u.id));
@@ -133,13 +137,13 @@ export default function MuestraFormModal({ isOpen, onClose, editingMuestra = nul
                                 );
                             })}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Selección táctil. Si dejas vacío, te asignas por defecto.</p>
+                        <p className="text-xs text-gray-500 mt-1">Si no se selecciona ningún usuario, se te asigna a ti por defecto.</p>
                         <InputError message={errors.users_ids} className="mt-2" />
                     </div>
 
-                    {/* Selección de Alumnos (Checkboxes táctiles para móviles) */}
+                    {/* Selección de Alumnos*/}
                     <div>
-                        <InputLabel value="Alumnos Asignados" />
+                        <InputLabel value="Alumnos asignados" className='text-indigo-800' />
                         <div className="mt-1 max-h-36 overflow-y-auto border border-gray-300 rounded-md p-2 space-y-1.5 bg-white">
                             {usuarios?.map(u => {
                                 const isChecked = data.usuarios_ids.includes(u.id) || data.usuarios_ids.includes(String(u.id));
@@ -162,12 +166,11 @@ export default function MuestraFormModal({ isOpen, onClose, editingMuestra = nul
                                 );
                             })}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Selección táctil para móviles.</p>
                         <InputError message={errors.usuarios_ids} className="mt-2" />
                     </div>
 
                     <div className="md:col-span-2">
-                        <InputLabel htmlFor="observaciones" value="Observaciones" />
+                        <InputLabel htmlFor="observaciones" value="Observaciones" className='text-indigo-800' />
                         <textarea id="observaciones" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3" value={data.observaciones} onChange={e => setData('observaciones', e.target.value)} />
                         <InputError message={errors.observaciones} className="mt-2" />
                     </div>

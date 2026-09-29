@@ -36,32 +36,15 @@ export default function MuestrasAccordion({ muestras = [], freezers = [], filter
     const muestrasFiltradas = muestras.filter(m => filtroEstado[m.estado_vencimiento]);
 
     return (
-        <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-100">
-            <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/80 border-b border-slate-100 gap-3">
+        <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-200">
+            <div className="px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/80 border-b border-slate-200 gap-3">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => setMostrarMuestras(!mostrarMuestras)}>
                     <h3 className="text-lg font-medium text-slate-900 flex items-center gap-2">
                         <FlaskConical className="w-5 h-5 text-purple-600" /> Muestras por Vencer
                     </h3>
                 </div>
 
-                {/* Filtro desplegable por Freezer */}
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {freezers.length > 0 && (
-                        <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm text-xs font-semibold">
-                            <span>Freezer:</span>
-                            <select
-                                value={filters.freezer_id || ''}
-                                onChange={handleFreezerFilterChange}
-                                className="border-none py-0 pl-1 pr-6 text-xs font-bold text-slate-800 focus:ring-0 cursor-pointer bg-transparent"
-                            >
-                                <option value="">Todos</option>
-                                {freezers.map(f => (
-                                    <option key={f.id} value={f.id}>{f.ubicacion}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
+                <div className="flex items-center gap-3">
                     <button onClick={() => setMostrarMuestras(!mostrarMuestras)} className="text-slate-400 hover:text-slate-600">
                         {mostrarMuestras ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
@@ -69,7 +52,7 @@ export default function MuestrasAccordion({ muestras = [], freezers = [], filter
             </div>
 
             {mostrarMuestras && (
-                <div className="p-6 border-t border-slate-100">
+                <div className="p-6 border-t border-slate-200">
                     <div className="flex flex-wrap gap-3 mb-6">
                         <button onClick={() => toggleFiltroEstado('Vencida')} className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${!filtroEstado['Vencida'] ? 'opacity-40 grayscale' : 'ring-2 ring-red-200'} bg-red-100 text-red-800`}>Vencidas</button>
                         <button onClick={() => toggleFiltroEstado('Por vencer')} className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${!filtroEstado['Por vencer'] ? 'opacity-40 grayscale' : 'ring-2 ring-yellow-200'} bg-yellow-100 text-yellow-800`}>Por vencer {'(<3 días)'}</button>
