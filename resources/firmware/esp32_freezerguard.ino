@@ -6,190 +6,566 @@
 #include <DallasTemperature.h>
 #include <ArduinoJson.h>
 
-// -------------------------------------------------------------------
-// CONFIGURACIÓN MÓDEM CELLULAR Y SMS (A7670G)
-// -------------------------------------------------------------------
-#define MODEM_RX 16 // Conectado a TX del Módem
-#define MODEM_TX 17 // Conectado a RX del Módem
-String NUMERO_DESTINO_SMS = "+59898485023"; 
-bool modemOk = true; // Estado de salud del módulo celular SMS
+// ============================================================
+// CONFIGURACIÓN GENERAL
+// ============================================================
 
-// -------------------------------------------------------------------
-// CREDENCIALES WIFI Y SERVIDOR
-// -------------------------------------------------------------------
-const char* WIFI_SSID = "DispositivosIOT"; 
-const char* WIFI_PASSWORD = "IOT_UTEC.-"; 
+const char* WIFI_SSID = "DispositivosIOT";
+const char* WIFI_PASSWORD = "IOT_UTEC.-";
+
 const char* SERVER_URL = "https://tip-proymf26.tipyenaccion.net/api/telemetry";
-const char* API_KEY = "fg_sec_9nQBt2sF1bLJAEGlR"; 
-const int DEVICE_ID = 1; 
+const char* API_KEY = "fg_sec_9nQBt2sF1bLJAEGlR";
 
-// -------------------------------------------------------------------
+const int DEVICE_ID = 1;
+
+// ============================================================
+// MODEM A7670G
+// ============================================================
+
+#define MODEM_RX 16
+#define MODEM_TX 17
+
+const int PIN_PWRKEY_MODEM = 4;
+
+// Número obtenido dinámicamente desde el servidor
+String NUMERO_DESTINO_SMS = "";
+
+HardwareSerial modem(2);
+
+bool modemOk = false;
+
+// ============================================================
 // PINES DE HARDWARE
-// -------------------------------------------------------------------
-const int PIN_PWRKEY_MODEM = 4; 
-const int PIN_DS18B20 = 21;    
-const int PIN_DETECTOR = 22;   
-const int LED_VERDE = 5;        
-const int LED_ROJO = 19; 
-const int PIN_BUZZER = 23;     
+// ============================================================
 
-// LÓGICA 4N25: HIGH = CORTE / BATERÍA
-const int VALOR_CORTE = HIGH; 
+const int PIN_DS18B20 = 21;
+const int PIN_DETECTOR = 22;
 
-// TIEMPO DE ENCLAVAMIENTO (8 segundos continuos en 0 para confirmar que volvió la luz)
-const unsigned long TIEMPO_RECUPERACION_RED_MS = 8000; 
-unsigned long ultimoPicoCorteMillis = 0;
+const int LED_VERDE = 5;
+const int LED_ROJO = 19;
+const int PIN_BUZZER = 23;
 
-// LÍMITES Y TOGGLES DINÁMICOS (Sincronizados desde el servidor)
+// Lógica 4N25:
+// HIGH = corte de corriente / operando en batería
+// LOW  = corriente de red activa
+const int VALOR_CORTE = HIGH;
+
+// ============================================================
+// CONFIGURACIÓN RECIBIDA DEL SERVIDOR
+// ============================================================
+
 float temp_min_segura = -25.0;
 float temp_max_segura = -10.0;
+
 bool alerta_temperatura_activa = true;
 bool alerta_bateria_activa = true;
 bool alerta_vencimiento_activa = true;
 bool alerta_modem_activa = true;
-int intervalo_telemetria = 5; 
+bool envio_sms_activo = true; // Interruptor general de SMS recibido del backend
 
-// TIMERS NON-BLOCKING
+int intervalo_telemetria = 5;
+
+// ============================================================
+// TEMPORIZADORES Y ANTI-SPAM (PROTECCIÓN DE SIM)
+// ============================================================
+
 unsigned long previoMillis = 0;
 unsigned long previoBuzzerMillis = 0;
 unsigned long previoImpresion = 0;
+unsigned long previoLecturaTemp = 0;
+unsigned long previoModemCheck = 0;
+
+// Cooldown de envío de SMS para alertas periódicas/temperatura
+unsigned long ultimoEnvioSMS = 0;
+const unsigned long COOLDOWN_SMS_MS = 60000; // 60 segundos mínimos entre SMS generales
+const unsigned long INTERVALO_MODEM_CHECK_MS = 60000; // Health check del módem cada 60s
+
+// Debounce del detector 4N25 (evita ruidos y micro-cortes)
+unsigned long ultimoCambioDetector = 0;
+int ultimoEstadoLectura = LOW;
+const unsigned long TIEMPO_DEBOUNCE_CORTE_MS = 500; // 500 ms de estabilidad requeridos
+
 bool estadoBuzzer = false;
 
-// VARIABLES GLOBALES DE ESTADO
+// ============================================================
+// ESTADO DEL DISPOSITIVO
+// ============================================================
+
 float temperaturaActual = 0.0;
+
 bool enBateriaEnclavado = false;
-bool estadoBateriaAnterior = false; 
+bool estadoBateriaAnterior = false;
+
+// ============================================================
+// SENSOR DE TEMPERATURA
+// ============================================================
 
 OneWire oneWire(PIN_DS18B20);
 DallasTemperature sensors(&oneWire);
 
-// -------------------------------------------------------------------
-// FUNCIONES MÓDEM A7670G (SMS)
-// -------------------------------------------------------------------
-void enviarComandoAT(const char* cmd, int esperaMs = 500) {
-    Serial.printf("\n[Módem] -> %s\n", cmd);
-    Serial2.println(cmd);
-    
-    unsigned long start = millis();
-    while (millis() - start < (unsigned long)esperaMs) {
-        while (Serial2.available()) {
-            Serial.write(Serial2.read());
-        }
+// ============================================================
+// FUNCIONES AUXILIARES DEL MÓDEM
+// ============================================================
+
+void limpiarBufferModem() {
+    while (modem.available()) {
+        modem.read();
     }
 }
 
-bool esperarPromptOOk(const char* objetivo, unsigned long timeoutMs) {
-    unsigned long t = millis();
-    String buffer = "";
-    while (millis() - t < timeoutMs) {
-        while (Serial2.available()) {
-            char c = Serial2.read();
+// ------------------------------------------------------------
+
+bool esperarRespuesta(
+    const String& respuestaOK,
+    const String& respuestaError,
+    unsigned long timeout
+) {
+    unsigned long inicio = millis();
+    String respuesta = "";
+
+    while (millis() - inicio < timeout) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
             Serial.write(c);
-            buffer += c;
-            if (buffer.indexOf(objetivo) != -1) {
+
+            if (respuesta.indexOf(respuestaOK) >= 0) {
                 return true;
             }
+
+            if (respuestaError.length() > 0 && respuesta.indexOf(respuestaError) >= 0) {
+                return false;
+            }
         }
+        delay(5); // Previene sobrecarga de CPU y Watchdog Reset (WDT)
     }
+
     return false;
 }
 
-bool verificarModemAT() {
-    while (Serial2.available()) Serial2.read();
-    Serial2.println("AT");
-    return esperarPromptOOk("OK", 800);
+// ------------------------------------------------------------
+
+bool enviarAT(
+    const String& comando,
+    const String& respuestaOK = "OK",
+    unsigned long timeout = 3000
+) {
+    limpiarBufferModem();
+
+    Serial.print("[MODEM] >> ");
+    Serial.println(comando);
+
+    modem.println(comando);
+
+    return esperarRespuesta(respuestaOK, "ERROR", timeout);
 }
 
-void inicializarModemSMS() {
-    Serial.println("\n--- INICIALIZANDO MÓDEM A7670G PARA ALERTA SMS ---");
-    
+// ============================================================
+// VERIFICACIÓN DEL MÓDEM
+// ============================================================
+
+bool verificarModemAT() {
+    limpiarBufferModem();
+    modem.println("AT");
+
+    unsigned long inicio = millis();
+    String respuesta = "";
+
+    while (millis() - inicio < 2000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
+
+            if (respuesta.indexOf("OK") >= 0) {
+                return true;
+            }
+        }
+        delay(5);
+    }
+
+    return false;
+}
+
+// ============================================================
+// VERIFICACIÓN DE SIM
+// ============================================================
+
+bool verificarSIM() {
+    limpiarBufferModem();
+    modem.println("AT+CPIN?");
+
+    unsigned long inicio = millis();
+    String respuesta = "";
+
+    while (millis() - inicio < 3000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
+            Serial.write(c);
+
+            if (respuesta.indexOf("+CPIN: READY") >= 0) {
+                return true;
+            }
+
+            if (respuesta.indexOf("ERROR") >= 0) {
+                return false;
+            }
+        }
+        delay(5);
+    }
+
+    return false;
+}
+
+// ============================================================
+// VERIFICACIÓN DE RED
+// ============================================================
+
+bool verificarRed() {
+    limpiarBufferModem();
+    modem.println("AT+CEREG?");
+
+    unsigned long inicio = millis();
+    String respuesta = "";
+
+    while (millis() - inicio < 3000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
+            Serial.write(c);
+
+            // Registrado en red local o roaming
+            if (respuesta.indexOf("+CEREG: 0,1") >= 0 ||
+                respuesta.indexOf("+CEREG: 1,1") >= 0 ||
+                respuesta.indexOf("+CEREG: 0,5") >= 0 ||
+                respuesta.indexOf("+CEREG: 1,5") >= 0) {
+                return true;
+            }
+        }
+        delay(5);
+    }
+
+    return false;
+}
+
+// ============================================================
+// HEALTH CHECK DEL MÓDEM (CADA 60 SEGUNDOS, FUERA DE TELEMETRÍA)
+// ============================================================
+
+void verificarSaludModem() {
+    if (millis() - previoModemCheck < INTERVALO_MODEM_CHECK_MS && previoModemCheck != 0) {
+        return;
+    }
+    previoModemCheck = millis();
+
+    if (modemOk) {
+        if (!verificarModemAT()) {
+            Serial.println("[MODEM] Health Check: dejó de responder a AT.");
+            modemOk = false;
+        }
+    } else {
+        // Intento de auto-recuperación si vuelve a responder AT
+        if (verificarModemAT() && verificarSIM()) {
+            enviarAT("AT+CMGF=1");
+            Serial.println("[MODEM] Health Check: Módem recuperado.");
+            modemOk = true;
+        }
+    }
+}
+
+// ============================================================
+// INICIALIZACIÓN DEL MÓDEM
+// ============================================================
+
+bool inicializarModemSMS() {
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("INICIALIZANDO MODEM A7670G");
+    Serial.println("========================================");
+
+    modem.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
+    delay(500);
+
+    // Encendido mediante pulso PWRKEY
     pinMode(PIN_PWRKEY_MODEM, OUTPUT);
+
     digitalWrite(PIN_PWRKEY_MODEM, HIGH);
     delay(100);
+
     digitalWrite(PIN_PWRKEY_MODEM, LOW);
     delay(1500);
+
     digitalWrite(PIN_PWRKEY_MODEM, HIGH);
-    delay(3000);
 
-    Serial2.begin(115200, SERIAL_8N1, MODEM_RX, MODEM_TX);
-    delay(1000);
+    Serial.println("[MODEM] Esperando arranque...");
+    delay(5000);
 
-    bool respondeAT = verificarModemAT();
-    if (!respondeAT) {
-        Serial.println("--- [ERROR: MÓDEM NO RESPONDE (SIN ENERGÍA O NO CONECTADO)] ---");
+    bool conectado = false;
+
+    for (int intento = 1; intento <= 5; intento++) {
+        Serial.print("[MODEM] AT intento ");
+        Serial.print(intento);
+        Serial.println("/5");
+
+        if (verificarModemAT()) {
+            conectado = true;
+            break;
+        }
+
+        delay(1000);
+    }
+
+    if (!conectado) {
+        Serial.println("[MODEM] ERROR: no responde a AT.");
         modemOk = false;
+        return false;
+    }
+
+    Serial.println("[MODEM] Comunicación AT OK.");
+
+    Serial.println("[MODEM] Verificando SIM...");
+    if (!verificarSIM()) {
+        Serial.println("[MODEM] ERROR: SIM no disponible o bloqueada.");
+        modemOk = false;
+        return false;
+    }
+    Serial.println("[MODEM] SIM OK.");
+
+    Serial.println("[MODEM] Verificando registro en red...");
+    if (!verificarRed()) {
+        Serial.println("[MODEM] ADVERTENCIA: aún no registrado en red celular.");
+    } else {
+        Serial.println("[MODEM] Red registrada.");
+    }
+
+    if (!enviarAT("AT+CMGF=1")) {
+        Serial.println("[MODEM] ERROR configurando modo SMS (AT+CMGF=1).");
+        modemOk = false;
+        return false;
+    }
+
+    Serial.println("[MODEM] Modo SMS configurado.");
+    modemOk = true;
+    previoModemCheck = millis();
+    Serial.println("[MODEM] Inicialización completada con éxito.");
+
+    return true;
+}
+
+// ============================================================
+// ENVÍO DE SMS (CON PROTECCIÓN ANTI-BLOQUEO SIM Y PRIORIZACIÓN)
+// ============================================================
+
+bool enviarSMS(const String& mensaje, bool esEventoPrioritario = false, bool esPrueba = false) {
+    if (!modemOk) {
+        // Intento rápido de recuperación antes de cancelar
+        if (verificarModemAT() && verificarSIM()) {
+            enviarAT("AT+CMGF=1");
+            modemOk = true;
+        } else {
+            Serial.println("[SMS] No se envía: módem no disponible.");
+            return false;
+        }
+    }
+
+    if (!envio_sms_activo && !esPrueba) {
+        Serial.println("[SMS] No se envía: el envío de SMS está desactivado en el servidor.");
+        return false;
+    }
+
+    if (NUMERO_DESTINO_SMS.length() < 8) {
+        Serial.println("[SMS] No se envía: número de destino inválido o no recibido del servidor.");
+        return false;
+    }
+
+    // --------------------------------------------------------
+    // PROTECCIÓN DE SIM: Cooldown de tiempo (Se salta en eventos de corte/restauración y pruebas)
+    // --------------------------------------------------------
+    unsigned long ahora = millis();
+    if (!esPrueba && !esEventoPrioritario && (ahora - ultimoEnvioSMS < COOLDOWN_SMS_MS) && ultimoEnvioSMS != 0) {
+        Serial.print("[SMS] PROTECCIÓN SIM: Cooldown activo. Omitiendo envío. Debe esperar ");
+        Serial.print((COOLDOWN_SMS_MS - (ahora - ultimoEnvioSMS)) / 1000);
+        Serial.println(" segundos.");
+        return false;
+    }
+
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("ENVIANDO SMS");
+    Serial.println("========================================");
+    Serial.print("[SMS] Destino: "); Serial.println(NUMERO_DESTINO_SMS);
+    Serial.print("[SMS] Mensaje: "); Serial.println(mensaje);
+
+    if (!verificarModemAT()) {
+        Serial.println("[SMS] ERROR: módem no responde a AT.");
+        modemOk = false;
+        return false;
+    }
+
+    if (!enviarAT("AT+CMGF=1")) {
+        Serial.println("[SMS] ERROR configurando modo texto.");
+        modemOk = false;
+        return false;
+    }
+
+    limpiarBufferModem();
+    String comando = "AT+CMGS=\"" + NUMERO_DESTINO_SMS + "\"";
+    Serial.print("[MODEM] >> "); Serial.println(comando);
+    modem.println(comando);
+
+    // Esperar prompt ">"
+    unsigned long inicioPrompt = millis();
+    bool promptRecibido = false;
+    String respuestaPrompt = "";
+
+    while (millis() - inicioPrompt < 5000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuestaPrompt += c;
+            Serial.write(c);
+
+            if (c == '>') {
+                promptRecibido = true;
+                break;
+            }
+
+            if (respuestaPrompt.indexOf("ERROR") >= 0) {
+                Serial.println();
+                Serial.println("[SMS] ERROR al solicitar CMGS.");
+                return false;
+            }
+        }
+
+        if (promptRecibido) break;
+        delay(5);
+    }
+
+    if (!promptRecibido) {
+        Serial.println();
+        Serial.println("[SMS] ERROR: no se recibió prompt '>'.");
+        return false;
+    }
+
+    // Enviar contenido del mensaje
+    modem.print(mensaje);
+    delay(100);
+
+    Serial.println();
+    Serial.println("[SMS] Enviando Ctrl+Z (ASCII 26)...");
+    modem.write(26);
+
+    // Esperar confirmación
+    unsigned long inicioConfirmacion = millis();
+    String respuesta = "";
+
+    while (millis() - inicioConfirmacion < 30000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
+            Serial.write(c);
+
+            if (respuesta.indexOf("+CMGS:") >= 0) {
+                // Actualizar cooldown SOLO cuando el envío fue verificado y exitoso por la red
+                if (!esPrueba) {
+                    ultimoEnvioSMS = millis();
+                }
+                Serial.println();
+                Serial.println("[SMS] ¡SMS ENVIADO CORRECTAMENTE!");
+                modemOk = true;
+                return true;
+            }
+
+            if (respuesta.indexOf("ERROR") >= 0) {
+                Serial.println();
+                Serial.println("[SMS] ERROR enviando SMS.");
+                return false;
+            }
+        }
+        delay(5);
+    }
+
+    Serial.println();
+    Serial.println("[SMS] TIMEOUT esperando confirmación de red.");
+    return false;
+}
+
+// ============================================================
+// SMS DE INICIO
+// ============================================================
+
+void enviarSMSInicio() {
+    String mensaje = "";
+    mensaje += "FREEZERGUARD: inicio correcto.\n";
+    mensaje += "Dispositivo operativo.\n";
+    mensaje += "Temp: ";
+    mensaje += String(temperaturaActual, 1);
+    mensaje += " C";
+
+    enviarSMS(mensaje, false, false);
+}
+
+// ============================================================
+// SMS DE PRUEBA (IGNORA COOLDOWN)
+// ============================================================
+
+void enviarSMSPrueba() {
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("SMS DE PRUEBA");
+    Serial.println("========================================");
+
+    String mensaje = "";
+    mensaje += "FREEZERGUARD - PRUEBA\n";
+    mensaje += "Dispositivo: ";
+    mensaje += String(DEVICE_ID);
+    mensaje += "\nTemp: ";
+    mensaje += String(temperaturaActual, 1);
+    mensaje += " C\nEnergia: ";
+    mensaje += (enBateriaEnclavado ? "BATERIA" : "RED");
+    mensaje += "\nModem: ";
+    mensaje += (modemOk ? "OK" : "ERROR");
+
+    enviarSMS(mensaje, false, true);
+}
+
+// ============================================================
+// SMS DE CORTE / RESTAURACIÓN (EVENTO PRIORITARIO)
+// ============================================================
+
+void enviarSMSAlertaCorte(bool hayCorte) {
+    if (!alerta_bateria_activa) {
+        Serial.println("[SMS] Alerta de batería desactivada por configuración local.");
         return;
     }
 
-    enviarComandoAT("AT+CMEE=2", 300);
-    enviarComandoAT("AT+CMGF=1", 300);
-    enviarComandoAT("AT+CGSMS=1", 300);
-    enviarComandoAT("AT+CEREG?", 1000);
-
-    while (Serial2.available()) Serial2.read();
-    Serial2.println("AT+CPIN?");
-    bool simReady = esperarPromptOOk("READY", 2000);
-
-    modemOk = simReady;
-    if (modemOk) {
-        Serial.println("--- MÓDEM CONFIGURADO ---\n");
+    String mensaje = "";
+    if (hayCorte) {
+        mensaje += "FREEZERGUARD: CORTE DE CORRIENTE.\n";
+        mensaje += "El dispositivo funciona con bateria.\n";
     } else {
-        Serial.println("--- [ERROR: MÓDEM O SIM NO LISTA / SIN SALDO] ---\n");
+        mensaje += "FREEZERGUARD: CORRIENTE RESTAURADA.\n";
+        mensaje += "El dispositivo vuelve a funcionar con red.\n";
     }
+
+    mensaje += "Temp: ";
+    mensaje += String(temperaturaActual, 1);
+    mensaje += " C";
+
+    // Permite enviar corte y restauración sin trabarse por cooldown (esEventoPrioritario = true)
+    enviarSMS(mensaje, true, false);
 }
 
-bool enviarSMSAlertaCorte(bool hayCorte) {
-    Serial.println("\n------------------------------------------------");
-    Serial.println("   DISPARANDO SMS DE EMERGENCIA POR CORTE       ");
-    Serial.println("------------------------------------------------");
+// ============================================================
+// CONEXIÓN WIFI
+// ============================================================
 
-    if (NUMERO_DESTINO_SMS.length() < 6) {
-        Serial.println("[AVISO: No hay número de destino SMS configurado]");
-        return false;
-    }
-
-    while (Serial2.available()) Serial2.read();
-
-    Serial2.printf("AT+CMGS=\"%s\"\r\n", NUMERO_DESTINO_SMS.c_str());
-
-    if (esperarPromptOOk(">", 4000)) {
-        Serial.println("\n[Prompt '>' detectado, escribiendo texto...]");
-
-        if (hayCorte) {
-            Serial2.printf("ALERTA FREEZERGUARD: Se ha detectado un CORTE DE ENERGIA ELECTRICA. El equipo opera con bateria respaldada. Temp actual: %.1f C", temperaturaActual);
-        } else {
-            Serial2.printf("AVISO FREEZERGUARD: La RED ELECTRICA ha sido RESTAURADA. Temp actual: %.1f C", temperaturaActual);
-        }
-        
-        delay(300);
-        Serial2.write(26); // Byte Ctrl+Z
-
-        Serial.println("\n[Ctrl+Z enviado, esperando confirmacion de red...]");
-        if (esperarPromptOOk("OK", 12000)) {
-            Serial.println("\n>>> ¡SMS DE ALERTA ENVIADO Y CONFIRMADO POR LA RED! <<<");
-            modemOk = true;
-            return true;
-        } else {
-            Serial.println("\n[ERROR: Timeout o fallo al recibir confirmacion del SMS]");
-            modemOk = false;
-            return false;
-        }
-    } else {
-        Serial.println("\n[ERROR: El módem no devolvió el prompt '>']");
-        modemOk = false;
-        return false;
-    }
-}
-
-// -------------------------------------------------------------------
-// FUNCIONES CONEXIÓN Y SERVIDOR WEB (HTTP/WIFI)
-// -------------------------------------------------------------------
 void conectarWiFi() {
-    if (WiFi.status() == WL_CONNECTED) return;
+    if (WiFi.status() == WL_CONNECTED) {
+        return;
+    }
 
-    Serial.println("\n----------------------------------");
-    Serial.print("Intentando conectar a Wi-Fi: ");
-    Serial.println(WIFI_SSID);
+    Serial.println();
+    Serial.println("[WIFI] Conectando...");
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -201,219 +577,406 @@ void conectarWiFi() {
         intentos++;
     }
 
+    Serial.println();
+
     if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\n¡Wi-Fi conectado exitosamente!");
-        Serial.print("Dirección IP: ");
+        Serial.print("[WIFI] Conectado. IP: ");
         Serial.println(WiFi.localIP());
     } else {
-        Serial.println("\nError: No se pudo conectar a la red Wi-Fi en este intento.");
+        Serial.println("[WIFI] No se pudo conectar.");
     }
-    Serial.println("----------------------------------\n");
 }
 
-void procesarDetectorCorte() {
-    int lecturaLecturaBruta = digitalRead(PIN_DETECTOR);
+// ============================================================
+// PROCESAR RESPUESTA DEL SERVIDOR
+// ============================================================
 
-    if (lecturaLecturaBruta == VALOR_CORTE) {
-        enBateriaEnclavado = true;
-        ultimoPicoCorteMillis = millis();
-    } else {
-        if (enBateriaEnclavado && (millis() - ultimoPicoCorteMillis >= TIEMPO_RECUPERACION_RED_MS)) {
-            enBateriaEnclavado = false;
+void procesarRespuestaServidor(String respuesta) {
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("RESPUESTA DEL SERVIDOR");
+    Serial.println("========================================");
+    Serial.println(respuesta);
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, respuesta);
+
+    if (error) {
+        Serial.print("[JSON] Error al deserializar: ");
+        Serial.println(error.c_str());
+        return;
+    }
+
+    // --------------------------------------------------------
+    // Configuración recibida
+    // --------------------------------------------------------
+
+    JsonObject configuracion = doc["configuracion"];
+
+    if (!configuracion.isNull()) {
+        if (configuracion["temp_min"].is<float>() || configuracion["temp_min"].is<int>()) {
+            temp_min_segura = configuracion["temp_min"];
         }
-    }
-}
 
-void actualizarAlarmasFisicas(float temp, bool enBateria) {
-    bool desvioTemp = alerta_temperatura_activa && (temp < temp_min_segura || temp > temp_max_segura);
-    bool desvioCorte = alerta_bateria_activa && enBateria;
-    bool desvioModem = alerta_modem_activa && !modemOk;
+        if (configuracion["temp_max"].is<float>() || configuracion["temp_max"].is<int>()) {
+            temp_max_segura = configuracion["temp_max"];
+        }
 
-    if (desvioTemp || desvioCorte || desvioModem) {
-        digitalWrite(LED_VERDE, LOW);
-        digitalWrite(LED_ROJO, HIGH);
+        if (configuracion["alerta_temperatura_activa"].is<bool>()) {
+            alerta_temperatura_activa = configuracion["alerta_temperatura_activa"];
+        }
 
-        if (millis() - previoBuzzerMillis >= 500) {
-            previoBuzzerMillis = millis();
-            estadoBuzzer = !estadoBuzzer;
-            if (estadoBuzzer) {
-                tone(PIN_BUZZER, 1000);
-            } else {
-                noTone(PIN_BUZZER);
+        if (configuracion["alerta_bateria_activa"].is<bool>()) {
+            alerta_bateria_activa = configuracion["alerta_bateria_activa"];
+        }
+
+        if (configuracion["alerta_vencimiento_activa"].is<bool>()) {
+            alerta_vencimiento_activa = configuracion["alerta_vencimiento_activa"];
+        }
+
+        if (configuracion["alerta_modem_activa"].is<bool>()) {
+            alerta_modem_activa = configuracion["alerta_modem_activa"];
+        }
+
+        if (configuracion["envio_sms_activo"].is<bool>()) {
+            envio_sms_activo = configuracion["envio_sms_activo"];
+        }
+
+        if (configuracion["intervalo_telemetria"].is<int>()) {
+            int interval = configuracion["intervalo_telemetria"];
+            if (interval > 0) {
+                intervalo_telemetria = interval;
             }
         }
-    } else {
-        digitalWrite(LED_VERDE, HIGH);
-        digitalWrite(LED_ROJO, LOW);
-        noTone(PIN_BUZZER);
-        estadoBuzzer = false;
-    }
-}
 
-void procesarRespuestaServidor(String jsonRespuesta) {
-    DynamicJsonDocument doc(1024);
-    DeserializationError error = deserializeJson(doc, jsonRespuesta);
-
-    if (error) return;
-
-    if (doc.containsKey("configuracion")) {
-        JsonObject config = doc["configuracion"];
-
-        if (config.containsKey("temp_min")) temp_min_segura = config["temp_min"].as<float>();
-        if (config.containsKey("temp_max")) temp_max_segura = config["temp_max"].as<float>();
-        if (config.containsKey("alerta_temperatura_activa")) alerta_temperatura_activa = config["alerta_temperatura_activa"].as<bool>();
-        if (config.containsKey("alerta_bateria_activa")) alerta_bateria_activa = config["alerta_bateria_activa"].as<bool>();
-        if (config.containsKey("alerta_vencimiento_activa")) alerta_vencimiento_activa = config["alerta_vencimiento_activa"].as<bool>();
-        if (config.containsKey("alerta_modem_activa")) alerta_modem_activa = config["alerta_modem_activa"].as<bool>();
-        if (config.containsKey("intervalo_telemetria")) intervalo_telemetria = config["intervalo_telemetria"].as<int>();
-        if (config.containsKey("telefonos_sms")) NUMERO_DESTINO_SMS = config["telefonos_sms"].as<String>();
-    }
-}
-
-void enviarTelemetriaNodeRed(String payload) {
-    if (WiFi.status() != WL_CONNECTED) {
-        conectarWiFi();
-    }
-
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        http.setTimeout(8000);
-        http.begin(SERVER_URL);
-        http.addHeader("Content-Type", "application/json");
-        http.addHeader("X-API-Key", API_KEY);
-
-        int httpResponseCode = http.POST(payload);
-
-        if (httpResponseCode > 0) {
-            String respuestaServidor = http.getString();
-            Serial.printf("HTTP Response: %d OK\n", httpResponseCode);
-            procesarRespuestaServidor(respuestaServidor);
-        } else {
-            Serial.printf("Error HTTP: %s (código: %d)\n", http.errorToString(httpResponseCode).c_str(), httpResponseCode);
+        if (!configuracion["telefonos_sms"].isNull()) {
+            NUMERO_DESTINO_SMS = configuracion["telefonos_sms"].as<String>();
+            NUMERO_DESTINO_SMS.trim();
+            Serial.print("[SMS] Número obtenido del servidor: ");
+            Serial.println(NUMERO_DESTINO_SMS);
         }
-        http.end();
-    } else {
-        conectarWiFi();
     }
+
+    Serial.println();
+    Serial.println("[CONFIG] Valores sincronizados:");
+    Serial.print("Temp mínima: "); Serial.println(temp_min_segura);
+    Serial.print("Temp máxima: "); Serial.println(temp_max_segura);
+    Serial.print("Alerta temperatura: "); Serial.println(alerta_temperatura_activa ? "ACTIVA" : "INACTIVA");
+    Serial.print("Alerta batería: "); Serial.println(alerta_bateria_activa ? "ACTIVA" : "INACTIVA");
+    Serial.print("Alerta módem: "); Serial.println(alerta_modem_activa ? "ACTIVA" : "INACTIVA");
+    Serial.print("Envío SMS backend: "); Serial.println(envio_sms_activo ? "ACTIVO" : "INACTIVO");
+    Serial.print("Intervalo telemetría: "); Serial.print(intervalo_telemetria); Serial.println("s");
 }
 
-void ejecutarEnvioTelemetria(const char* motivo) {
-    // Comprobar si el módem responde a los comandos AT
-    if (modemOk) {
-        modemOk = verificarModemAT();
+// ============================================================
+// ENVIAR TELEMETRÍA AL SERVIDOR
+// ============================================================
+
+bool enviarTelemetriaNodeRed(String payload) {
+    conectarWiFi();
+
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("[TELEMETRIA] Sin WiFi.");
+        return false;
     }
 
-    Serial.println("\n-----------------------------------------");
-    Serial.printf("Motivo Envío: %s\n", motivo);
-    Serial.printf("Temperatura Actual: %.2f °C\n", temperaturaActual);
-    Serial.printf("Rango Seguro: [%.1f °C a %.1f °C]\n", temp_min_segura, temp_max_segura);
-    Serial.printf("Pin 22 (Lectura Bruta): %d\n", digitalRead(PIN_DETECTOR)); 
-    Serial.printf("Estado Enclavado: %s\n", enBateriaEnclavado ? "CORTE DE LUZ (EN BATERÍA)" : "OK (RED ELÉCTRICA)");
-    Serial.printf("Estado Módem SMS: %s\n", modemOk ? "OK (OPERATIVO)" : "ERROR / SIN SALDO / DESCONECTADO");
-    Serial.printf("Intervalo Envío: %d seg\n", intervalo_telemetria);
-    
-    Serial.print("Alarmas Activas -> ");
-    Serial.printf("Temp: %s | ", alerta_temperatura_activa ? "SI" : "NO");
-    Serial.printf("Batería: %s | ", alerta_bateria_activa ? "SI" : "NO");
-    Serial.printf("Vencimiento: %s | ", alerta_vencimiento_activa ? "SI" : "NO");
-    Serial.printf("Módem SMS: %s\n", alerta_modem_activa ? "SI" : "NO");
-    Serial.println("-----------------------------------------");
+    HTTPClient http;
+    http.setTimeout(8000);
 
-    String payload = "{";
-    payload += "\"device_id\":";
-    payload += String(DEVICE_ID);
-    payload += ",\"temperature\":";
-    payload += String(temperaturaActual, 2);
-    payload += ",\"bateria\":";
-    payload += (enBateriaEnclavado ? "true" : "false");
-    payload += ",\"modem_ok\":";
-    payload += (modemOk ? "true" : "false");
-    payload += "}";
+    Serial.println();
+    Serial.println("[TELEMETRIA] Enviando datos...");
+
+    http.begin(SERVER_URL);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-API-KEY", API_KEY);
+
+    int codigo = http.POST(payload);
+
+    Serial.print("[TELEMETRIA] HTTP: ");
+    Serial.println(codigo);
+
+    if (codigo > 0) {
+        String respuesta = http.getString();
+        procesarRespuestaServidor(respuesta);
+        http.end();
+        return codigo >= 200 && codigo < 300;
+    }
+
+    Serial.println("[TELEMETRIA] Error HTTP.");
+    http.end();
+
+    return false;
+}
+
+// ============================================================
+// EJECUTAR TELEMETRÍA
+// ============================================================
+
+void ejecutarEnvioTelemetria(const String& motivo) {
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("TELEMETRÍA");
+    Serial.print("Motivo: "); Serial.println(motivo);
+    Serial.println("========================================");
+
+    Serial.print("Temperatura: "); Serial.print(temperaturaActual); Serial.println(" C");
+    Serial.print("Energía: "); Serial.println(enBateriaEnclavado ? "BATERIA" : "RED");
+    Serial.print("Módem: "); Serial.println(modemOk ? "OK" : "ERROR");
+
+    // JSON Payload
+    JsonDocument doc;
+    doc["device_id"] = DEVICE_ID;
+    doc["temperature"] = temperaturaActual;
+    doc["bateria"] = enBateriaEnclavado;
+    doc["modem_ok"] = modemOk;
+
+    String payload;
+    serializeJson(doc, payload);
+
+    Serial.print("[TELEMETRIA] JSON: ");
+    Serial.println(payload);
 
     enviarTelemetriaNodeRed(payload);
 }
 
-// -------------------------------------------------------------------
-// SETUP Y LOOP PRINCIPAL
-// -------------------------------------------------------------------
-void setup() {
-    Serial.begin(115200);
+// ============================================================
+// SENSOR DE TEMPERATURA (NO BLOQUEANTE)
+// ============================================================
 
-    pinMode(LED_VERDE, OUTPUT);
-    pinMode(LED_ROJO, OUTPUT);
-    pinMode(PIN_BUZZER, OUTPUT);
-    
-    pinMode(PIN_DETECTOR, INPUT_PULLUP); 
+void leerTemperatura() {
+    // Leer cada 1000 ms para no bloquear el loop con requestTemperatures()
+    if (millis() - previoLecturaTemp >= 1000 || previoLecturaTemp == 0) {
+        previoLecturaTemp = millis();
 
-    digitalWrite(LED_VERDE, HIGH);
-    digitalWrite(LED_ROJO, LOW);
-    noTone(PIN_BUZZER);
+        sensors.requestTemperatures();
+        float temperatura = sensors.getTempCByIndex(0);
 
-    sensors.begin();
-    
-    inicializarModemSMS();
-    conectarWiFi();
-
-    // Estado inicial enclavado
-    procesarDetectorCorte();
-    estadoBateriaAnterior = enBateriaEnclavado;
-
-    Serial.println("\n==================================");
-    Serial.println("    --- FREEZERGUARD INICIADO ---");
-    Serial.println("==================================\n");
+        if (temperatura != DEVICE_DISCONNECTED_C) {
+            temperaturaActual = temperatura;
+        } else {
+            Serial.println("[TEMP] Error leyendo DS18B20 (desconectado).");
+        }
+    }
 }
 
-void loop() {
-    // 1. Muestreo de sensores en cada ciclo
-    sensors.requestTemperatures();
-    float tempLeida = sensors.getTempCByIndex(0);
-    if (tempLeida != DEVICE_DISCONNECTED_C) {
-        temperaturaActual = tempLeida;
+// ============================================================
+// DETECTOR DE CORTE 4N25 (CON DEBOUNCE ANTI-RUIDO)
+// ============================================================
+
+void procesarDetectorCorte() {
+    int lectura = digitalRead(PIN_DETECTOR);
+
+    // Si cambia el valor del pin, reiniciamos temporizador de filtro
+    if (lectura != ultimoEstadoLectura) {
+        ultimoCambioDetector = millis();
+        ultimoEstadoLectura = lectura;
     }
 
-    // 2. Procesar estado del optoacoplador y alarmas
-    procesarDetectorCorte();
-    actualizarAlarmasFisicas(temperaturaActual, enBateriaEnclavado);
+    // Solo confirmamos el cambio si la lectura se mantiene estable durante 500 ms
+    if ((millis() - ultimoCambioDetector) >= TIEMPO_DEBOUNCE_CORTE_MS) {
+        // HIGH = corte de energía / batería
+        // LOW  = red eléctrica normal
+        enBateriaEnclavado = (lectura == VALOR_CORTE);
+    }
+}
 
-    // 3. Monitoreo por puerto serie cada 1 segundo (con contador regresivo)
-    if (millis() - previoImpresion >= 1000) {
-        previoImpresion = millis();
+// ============================================================
+// ALARMAS FÍSICAS (LED Y BUZZER)
+// ============================================================
 
-        Serial.print("Pin 22 (Bruto): ");
-        Serial.print(digitalRead(PIN_DETECTOR));
-        
-        if (enBateriaEnclavado) {
-            unsigned long transcurrido = millis() - ultimoPicoCorteMillis;
-            long restante = (TIEMPO_RECUPERACION_RED_MS - transcurrido) / 1000;
-            if (restante < 0) restante = 0;
+void procesarAlarmasFisicas() {
+    bool alarmaTemperatura = false;
 
-            Serial.printf(" | Estado: CORTE DE LUZ / BATERÍA (Reset en: %lds)\n", restante);
-        } else {
-            Serial.println(" | Estado: OK (RED ELÉCTRICA)");
+    if (alerta_temperatura_activa) {
+        if (temperaturaActual < temp_min_segura || temperaturaActual > temp_max_segura) {
+            alarmaTemperatura = true;
         }
     }
 
-    // 4. Transición de estado (Disparo por evento)
-    if (enBateriaEnclavado != estadoBateriaAnterior) {
-        estadoBateriaAnterior = enBateriaEnclavado;
-        
-        // Se sincroniza el envío periódico para no duplicar datos
-        previoMillis = millis(); 
+    bool alarmaBateria = alerta_bateria_activa && enBateriaEnclavado;
+    bool alarmaModem = alerta_modem_activa && !modemOk;
 
-        // Intentar envío de SMS
-        bool smsEnviado = enviarSMSAlertaCorte(enBateriaEnclavado);
+    bool alarmaGeneral = alarmaTemperatura || alarmaBateria || alarmaModem;
 
-        // Notificación al servidor incluyendo estado del módem
-        ejecutarEnvioTelemetria(enBateriaEnclavado ? "EVENTO: CORTE DETECTADO" : "EVENTO: RED RESTAURADA");
+    if (alarmaGeneral) {
+        digitalWrite(LED_ROJO, HIGH);
+        digitalWrite(LED_VERDE, LOW);
 
-        // Se reajusta el temporizador tras el tiempo consumido por el SMS
-        ultimoPicoCorteMillis = millis(); 
+        if (millis() - previoBuzzerMillis >= 500) {
+            previoBuzzerMillis = millis();
+            estadoBuzzer = !estadoBuzzer;
+            digitalWrite(PIN_BUZZER, estadoBuzzer ? HIGH : LOW);
+        }
+    } else {
+        digitalWrite(LED_ROJO, LOW);
+        digitalWrite(LED_VERDE, HIGH);
+        digitalWrite(PIN_BUZZER, LOW);
+        estadoBuzzer = false;
+    }
+}
+
+// ============================================================
+// PROCESAR COMANDOS DEL MONITOR SERIAL
+// ============================================================
+
+void procesarComandosSerial() {
+    if (!Serial.available()) {
+        return;
     }
 
-    // 5. Envío periódico programado vía HTTP
-    unsigned long intervaloMs = (unsigned long)(intervalo_telemetria > 0 ? intervalo_telemetria : 5) * 1000;
+    String comando = Serial.readStringUntil('\n');
+    comando.trim();
+
+    if (comando.equalsIgnoreCase("SMSPRUEBA")) {
+        enviarSMSPrueba();
+    } else {
+        Serial.print("[SERIAL] Comando desconocido: ");
+        Serial.println(comando);
+    }
+}
+
+// ============================================================
+// SETUP
+// ============================================================
+
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("       FREEZERGUARD ESP32");
+    Serial.println("========================================");
+
+    // Pines
+    pinMode(LED_VERDE, OUTPUT);
+    pinMode(LED_ROJO, OUTPUT);
+    pinMode(PIN_BUZZER, OUTPUT);
+    pinMode(PIN_DETECTOR, INPUT);
+
+    digitalWrite(LED_VERDE, LOW);
+    digitalWrite(LED_ROJO, LOW);
+    digitalWrite(PIN_BUZZER, LOW);
+
+    // Sensor de temperatura
+    sensors.begin();
+    sensors.requestTemperatures();
+    float tempIni = sensors.getTempCByIndex(0);
+    if (tempIni != DEVICE_DISCONNECTED_C) {
+        temperaturaActual = tempIni;
+    }
+
+    Serial.print("[TEMP] Temperatura inicial: ");
+    Serial.print(temperaturaActual);
+    Serial.println(" C");
+
+    // Detector 4N25
+    int lecturaIni = digitalRead(PIN_DETECTOR);
+    ultimoEstadoLectura = lecturaIni;
+    enBateriaEnclavado = (lecturaIni == VALOR_CORTE);
+    estadoBateriaAnterior = enBateriaEnclavado;
+
+    Serial.print("[ENERGIA] Estado inicial: ");
+    Serial.println(enBateriaEnclavado ? "BATERIA / CORTE" : "RED");
+
+    // Módem SIMCOM A7670G
+    inicializarModemSMS();
+
+    // WiFi
+    conectarWiFi();
+
+    // Primera telemetría (obtiene parámetros del servidor como telefonos_sms y envio_sms_activo)
+    ejecutarEnvioTelemetria("INICIO");
+
+    // SMS de inicio (respetando configuración y número devuelto por backend)
+    if (modemOk && NUMERO_DESTINO_SMS.length() >= 8 && envio_sms_activo) {
+        enviarSMSInicio();
+    } else {
+        Serial.println();
+        Serial.println("[SMS] No se envía SMS de inicio.");
+        if (!modemOk) Serial.println("[SMS] Motivo: módem no disponible.");
+        if (!envio_sms_activo) Serial.println("[SMS] Motivo: envío de SMS desactivado en servidor.");
+        if (NUMERO_DESTINO_SMS.length() < 8) Serial.println("[SMS] Motivo: no hay número válido configurado.");
+    }
+
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("FREEZERGUARD INICIADO");
+    Serial.println("========================================");
+    Serial.println("Escriba SMSPRUEBA en la consola serial para enviar un SMS de prueba.");
+
+    previoMillis = millis();
+    previoImpresion = millis();
+}
+
+// ============================================================
+// LOOP PRINCIPAL
+// ============================================================
+
+void loop() {
+    // 1. Comandos Serial
+    procesarComandosSerial();
+
+    // 2. Muestreo de Temperatura (no bloqueante)
+    leerTemperatura();
+
+    // 3. Detector de corte 4N25 (con debounce de 500 ms)
+    procesarDetectorCorte();
+
+    // 4. Alarmas físicas (LEDs y Buzzer)
+    procesarAlarmasFisicas();
+
+    // 5. Health Check periódico del módem (cada 60 segundos)
+    verificarSaludModem();
+
+    // 6. Detectar cambio de estado de energía (Corte / Restauración)
+    if (enBateriaEnclavado != estadoBateriaAnterior) {
+        if (enBateriaEnclavado) {
+            Serial.println();
+            Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            Serial.println("⚠ CORTE DE CORRIENTE DETECTADO");
+            Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+            // SMS de alerta por corte (Prioritario: ignora cooldown)
+            enviarSMSAlertaCorte(true);
+
+            // Telemetría inmediata al servidor
+            ejecutarEnvioTelemetria("CORTE");
+        } else {
+            Serial.println();
+            Serial.println("========================================");
+            Serial.println("✓ CORRIENTE RESTAURADA");
+            Serial.println("========================================");
+
+            // SMS de notificación por restauración (Prioritario: ignora cooldown)
+            enviarSMSAlertaCorte(false);
+
+            // Telemetría inmediata al servidor
+            ejecutarEnvioTelemetria("RESTAURACION");
+        }
+
+        estadoBateriaAnterior = enBateriaEnclavado;
+    }
+
+    // 7. Monitoreo por consola serial periódicamente
+    if (millis() - previoImpresion >= 1000) {
+        previoImpresion = millis();
+
+        Serial.print("[ESTADO] Temp: ");
+        Serial.print(temperaturaActual, 1);
+        Serial.print(" C | Energía: ");
+        Serial.print(enBateriaEnclavado ? "BATERIA" : "RED");
+        Serial.print(" | Módem: ");
+        Serial.println(modemOk ? "OK" : "ERROR");
+    }
+
+    // 8. Telemetría periódica programada
+    unsigned long intervaloMs = (unsigned long)(intervalo_telemetria > 0 ? intervalo_telemetria : 5) * 1000UL;
+
     if (millis() - previoMillis >= intervaloMs) {
         previoMillis = millis();
-        ejecutarEnvioTelemetria("PERIÓDICO");
+        ejecutarEnvioTelemetria("PERIODICA");
     }
+
+    delay(10); // Pequeña pausa para reducir consumo y ceder CPU
 }
