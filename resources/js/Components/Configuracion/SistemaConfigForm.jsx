@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
-import { Mail, MessageSquare } from 'lucide-react';
+import { Mail, MessageSquare, CreditCard, Info } from 'lucide-react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 
 export default function SistemaConfigForm({ configuracionSistema = {} }) {
+    const [mostrarModalSaldo, setMostrarModalSaldo] = useState(false);
+
     const sistemaForm = useForm({
         intervalo_correos: configuracionSistema?.intervalo_correos ?? 1,
         email_default: configuracionSistema?.email_default ?? '',
@@ -99,22 +102,32 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                             <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-purple-600" /> Canal mensajes de texto (SMS)
                             </h4>
-                            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-900 bg-white px-2.5 py-1 rounded-md border border-purple-200">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                                    checked={sistemaForm.data.envio_sms_activo}
-                                    onChange={e => sistemaForm.setData('envio_sms_activo', e.target.checked)}
-                                />
-                                Activar SMS
-                            </label>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarModalSaldo(true)}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-2.5 py-1 rounded-md border border-purple-300 transition"
+                                >
+                                    <CreditCard className="w-3.5 h-3.5 text-purple-700" />
+                                    Consultar Saldo SIM
+                                </button>
+                                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-900 bg-white px-2.5 py-1 rounded-md border border-purple-200">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                        checked={sistemaForm.data.envio_sms_activo}
+                                        onChange={e => sistemaForm.setData('envio_sms_activo', e.target.checked)}
+                                    />
+                                    Activar SMS
+                                </label>
+                            </div>
                         </div>
 
                         {/* Mensaje SMS Alerta */}
                         <div>
                             <InputLabel htmlFor="plantilla_sms_cuerpo" value="Mensaje SMS de Alerta" className="font-semibold text-gray-800 text-xs" />
                             <textarea id="plantilla_sms_cuerpo" rows="4" className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm font-mono text-xs focus:border-purple-500 focus:ring-purple-500" value={sistemaForm.data.plantilla_sms_cuerpo} onChange={e => sistemaForm.setData('plantilla_sms_cuerpo', e.target.value)} required></textarea>
-                            <p className="text-[11px] text-purple-700 mt-1">El aviso de resolución por SMS se enviara automáticamente cuando se resuelva la alerta</p>
+                            <p className="text-[11px] text-purple-700 mt-1">El aviso de resolución por SMS se enviará automáticamente cuando se resuelva la alerta</p>
                             <InputError message={sistemaForm.errors.plantilla_sms_cuerpo} className="mt-1" />
                         </div>
                     </div>
@@ -139,6 +152,52 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                     </PrimaryButton>
                 </div>
             </form>
+
+            {/* Modal de información y prueba de saldo SIM */}
+            {mostrarModalSaldo && (
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100 animate-in fade-in zoom-in duration-150">
+                        <div className="flex items-center justify-between border-b pb-3">
+                            <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-purple-600" />
+                                Consulta de Saldo y Estado del Módem SIM
+                            </h3>
+                            <button onClick={() => setMostrarModalSaldo(false)} className="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+                        </div>
+
+                        <div className="space-y-3 text-xs text-slate-700">
+                            <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 flex items-start gap-2.5">
+                                <Info className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <strong className="block text-purple-900 font-semibold mb-0.5">Comandos de consulta desde el Módem A7670G</strong>
+                                    El dispositivo puede consultar el saldo restante y vencimiento de la tarjeta SIM directamente por comandos de red celular (USSD / SMS).
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 border-t pt-3">
+                                <h4 className="font-semibold text-slate-800">Métodos disponibles:</h4>
+                                <ul className="space-y-1.5 list-disc list-inside text-slate-600 font-mono text-[11px]">
+                                    <li><strong>USSD Antel / Movistar / Claro:</strong> Escriba <span className="bg-slate-100 px-1 py-0.5 rounded text-purple-700">SALDO</span> en el Monitor Serial del ESP32 (ejecuta <span className="text-slate-800">AT+CUSD=1,"*226#",15</span> o <span className="text-slate-800">*611#</span>).</li>
+                                    <li><strong>Mensaje de texto al 226 / 611:</strong> Envía automáticamente la palabra <span className="bg-slate-100 px-1 py-0.5 rounded text-purple-700">SALDO</span> al número corto de la operadora para recibir la respuesta con el monto y fecha de caducidad.</li>
+                                </ul>
+                            </div>
+
+                            <div className="p-2.5 bg-slate-100 rounded-lg text-[11px] text-slate-600">
+                                💡 <strong>Tip:</strong> Si la SIM se queda sin saldo o vence, el servidor registrará una alerta de <i>"Fallo de Módulo SMS"</i> e indicará el estado en el Dashboard principal.
+                            </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={() => setMostrarModalSaldo(false)}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs"
+                            >
+                                Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

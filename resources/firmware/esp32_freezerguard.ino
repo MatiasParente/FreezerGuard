@@ -45,9 +45,9 @@ const int LED_VERDE = 5;
 const int LED_ROJO = 19;
 const int PIN_BUZZER = 23;
 
-// Lógica 4N25:
-// HIGH = corte de corriente / operando en batería
-// LOW  = corriente de red activa
+// Lógica 4N25 con INPUT_PULLUP:
+// HIGH = transistor abierto (Corte de corriente / operando en batería)
+// LOW  = transistor conduciendo (Corriente de red activa)
 const int VALOR_CORTE = HIGH;
 
 // ============================================================
@@ -62,6 +62,8 @@ bool alerta_bateria_activa = true;
 bool alerta_vencimiento_activa = true;
 bool alerta_modem_activa = true;
 bool envio_sms_activo = true; // Interruptor general de SMS recibido del backend
+
+String plantilla_sms_cuerpo = "ALERTA FREEZERGUARD: Se detectó {tipo_alerta} en {dispositivo}. Temp: {temperatura} C.";
 
 int intervalo_telemetria = 5;
 
@@ -80,10 +82,10 @@ unsigned long ultimoEnvioSMS = 0;
 const unsigned long COOLDOWN_SMS_MS = 60000; // 60 segundos mínimos entre SMS generales
 const unsigned long INTERVALO_MODEM_CHECK_MS = 60000; // Health check del módem cada 60s
 
-// Debounce del detector 4N25 (evita ruidos y micro-cortes)
+// Debounce del detector 4N25 (aumentado a 2500ms para evitar falsos positivos por capacitores de fuente)
 unsigned long ultimoCambioDetector = 0;
 int ultimoEstadoLectura = LOW;
-const unsigned long TIEMPO_DEBOUNCE_CORTE_MS = 500; // 500 ms de estabilidad requeridos
+const unsigned long TIEMPO_DEBOUNCE_CORTE_MS = 2500; // 2.5 segundos de estabilidad requeridos
 
 bool estadoBuzzer = false;
 
@@ -92,9 +94,12 @@ bool estadoBuzzer = false;
 // ============================================================
 
 float temperaturaActual = 0.0;
+float ultimaLecturaValidaTemp = 0.0;
+int lecturasFallidasTemp = 0;
 
 bool enBateriaEnclavado = false;
 bool estadoBateriaAnterior = false;
+bool alertaTempSMSActiva = false; // Estado para controlar disparo de SMS por temperatura
 
 // ============================================================
 // SENSOR DE TEMPERATURA
@@ -158,6 +163,25 @@ bool enviarAT(
     modem.println(comando);
 
     return esperarRespuesta(respuestaOK, "ERROR", timeout);
+}
+
+// ============================================================
+// GENERAR MENSAJE CON PLANTILLA DE LA PÁGINA WEB
+// ============================================================
+
+String generarMensajeSMS(String tipoAlerta) {
+    if (plantilla_sms_cuerpo.length() == 0) {
+        return "FREEZERGUARD: " + tipoAlerta + ". Temp: " + String(temperaturaActual, 1) + " C";
+    }
+
+    String msg = plantilla_sms_cuerpo;
+    msg.replace("{tipo_alerta}", tipoAlerta);
+    msg.replace("{dispositivo}", "Dispositivo #" + String(DEVICE_ID));
+    msg.replace("{freezer}", "Freezer #" + String(DEVICE_ID));
+    msg.replace("{temperatura}", String(temperaturaActual, 1));
+    msg.replace("{fecha}", "Ahora");
+
+    return msg;
 }
 
 // ============================================================
@@ -246,6 +270,63 @@ bool verificarRed() {
     }
 
     return false;
+}
+
+// ============================================================
+// CONSULTAR SALDO DE LA SIM (VÍA USSD O SMS AL 226 / 611)
+// ============================================================
+
+bool consultarSaldoSIM(const String& numeroConsulta = "226") {
+    if (!modemOk) {
+        Serial.println("[SALDO] Módem no disponible para consultar saldo.");
+        return false;
+    }
+
+    Serial.println();
+    Serial.println("========================================");
+    Serial.println("CONSULTANDO SALDO DE LA SIM");
+    Serial.println("========================================");
+
+    // Intento 1: Comando USSD al servicio (ej: *226# o *611#)
+    String comandoUSSD = "AT+CUSD=1,\"*" + numeroConsulta + "#\",15";
+    Serial.print("[SALDO] Enviando comando USSD: ");
+    Serial.println(comandoUSSD);
+
+    limpiarBufferModem();
+    modem.println(comandoUSSD);
+
+    unsigned long inicio = millis();
+    String respuesta = "";
+    bool ussdOk = false;
+
+    while (millis() - inicio < 8000) {
+        while (modem.available()) {
+            char c = modem.read();
+            respuesta += c;
+            Serial.write(c);
+
+            if (respuesta.indexOf("+CUSD:") >= 0) {
+                ussdOk = true;
+                break;
+            }
+        }
+        if (ussdOk) break;
+        delay(10);
+    }
+
+    if (ussdOk) {
+        Serial.println("\n[SALDO] ¡Respuesta USSD recibida con éxito!");
+        return true;
+    }
+
+    // Intento 2: Enviar SMS de consulta "SALDO" al número 226 / 611
+    Serial.println("\n[SALDO] Intentando consulta vía SMS al " + numeroConsulta + "...");
+    String tempDestino = NUMERO_DESTINO_SMS;
+    NUMERO_DESTINO_SMS = numeroConsulta;
+    bool smsEnviado = enviarSMS("SALDO", true, true);
+    NUMERO_DESTINO_SMS = tempDestino;
+
+    return smsEnviado;
 }
 
 // ============================================================
@@ -373,7 +454,7 @@ bool enviarSMS(const String& mensaje, bool esEventoPrioritario = false, bool esP
         return false;
     }
 
-    if (NUMERO_DESTINO_SMS.length() < 8) {
+    if (NUMERO_DESTINO_SMS.length() < 3) {
         Serial.println("[SMS] No se envía: número de destino inválido o no recibido del servidor.");
         return false;
     }
@@ -494,13 +575,7 @@ bool enviarSMS(const String& mensaje, bool esEventoPrioritario = false, bool esP
 // ============================================================
 
 void enviarSMSInicio() {
-    String mensaje = "";
-    mensaje += "FREEZERGUARD: inicio correcto.\n";
-    mensaje += "Dispositivo operativo.\n";
-    mensaje += "Temp: ";
-    mensaje += String(temperaturaActual, 1);
-    mensaje += " C";
-
+    String mensaje = generarMensajeSMS("DISPOSITIVO INICIADO");
     enviarSMS(mensaje, false, false);
 }
 
@@ -514,17 +589,7 @@ void enviarSMSPrueba() {
     Serial.println("SMS DE PRUEBA");
     Serial.println("========================================");
 
-    String mensaje = "";
-    mensaje += "FREEZERGUARD - PRUEBA\n";
-    mensaje += "Dispositivo: ";
-    mensaje += String(DEVICE_ID);
-    mensaje += "\nTemp: ";
-    mensaje += String(temperaturaActual, 1);
-    mensaje += " C\nEnergia: ";
-    mensaje += (enBateriaEnclavado ? "BATERIA" : "RED");
-    mensaje += "\nModem: ";
-    mensaje += (modemOk ? "OK" : "ERROR");
-
+    String mensaje = generarMensajeSMS("PRUEBA DE SMS");
     enviarSMS(mensaje, false, true);
 }
 
@@ -538,21 +603,34 @@ void enviarSMSAlertaCorte(bool hayCorte) {
         return;
     }
 
-    String mensaje = "";
-    if (hayCorte) {
-        mensaje += "FREEZERGUARD: CORTE DE CORRIENTE.\n";
-        mensaje += "El dispositivo funciona con bateria.\n";
-    } else {
-        mensaje += "FREEZERGUARD: CORRIENTE RESTAURADA.\n";
-        mensaje += "El dispositivo vuelve a funcionar con red.\n";
-    }
-
-    mensaje += "Temp: ";
-    mensaje += String(temperaturaActual, 1);
-    mensaje += " C";
+    String tipo = hayCorte ? "CORTE DE CORRIENTE" : "CORRIENTE RESTAURADA";
+    String mensaje = generarMensajeSMS(tipo);
 
     // Permite enviar corte y restauración sin trabarse por cooldown (esEventoPrioritario = true)
     enviarSMS(mensaje, true, false);
+}
+
+// ============================================================
+// ALERTA DE TEMPERATURA POR SMS
+// ============================================================
+
+void verificarAlertaTemperaturaSMS() {
+    if (!alerta_temperatura_activa) {
+        alertaTempSMSActiva = false;
+        return;
+    }
+
+    bool fueraDeRango = (temperaturaActual < temp_min_segura || temperaturaActual > temp_max_segura);
+
+    if (fueraDeRango != alertaTempSMSActiva) {
+        alertaTempSMSActiva = fueraDeRango;
+
+        String tipo = fueraDeRango ? "TEMPERATURA FUERA DE RANGO" : "TEMPERATURA RESTAURADA";
+        String mensaje = generarMensajeSMS(tipo);
+
+        enviarSMS(mensaje, false, false);
+        ejecutarEnvioTelemetria(fueraDeRango ? "ALERTA_TEMPERATURA" : "TEMPERATURA_NORMALIZADA");
+    }
 }
 
 // ============================================================
@@ -649,6 +727,11 @@ void procesarRespuestaServidor(String respuesta) {
             }
         }
 
+        if (!configuracion["plantilla_sms_cuerpo"].isNull()) {
+            plantilla_sms_cuerpo = configuracion["plantilla_sms_cuerpo"].as<String>();
+            plantilla_sms_cuerpo.trim();
+        }
+
         if (!configuracion["telefonos_sms"].isNull()) {
             NUMERO_DESTINO_SMS = configuracion["telefonos_sms"].as<String>();
             NUMERO_DESTINO_SMS.trim();
@@ -665,6 +748,7 @@ void procesarRespuestaServidor(String respuesta) {
     Serial.print("Alerta batería: "); Serial.println(alerta_bateria_activa ? "ACTIVA" : "INACTIVA");
     Serial.print("Alerta módem: "); Serial.println(alerta_modem_activa ? "ACTIVA" : "INACTIVA");
     Serial.print("Envío SMS backend: "); Serial.println(envio_sms_activo ? "ACTIVO" : "INACTIVO");
+    Serial.print("Plantilla SMS: "); Serial.println(plantilla_sms_cuerpo);
     Serial.print("Intervalo telemetría: "); Serial.print(intervalo_telemetria); Serial.println("s");
 }
 
@@ -740,27 +824,45 @@ void ejecutarEnvioTelemetria(const String& motivo) {
 }
 
 // ============================================================
-// SENSOR DE TEMPERATURA (NO BLOQUEANTE)
+// SENSOR DE TEMPERATURA (CON FILTRO ANTI-RUIDO Y LECTURA ESTABLE)
 // ============================================================
 
 void leerTemperatura() {
-    // Leer cada 1000 ms para no bloquear el loop con requestTemperatures()
-    if (millis() - previoLecturaTemp >= 1000 || previoLecturaTemp == 0) {
-        previoLecturaTemp = millis();
-
-        sensors.requestTemperatures();
-        float temperatura = sensors.getTempCByIndex(0);
-
-        if (temperatura != DEVICE_DISCONNECTED_C) {
-            temperaturaActual = temperatura;
-        } else {
-            Serial.println("[TEMP] Error leyendo DS18B20 (desconectado).");
-        }
+    if (millis() - previoLecturaTemp < 1000 && previoLecturaTemp != 0) {
+        return;
     }
+    previoLecturaTemp = millis();
+
+    sensors.requestTemperatures();
+    float tempLeida = sensors.getTempCByIndex(0);
+
+    // 1. Filtrar lecturas basura: -127°C (desconectado) o 85°C (no convertido) o valores imposibles
+    if (tempLeida == DEVICE_DISCONNECTED_C || tempLeida == 85.0f || tempLeida < -50.0f || tempLeida > 100.0f) {
+        lecturasFallidasTemp++;
+        if (lecturasFallidasTemp % 10 == 0) {
+            Serial.println("[TEMP] Ruido/Interrupción en bus DS18B20. Preservando última lectura válida.");
+        }
+        return; // Conserva la temperaturaActual anterior sin corromperla con picos falsos
+    }
+
+    // 2. Filtro de saltos bruscos (Picos de ruido OneWire ej: saltar de 20.8°C a -0.8°C en 1s)
+    if (temperaturaActual != 0.0 && abs(tempLeida - temperaturaActual) > 7.0f) {
+        // Exige 2 lecturas consecutivas para validar un cambio real tan abrupto
+        if (abs(tempLeida - ultimaLecturaValidaTemp) < 2.0f) {
+            temperaturaActual = tempLeida;
+        }
+        ultimaLecturaValidaTemp = tempLeida;
+        return;
+    }
+
+    // Lectura válida normal
+    temperaturaActual = tempLeida;
+    ultimaLecturaValidaTemp = tempLeida;
+    lecturasFallidasTemp = 0;
 }
 
 // ============================================================
-// DETECTOR DE CORTE 4N25 (CON DEBOUNCE ANTI-RUIDO)
+// DETECTOR DE CORTE 4N25 (CON INPUT_PULLUP Y DEBOUNCE DE 2.5s)
 // ============================================================
 
 void procesarDetectorCorte() {
@@ -772,27 +874,20 @@ void procesarDetectorCorte() {
         ultimoEstadoLectura = lectura;
     }
 
-    // Solo confirmamos el cambio si la lectura se mantiene estable durante 500 ms
+    // Solo confirmamos el cambio si la lectura se mantiene estable durante 2.5 segundos
     if ((millis() - ultimoCambioDetector) >= TIEMPO_DEBOUNCE_CORTE_MS) {
-        // HIGH = corte de energía / batería
-        // LOW  = red eléctrica normal
+        // HIGH = optoacoplador apagado / sin tensión (Corte de energía / Batería)
+        // LOW  = optoacoplador conduciendo (Red eléctrica activa)
         enBateriaEnclavado = (lectura == VALOR_CORTE);
     }
 }
 
 // ============================================================
-// ALARMAS FÍSICAS (LED Y BUZZER)
+// ALARMAS FÍSICAS (LED Y BUZZER TONO 2kHz)
 // ============================================================
 
 void procesarAlarmasFisicas() {
-    bool alarmaTemperatura = false;
-
-    if (alerta_temperatura_activa) {
-        if (temperaturaActual < temp_min_segura || temperaturaActual > temp_max_segura) {
-            alarmaTemperatura = true;
-        }
-    }
-
+    bool alarmaTemperatura = alerta_temperatura_activa && (temperaturaActual < temp_min_segura || temperaturaActual > temp_max_segura);
     bool alarmaBateria = alerta_bateria_activa && enBateriaEnclavado;
     bool alarmaModem = alerta_modem_activa && !modemOk;
 
@@ -805,11 +900,16 @@ void procesarAlarmasFisicas() {
         if (millis() - previoBuzzerMillis >= 500) {
             previoBuzzerMillis = millis();
             estadoBuzzer = !estadoBuzzer;
-            digitalWrite(PIN_BUZZER, estadoBuzzer ? HIGH : LOW);
+            if (estadoBuzzer) {
+                tone(PIN_BUZZER, 2000); // Emite tono de 2000 Hz en lugar de solo conmutar pin
+            } else {
+                noTone(PIN_BUZZER);
+            }
         }
     } else {
         digitalWrite(LED_ROJO, LOW);
         digitalWrite(LED_VERDE, HIGH);
+        noTone(PIN_BUZZER);
         digitalWrite(PIN_BUZZER, LOW);
         estadoBuzzer = false;
     }
@@ -829,6 +929,8 @@ void procesarComandosSerial() {
 
     if (comando.equalsIgnoreCase("SMSPRUEBA")) {
         enviarSMSPrueba();
+    } else if (comando.equalsIgnoreCase("SALDO") || comando.equalsIgnoreCase("CONSULTARSALDO")) {
+        consultarSaldoSIM("226");
     } else {
         Serial.print("[SERIAL] Comando desconocido: ");
         Serial.println(comando);
@@ -848,22 +950,24 @@ void setup() {
     Serial.println("       FREEZERGUARD ESP32");
     Serial.println("========================================");
 
-    // Pines
+    // Pines (CRÍTICO: INPUT_PULLUP previene pin flotante en 4N25 al estar desenchufado)
     pinMode(LED_VERDE, OUTPUT);
     pinMode(LED_ROJO, OUTPUT);
     pinMode(PIN_BUZZER, OUTPUT);
-    pinMode(PIN_DETECTOR, INPUT);
+    pinMode(PIN_DETECTOR, INPUT_PULLUP);
 
     digitalWrite(LED_VERDE, LOW);
     digitalWrite(LED_ROJO, LOW);
+    noTone(PIN_BUZZER);
     digitalWrite(PIN_BUZZER, LOW);
 
     // Sensor de temperatura
     sensors.begin();
     sensors.requestTemperatures();
     float tempIni = sensors.getTempCByIndex(0);
-    if (tempIni != DEVICE_DISCONNECTED_C) {
+    if (tempIni != DEVICE_DISCONNECTED_C && tempIni != 85.0f) {
         temperaturaActual = tempIni;
+        ultimaLecturaValidaTemp = tempIni;
     }
 
     Serial.print("[TEMP] Temperatura inicial: ");
@@ -885,25 +989,25 @@ void setup() {
     // WiFi
     conectarWiFi();
 
-    // Primera telemetría (obtiene parámetros del servidor como telefonos_sms y envio_sms_activo)
+    // Primera telemetría (obtiene parámetros del servidor como telefonos_sms, plantilla_sms_cuerpo y envio_sms_activo)
     ejecutarEnvioTelemetria("INICIO");
 
     // SMS de inicio (respetando configuración y número devuelto por backend)
-    if (modemOk && NUMERO_DESTINO_SMS.length() >= 8 && envio_sms_activo) {
+    if (modemOk && NUMERO_DESTINO_SMS.length() >= 3 && envio_sms_activo) {
         enviarSMSInicio();
     } else {
         Serial.println();
         Serial.println("[SMS] No se envía SMS de inicio.");
         if (!modemOk) Serial.println("[SMS] Motivo: módem no disponible.");
         if (!envio_sms_activo) Serial.println("[SMS] Motivo: envío de SMS desactivado en servidor.");
-        if (NUMERO_DESTINO_SMS.length() < 8) Serial.println("[SMS] Motivo: no hay número válido configurado.");
+        if (NUMERO_DESTINO_SMS.length() < 3) Serial.println("[SMS] Motivo: no hay número válido configurado.");
     }
 
     Serial.println();
     Serial.println("========================================");
     Serial.println("FREEZERGUARD INICIADO");
     Serial.println("========================================");
-    Serial.println("Escriba SMSPRUEBA en la consola serial para enviar un SMS de prueba.");
+    Serial.println("Comandos serial: SMSPRUEBA | SALDO");
 
     previoMillis = millis();
     previoImpresion = millis();
@@ -917,19 +1021,22 @@ void loop() {
     // 1. Comandos Serial
     procesarComandosSerial();
 
-    // 2. Muestreo de Temperatura (no bloqueante)
+    // 2. Muestreo de Temperatura (no bloqueante + filtro anti-ruido)
     leerTemperatura();
 
-    // 3. Detector de corte 4N25 (con debounce de 500 ms)
+    // 3. Detector de corte 4N25 (INPUT_PULLUP + debounce de 2.5s)
     procesarDetectorCorte();
 
-    // 4. Alarmas físicas (LEDs y Buzzer)
+    // 4. Alarmas físicas (LEDs y Buzzer Tono 2kHz)
     procesarAlarmasFisicas();
 
     // 5. Health Check periódico del módem (cada 60 segundos)
     verificarSaludModem();
 
-    // 6. Detectar cambio de estado de energía (Corte / Restauración)
+    // 6. Monitorear disparo de SMS por Temperatura Fuera de Rango
+    verificarAlertaTemperaturaSMS();
+
+    // 7. Detectar cambio de estado de energía (Corte / Restauración)
     if (enBateriaEnclavado != estadoBateriaAnterior) {
         if (enBateriaEnclavado) {
             Serial.println();
@@ -958,7 +1065,7 @@ void loop() {
         estadoBateriaAnterior = enBateriaEnclavado;
     }
 
-    // 7. Monitoreo por consola serial periódicamente
+    // 8. Monitoreo por consola serial periódicamente
     if (millis() - previoImpresion >= 1000) {
         previoImpresion = millis();
 
@@ -970,7 +1077,7 @@ void loop() {
         Serial.println(modemOk ? "OK" : "ERROR");
     }
 
-    // 8. Telemetría periódica programada
+    // 9. Telemetría periódica programada
     unsigned long intervaloMs = (unsigned long)(intervalo_telemetria > 0 ? intervalo_telemetria : 5) * 1000UL;
 
     if (millis() - previoMillis >= intervaloMs) {
@@ -978,5 +1085,5 @@ void loop() {
         ejecutarEnvioTelemetria("PERIODICA");
     }
 
-    delay(10); // Pequeña pausa para reducir consumo y ceder CPU
+    delay(10); // Pequeña pausa para ceder CPU y reducir consumo
 }
