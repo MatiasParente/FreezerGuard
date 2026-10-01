@@ -27,6 +27,7 @@ class Dispositivo extends Model
         'intervalo_telemetria',
         'wifi_status',
         'telefonos_sms',
+        'solicitud_sms_prueba',
     ];
 
     protected $casts = [
@@ -40,6 +41,7 @@ class Dispositivo extends Model
         'temp_max_default' => 'float',
         'intervalo_telemetria' => 'integer',
         'wifi_status' => 'integer',
+        'solicitud_sms_prueba' => 'boolean',
     ];
 
     //obtener el freezer asociado con el dispositivo

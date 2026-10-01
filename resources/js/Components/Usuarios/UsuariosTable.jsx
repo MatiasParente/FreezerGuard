@@ -28,6 +28,11 @@ export default function UsuariosTable({
     const [restoringUser, setRestoringUser] = useState(null);
     const [forceDeletingUser, setForceDeletingUser] = useState(null);
 
+    const handleToggleAdmin = (targetUser) => {
+        if (authUser?.id === targetUser.id) return;
+        router.post(route('usuarios.toggle-admin', targetUser.id), {}, { preserveScroll: true });
+    };
+
     // búsqueda por correo o nombre
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -183,6 +188,27 @@ export default function UsuariosTable({
                                         <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                                             {!isInactiveMode ? (
                                                 <>
+                                                    <button
+                                                        onClick={() => handleToggleAdmin(user)}
+                                                        disabled={isSelf}
+                                                        title={
+                                                            isSelf
+                                                                ? 'No puedes cambiar tu propio rol de Administrador'
+                                                                : user.is_general_admin
+                                                                ? 'Retirar rango de Admin General'
+                                                                : 'Asignar como Admin General'
+                                                        }
+                                                        className={`inline-flex items-center justify-center p-2 rounded-lg border transition-all shadow-sm ${
+                                                            isSelf
+                                                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                                : user.is_general_admin
+                                                                ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 border-purple-300 hover:scale-105'
+                                                                : 'bg-slate-50 hover:bg-purple-50 text-slate-600 hover:text-purple-600 border-slate-200 hover:scale-105'
+                                                        }`}
+                                                    >
+                                                        <ShieldCheck className="w-4 h-4" />
+                                                    </button>
+
                                                     <button
                                                         onClick={() => onOpenResetModal(user)}
                                                         title="Resetear Contraseña"

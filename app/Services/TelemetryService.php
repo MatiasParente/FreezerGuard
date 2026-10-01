@@ -52,6 +52,11 @@ class TelemetryService
         // Calcular configuración segura para enviar al ESP32 vía Node-RED
         $configuracionCalculada = $this->obtenerConfiguracionSegura($dispositivo);
 
+        // Si se envió la señal de prueba de SMS a la ESP32, reseteamos la bandera
+        if ($dispositivo && $dispositivo->solicitud_sms_prueba) {
+            $dispositivo->update(['solicitud_sms_prueba' => false]);
+        }
+
         $message = empty($alertasGeneradas) 
             ? 'Medición guardada correctamente' 
             : 'Medición guardada. Se generaron ' . count($alertasGeneradas) . ' alerta(s).';
@@ -150,6 +155,7 @@ class TelemetryService
                 'envio_email_activo' => (bool)$configSistema->envio_email_activo,
                 'envio_sms_activo' => (bool)$configSistema->envio_sms_activo,
                 'plantilla_sms_cuerpo' => $configSistema->plantilla_sms_cuerpo,
+                'solicitud_sms_prueba' => false,
             ];
         }
 
@@ -180,6 +186,7 @@ class TelemetryService
             'envio_email_activo' => (bool)$configSistema->envio_email_activo,
             'envio_sms_activo' => (bool)$configSistema->envio_sms_activo,
             'plantilla_sms_cuerpo' => $configSistema->plantilla_sms_cuerpo,
+            'solicitud_sms_prueba' => (bool)($dispositivo->solicitud_sms_prueba ?? false),
         ];
     }
 

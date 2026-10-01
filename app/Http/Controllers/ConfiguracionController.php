@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use App\Models\Dispositivo;
 
 class ConfiguracionController extends Controller
@@ -119,7 +120,6 @@ class ConfiguracionController extends Controller
     {
         $dispositivo = Dispositivo::onlyTrashed()->findOrFail($id);
         
-        // Opcional: borrar mediciones y alertas asociadas
         $dispositivo->mediciones()->delete();
         $dispositivo->alertasGeneradas()->delete();
         $dispositivo->forceDelete();
@@ -143,5 +143,20 @@ class ConfiguracionController extends Controller
         $config->update($validated);
 
         return redirect()->back()->with('success', 'Configuración del sistema, canales y plantillas de alerta actualizadas.');
+    }
+
+    public function probarSMS(Request $request): RedirectResponse
+    {
+        $dispositivo = Dispositivo::whereNotNull('telefonos_sms')
+            ->where('telefonos_sms', '!=', '')
+            ->first();
+
+        if (!$dispositivo) {
+            return redirect()->back()->withErrors(['error' => 'No hay ningún dispositivo configurado con número de teléfono para la prueba.']);
+        }
+
+        $dispositivo->update(['solicitud_sms_prueba' => true]);
+
+        return redirect()->back()->with('success', "Solicitud de prueba enviada al dispositivo. La ESP32 enviará un SMS a {$dispositivo->telefonos_sms} en su próximo reporte.");
     }
 }

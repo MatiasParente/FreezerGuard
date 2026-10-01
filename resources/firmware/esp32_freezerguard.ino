@@ -7,6 +7,19 @@
 #include <ArduinoJson.h>
 
 // ============================================================
+// DECLARACIONES ADELANTADAS DE FUNCIONES (FORWARD DECLARATIONS)
+// ============================================================
+
+bool verificarModemAT();
+bool verificarSIM();
+bool verificarRed();
+bool enviarAT(const String& comando, const String& respuestaOK = "OK", unsigned long timeout = 3000);
+void limpiarBufferModem();
+bool enviarSMS(const String& mensaje, bool esEventoPrioritario = false, bool esPrueba = false);
+void ejecutarEnvioTelemetria(const String& motivo);
+String generarMensajeSMS(String tipoAlerta);
+
+// ============================================================
 // CONFIGURACIÓN GENERAL
 // ============================================================
 
@@ -82,7 +95,7 @@ unsigned long ultimoEnvioSMS = 0;
 const unsigned long COOLDOWN_SMS_MS = 60000; // 60 segundos mínimos entre SMS generales
 const unsigned long INTERVALO_MODEM_CHECK_MS = 60000; // Health check del módem cada 60s
 
-// Debounce del detector 4N25 (aumentado a 2500ms para evitar falsos positivos por capacitores de fuente)
+// Debounce del detector 4N25 (2500ms para evitar falsos positivos por capacitores de fuente)
 unsigned long ultimoCambioDetector = 0;
 int ultimoEstadoLectura = LOW;
 const unsigned long TIEMPO_DEBOUNCE_CORTE_MS = 2500; // 2.5 segundos de estabilidad requeridos
@@ -152,8 +165,8 @@ bool esperarRespuesta(
 
 bool enviarAT(
     const String& comando,
-    const String& respuestaOK = "OK",
-    unsigned long timeout = 3000
+    const String& respuestaOK,
+    unsigned long timeout
 ) {
     limpiarBufferModem();
 
@@ -273,63 +286,6 @@ bool verificarRed() {
 }
 
 // ============================================================
-// CONSULTAR SALDO DE LA SIM (VÍA USSD O SMS AL 226 / 611)
-// ============================================================
-
-bool consultarSaldoSIM(const String& numeroConsulta = "226") {
-    if (!modemOk) {
-        Serial.println("[SALDO] Módem no disponible para consultar saldo.");
-        return false;
-    }
-
-    Serial.println();
-    Serial.println("========================================");
-    Serial.println("CONSULTANDO SALDO DE LA SIM");
-    Serial.println("========================================");
-
-    // Intento 1: Comando USSD al servicio (ej: *226# o *611#)
-    String comandoUSSD = "AT+CUSD=1,\"*" + numeroConsulta + "#\",15";
-    Serial.print("[SALDO] Enviando comando USSD: ");
-    Serial.println(comandoUSSD);
-
-    limpiarBufferModem();
-    modem.println(comandoUSSD);
-
-    unsigned long inicio = millis();
-    String respuesta = "";
-    bool ussdOk = false;
-
-    while (millis() - inicio < 8000) {
-        while (modem.available()) {
-            char c = modem.read();
-            respuesta += c;
-            Serial.write(c);
-
-            if (respuesta.indexOf("+CUSD:") >= 0) {
-                ussdOk = true;
-                break;
-            }
-        }
-        if (ussdOk) break;
-        delay(10);
-    }
-
-    if (ussdOk) {
-        Serial.println("\n[SALDO] ¡Respuesta USSD recibida con éxito!");
-        return true;
-    }
-
-    // Intento 2: Enviar SMS de consulta "SALDO" al número 226 / 611
-    Serial.println("\n[SALDO] Intentando consulta vía SMS al " + numeroConsulta + "...");
-    String tempDestino = NUMERO_DESTINO_SMS;
-    NUMERO_DESTINO_SMS = numeroConsulta;
-    bool smsEnviado = enviarSMS("SALDO", true, true);
-    NUMERO_DESTINO_SMS = tempDestino;
-
-    return smsEnviado;
-}
-
-// ============================================================
 // HEALTH CHECK DEL MÓDEM (CADA 60 SEGUNDOS, FUERA DE TELEMETRÍA)
 // ============================================================
 
@@ -437,7 +393,7 @@ bool inicializarModemSMS() {
 // ENVÍO DE SMS (CON PROTECCIÓN ANTI-BLOQUEO SIM Y PRIORIZACIÓN)
 // ============================================================
 
-bool enviarSMS(const String& mensaje, bool esEventoPrioritario = false, bool esPrueba = false) {
+bool enviarSMS(const String& mensaje, bool esEventoPrioritario, bool esPrueba) {
     if (!modemOk) {
         // Intento rápido de recuperación antes de cancelar
         if (verificarModemAT() && verificarSIM()) {
@@ -580,7 +536,7 @@ void enviarSMSInicio() {
 }
 
 // ============================================================
-// SMS DE PRUEBA (IGNORA COOLDOWN)
+// SMS DE PRUEBA (SOLICITADO DESDE WEB O MONITOR SERIAL)
 // ============================================================
 
 void enviarSMSPrueba() {
@@ -589,12 +545,15 @@ void enviarSMSPrueba() {
     Serial.println("SMS DE PRUEBA");
     Serial.println("========================================");
 
-    String mensaje = generarMensajeSMS("PRUEBA DE SMS");
+    String mensaje = "FREEZERGUARD - PRUEBA DE SMS\nDispositivo: #" + String(DEVICE_ID) +
+                     "\nTemp: " + String(temperaturaActual, 1) + " C\nEnergia: " +
+                     (enBateriaEnclavado ? "BATERIA" : "RED") + "\nModem: " + (modemOk ? "OK" : "ERROR");
+
     enviarSMS(mensaje, false, true);
 }
 
 // ============================================================
-// SMS DE CORTE / RESTAURACIÓN (EVENTO PRIORITARIO)
+// SMS DE CORTE / RESTAURACIÓN
 // ============================================================
 
 void enviarSMSAlertaCorte(bool hayCorte) {
@@ -603,8 +562,14 @@ void enviarSMSAlertaCorte(bool hayCorte) {
         return;
     }
 
-    String tipo = hayCorte ? "CORTE DE CORRIENTE" : "CORRIENTE RESTAURADA";
-    String mensaje = generarMensajeSMS(tipo);
+    String mensaje = "";
+    if (hayCorte) {
+        // Alerta inicial: usa la plantilla configurada en la página web
+        mensaje = generarMensajeSMS("CORTE DE CORRIENTE");
+    } else {
+        // Mensaje de confirmación/resolución: HARDCODED por defecto
+        mensaje = "FREEZERGUARD: CORRIENTE RESTAURADA.\nEl dispositivo vuelve a funcionar con red. Temp: " + String(temperaturaActual, 1) + " C";
+    }
 
     // Permite enviar corte y restauración sin trabarse por cooldown (esEventoPrioritario = true)
     enviarSMS(mensaje, true, false);
@@ -625,11 +590,18 @@ void verificarAlertaTemperaturaSMS() {
     if (fueraDeRango != alertaTempSMSActiva) {
         alertaTempSMSActiva = fueraDeRango;
 
-        String tipo = fueraDeRango ? "TEMPERATURA FUERA DE RANGO" : "TEMPERATURA RESTAURADA";
-        String mensaje = generarMensajeSMS(tipo);
-
-        enviarSMS(mensaje, false, false);
-        ejecutarEnvioTelemetria(fueraDeRango ? "ALERTA_TEMPERATURA" : "TEMPERATURA_NORMALIZADA");
+        String mensaje = "";
+        if (fueraDeRango) {
+            // Alerta inicial: usa la plantilla configurada en la página web
+            mensaje = generarMensajeSMS("TEMPERATURA FUERA DE RANGO");
+            enviarSMS(mensaje, false, false);
+            ejecutarEnvioTelemetria("ALERTA_TEMPERATURA");
+        } else {
+            // Mensaje de confirmación/resolución: HARDCODED por defecto
+            mensaje = "FREEZERGUARD: TEMPERATURA RESTAURADA.\nLa temperatura volvio al rango seguro. Temp: " + String(temperaturaActual, 1) + " C";
+            enviarSMS(mensaje, false, false);
+            ejecutarEnvioTelemetria("TEMPERATURA_NORMALIZADA");
+        }
     }
 }
 
@@ -737,6 +709,13 @@ void procesarRespuestaServidor(String respuesta) {
             NUMERO_DESTINO_SMS.trim();
             Serial.print("[SMS] Número obtenido del servidor: ");
             Serial.println(NUMERO_DESTINO_SMS);
+        }
+
+        // Detectar si la página web solicitó una prueba inmediata de SMS
+        if (configuracion["solicitud_sms_prueba"].is<bool>() && configuracion["solicitud_sms_prueba"].as<bool>() == true) {
+            Serial.println();
+            Serial.println("[SMS] Solicitud de prueba de SMS recibida desde la interfaz web.");
+            enviarSMSPrueba();
         }
     }
 
@@ -929,8 +908,6 @@ void procesarComandosSerial() {
 
     if (comando.equalsIgnoreCase("SMSPRUEBA")) {
         enviarSMSPrueba();
-    } else if (comando.equalsIgnoreCase("SALDO") || comando.equalsIgnoreCase("CONSULTARSALDO")) {
-        consultarSaldoSIM("226");
     } else {
         Serial.print("[SERIAL] Comando desconocido: ");
         Serial.println(comando);
@@ -1007,7 +984,7 @@ void setup() {
     Serial.println("========================================");
     Serial.println("FREEZERGUARD INICIADO");
     Serial.println("========================================");
-    Serial.println("Comandos serial: SMSPRUEBA | SALDO");
+    Serial.println("Comando serial: SMSPRUEBA");
 
     previoMillis = millis();
     previoImpresion = millis();

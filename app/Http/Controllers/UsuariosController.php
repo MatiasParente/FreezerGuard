@@ -117,6 +117,27 @@ class UsuariosController extends Controller
     }
 
     /**
+     * Toggle General Admin role for a user (except self).
+     */
+    public function toggleAdmin(Request $request, string $id): RedirectResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        if ($user->id === $request->user()->id) {
+            return redirect()->back()->withErrors(['error' => 'No puedes cambiar tu propio rango de Administrador General.']);
+        }
+
+        $nuevoRol = !$user->is_general_admin;
+        $user->update(['is_general_admin' => $nuevoRol]);
+
+        $mensaje = $nuevoRol
+            ? "Se le han asignado permisos de Administrador General a {$user->name}."
+            : "Se le han retirado los permisos de Administrador General a {$user->name}.";
+
+        return redirect()->back()->with('success', $mensaje);
+    }
+
+    /**
      * Soft delete a user.
      */
     public function destroy(Request $request, User $user): RedirectResponse
@@ -169,7 +190,6 @@ class UsuariosController extends Controller
         $userName = $user->name;
         $userEmail = $user->email;
 
-        // Enviar mail de aviso por eliminación definitiva antes de borrar de la BD
         try {
             Mail::to($userEmail)->send(new UsuarioEliminadoDefinitivoMail($user));
         } catch (\Exception $e) {

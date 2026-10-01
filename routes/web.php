@@ -43,7 +43,7 @@ Route::controller(MuestrasController::class)->group(function () {
     Route::get('/muestras/{muestra}', 'show')->name('muestras.show');
 });
 
-Route::controller(ConfiguracionController::class)->group(function () {
+Route::middleware(['auth', 'admin.general'])->controller(ConfiguracionController::class)->group(function () {
     Route::get('/configuracion', 'index')->name('configuracion.configuracion');
     Route::get('/configuración', 'index'); // Alias for legacy/browser URL with accent
     Route::post('/configuracion/dispositivo', 'storeDispositivo')->name('configuracion.dispositivo.store');
@@ -52,6 +52,7 @@ Route::controller(ConfiguracionController::class)->group(function () {
     Route::post('/configuracion/dispositivo/{id}/restore', 'restoreDispositivo')->name('configuracion.dispositivo.restore');
     Route::delete('/configuracion/dispositivo/{id}/force', 'forceDeleteDispositivo')->name('configuracion.dispositivo.forceDelete');
     Route::put('/configuracion/sistema', 'updateSistemaConfig')->name('configuracion.sistema.update');
+    Route::post('/configuracion/probar-sms', 'probarSMS')->name('configuracion.probar-sms');
     Route::get('/configuracion/{configuracion}', 'show')->name('configuracion.show');
 });
 
@@ -66,6 +67,7 @@ Route::middleware(['auth', 'admin.general'])->controller(\App\Http\Controllers\U
     Route::get('/usuarios', 'index')->name('usuarios.index');
     Route::post('/usuarios', 'store')->name('usuarios.store');
     Route::post('/usuarios/{id}/reset-password', 'resetPassword')->name('usuarios.reset-password');
+    Route::post('/usuarios/{id}/toggle-admin', 'toggleAdmin')->name('usuarios.toggle-admin');
     Route::delete('/usuarios/{user}', 'destroy')->name('usuarios.destroy');
     Route::post('/usuarios/{id}/restore', 'restore')->name('usuarios.restore');
     Route::delete('/usuarios/{id}/force-delete', 'forceDelete')->name('usuarios.force-delete');
