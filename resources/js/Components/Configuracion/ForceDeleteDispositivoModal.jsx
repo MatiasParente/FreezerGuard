@@ -17,9 +17,9 @@ export default function ForceDeleteDispositivoModal({ isOpen, onClose, dispositi
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="md">
+        <Modal title="Eliminar dispositivo definitivamente" show={isOpen} onClose={onClose} maxWidth="md">
             <form onSubmit={handleSubmit} className="p-6">
-                <h2 className="text-lg font-bold text-red-600 mb-2 uppercase tracking-wider">
+                <h2 className="text-lg font-bold text-red-600 mb-2">
                     Eliminación definitiva
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">

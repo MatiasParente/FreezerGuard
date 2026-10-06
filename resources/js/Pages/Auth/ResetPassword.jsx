@@ -36,10 +36,9 @@ export default function ResetPassword({ token, email }) {
                         value={data.email}
                         className="mt-1 block w-full"
                         autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
+                        onChange={(e) => setData('email', e.target.value)} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError id="email-error" message={errors.email} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -53,10 +52,9 @@ export default function ResetPassword({ token, email }) {
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                         isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                        onChange={(e) => setData('password', e.target.value)} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -74,10 +72,9 @@ export default function ResetPassword({ token, email }) {
                         autoComplete="new-password"
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
-                        }
-                    />
+                        } aria-invalid={!!errors.password_confirmation} aria-describedby={errors.password_confirmation ? 'password_confirmation-error' : undefined} />
 
-                    <InputError
+                    <InputError id="password_confirmation-error"
                         message={errors.password_confirmation}
                         className="mt-2"
                     />

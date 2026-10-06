@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root { --fg-canvas: #f3f6fa; --fg-ink: #172b45; --fg-accent: #2359a3; }
+    body { background: var(--fg-canvas); color: var(--fg-ink); }
+    ::selection { background: #dbe9fa; color: #172b45; }
+    :focus-visible { outline: 3px solid var(--fg-accent); outline-offset: 3px; }
+    button, select, input, textarea { accent-color: var(--fg-accent); }
+    button, select, input:not([type='checkbox']):not([type='radio']), textarea { min-height: 2.75rem; }
+    button:disabled { cursor: not-allowed; }
+    h1, h2, h3, h4 { text-wrap: balance; }
+    table { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+    .fg-page { @apply mx-auto w-full max-w-7xl space-y-6; }
+    .fg-panel { @apply overflow-hidden rounded-xl border border-slate-200 bg-white; }
+    .fg-panel-heading { @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6; }
+    .fg-button { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors duration-150 disabled:opacity-60; }
+    .fg-button-primary { @apply fg-button bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800; }
+    .fg-button-secondary { @apply fg-button border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100; }
+    .fg-button-danger { @apply fg-button bg-red-700 text-white hover:bg-red-800 active:bg-red-900; }
+    .fg-disclosure { @apply flex min-h-11 items-center gap-2 rounded-lg text-left text-base font-semibold text-slate-900 hover:text-indigo-700; }
+    .fg-empty { @apply px-4 py-10 text-center text-sm leading-relaxed text-slate-600; }
+    .fg-status { @apply inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold; }
+}
+
+.fg-shell button:has(> svg:only-child) { min-width: 2.75rem; }
+.fg-shell :is(input:not([type='checkbox']):not([type='radio']), select, textarea) { font-size: 1rem; }
+.fg-shell .overflow-x-auto:has(table) { overscroll-behavior-x: contain; }
+.fg-shell table th { font-weight: 600; }
+.fg-shell table td { vertical-align: top; }
+
+@media (max-width: 639px) {
+    .fg-shell .p-6 { padding: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-ping, .animate-pulse { animation: none; }
+    .transition-all, .transition-transform { transition-property: color, background-color, border-color, opacity; }
+    .hover\:scale-105:hover { transform: none; }
+}
+
+.fg-shell :is(a, button, input, select, textarea, summary):focus-visible { outline: 3px solid var(--fg-accent); outline-offset: 3px; }
+.fg-shell label:has(input[type='checkbox']) { min-height: 2.75rem; }
+.fg-shell details > summary { min-height: 2.75rem; display: list-item; align-content: center; }

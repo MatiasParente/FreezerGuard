@@ -14,6 +14,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        $request->validate(['dispositivo_id' => ['nullable', 'integer', 'exists:dispositivos,id']]);
+        $deviceId = $request->input('dispositivo_id');
         // Muestras por vencer
         $muestras = Muestra::with('freezer.dispositivo')->get()->map(function($muestra) {
             $dias = $muestra->vencimiento ? now()->diffInDays($muestra->vencimiento, false) : null;
@@ -52,7 +54,9 @@ class DashboardController extends Controller
         });
 
         // Alertas sin resolver (conteo total)
-        $alertasSinResolverCount = AlertaGenerada::where('estado', '!=', 2)->count();
+        $alertasSinResolverCount = AlertaGenerada::where('estado', '!=', 2)
+            ->when($deviceId, fn ($query) => $query->where('dispositivo_id', $deviceId))
+            ->count();
 
         // Últimas 100 mediciones para gráfico en tiempo real
         $ultimasMediciones = Medicion::with('dispositivo')
@@ -73,6 +77,7 @@ class DashboardController extends Controller
 
         // Alertas paginadas
         $alertas = AlertaGenerada::with(['dispositivo.freezer', 'alerta'])
+            ->when($deviceId, fn ($query) => $query->where('dispositivo_id', $deviceId))
             ->where(function($q) {
                 $q->where('estado', '!=', 2)
                   ->orWhere('fecha_y_hora', '>=', now()->subDays(30));

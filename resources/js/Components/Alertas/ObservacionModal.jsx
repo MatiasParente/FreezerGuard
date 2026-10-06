@@ -1,3 +1,4 @@
+import InputError from '@/Components/InputError';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -7,7 +8,7 @@ import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 export default function ObservacionModal({ isOpen, onClose, alerta = null }) {
-    const { data, setData, put, processing, reset } = useForm({
+    const { data, setData, put, processing, reset, errors } = useForm({
         observacion: '',
     });
 
@@ -29,7 +30,7 @@ export default function ObservacionModal({ isOpen, onClose, alerta = null }) {
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="md">
+        <Modal title="Modificar observación de alerta" show={isOpen} onClose={onClose} maxWidth="md">
             <form onSubmit={submitEdit} className="p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                     Modificar Observación
@@ -40,12 +41,14 @@ export default function ObservacionModal({ isOpen, onClose, alerta = null }) {
                     <TextInput
                         id="observacion"
                         type="text"
+                        maxLength={1000}
                         name="observacion"
                         value={data.observacion}
                         className="mt-1 block w-full"
                         onChange={(e) => setData('observacion', e.target.value)}
                         isFocused={true}
-                    />
+                    aria-invalid={!!errors.observacion} aria-describedby={errors.observacion ? 'observacion-error' : undefined} />
+                    <InputError id="observacion-error" message={errors.observacion} className="mt-2" />
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">

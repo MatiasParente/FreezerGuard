@@ -1,8 +1,20 @@
+import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
 import Pagination from '@/Components/Pagination';
 import TextInput from '@/Components/TextInput';
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { KeyRound, Trash2, UserPlus, ShieldCheck, User as UserIcon, RotateCcw, Search, History } from 'lucide-react';
+import {
+    KeyRound,
+    Trash2,
+    UserPlus,
+    ShieldCheck,
+    User as UserIcon,
+    RotateCcw,
+    Search,
+    History,
+} from 'lucide-react';
 import DeleteUserModal from '@/Components/Usuarios/DeleteUserModal';
 import RestoreUserModal from '@/Components/Usuarios/RestoreUserModal';
 import ForceDeleteUserModal from '@/Components/Usuarios/ForceDeleteUserModal';
@@ -13,6 +25,9 @@ export default function UsuariosTable({
     onOpenAddModal,
     onOpenResetModal,
 }) {
+    const [roleTarget, setRoleTarget] = useState(null);
+    const [roleOpen, setRoleOpen] = useState(false);
+    const { post: postRole, processing: changingRole } = useForm();
     const authUser = usePage().props.auth.user;
     const isInactiveMode = filters?.estado === 'inactivo';
 
@@ -30,7 +45,8 @@ export default function UsuariosTable({
 
     const handleToggleAdmin = (targetUser) => {
         if (authUser?.id === targetUser.id) return;
-        router.post(route('usuarios.toggle-admin', targetUser.id), {}, { preserveScroll: true });
+        setRoleTarget(targetUser);
+        setRoleOpen(true);
     };
 
     // búsqueda por correo o nombre
@@ -46,7 +62,7 @@ export default function UsuariosTable({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -62,7 +78,7 @@ export default function UsuariosTable({
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            }
+            },
         );
     };
 
@@ -71,8 +87,10 @@ export default function UsuariosTable({
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 p-2 rounded-xl">
                 <div>
-                    <h4 className="text-base font-bold text-slate-800 uppercase tracking-wider">
-                        {isInactiveMode ? 'Usuarios inactivos' : 'Lista de Usuarios'}
+                    <h4 className="text-base font-bold text-slate-800">
+                        {isInactiveMode
+                            ? 'Usuarios inactivos'
+                            : 'Lista de Usuarios'}
                     </h4>
                     <p className="text-xs text-slate-500">
                         {isInactiveMode
@@ -83,16 +101,24 @@ export default function UsuariosTable({
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     {/* búsqueda por email/nombre */}
-                    <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64 flex items-center">
+                    <form
+                        onSubmit={handleSearchSubmit}
+                        className="relative w-full sm:w-64 flex items-center"
+                    >
                         <TextInput
                             type="text"
                             name="search"
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            placeholder="Buscar por correo..."
-                            className="w-full pl-9 pr-8 py-2 text-xs rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
+                            aria-label="Buscar usuarios por nombre o correo"
+                            placeholder="Buscar por nombre o correo…"
+                            className="w-full pl-14 pr-3 py-2 text-xs rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        <button type="submit" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <button
+                            aria-label="Buscar usuarios"
+                            type="submit"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-600"
+                        >
                             <Search className="w-4 h-4" />
                         </button>
                     </form>
@@ -103,14 +129,14 @@ export default function UsuariosTable({
                             <>
                                 <button
                                     onClick={onOpenAddModal}
-                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 text-white font-semibold text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg shadow-sm transition ease-in-out duration-150"
+                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition ease-in-out duration-150"
                                 >
                                     <UserPlus className="w-4 h-4" />
                                     Crear usuario
                                 </button>
                                 <button
                                     onClick={toggleEstadoMode}
-                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
                                     <History className="w-4 h-4" />
                                     Historial Inactivos
@@ -119,7 +145,7 @@ export default function UsuariosTable({
                         ) : (
                             <button
                                 onClick={toggleEstadoMode}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
                                 <History className="w-4 h-4" />
                                 Ver Activos
@@ -130,15 +156,28 @@ export default function UsuariosTable({
             </div>
 
             {/* Tabla de Usuarios */}
+            <p className="mb-2 text-xs text-slate-600 sm:hidden">
+                Desliza la tabla para ver todas las columnas.
+            </p>
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
                 <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                    <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                         <tr>
-                            <th className="px-4 py-3">Usuario</th>
-                            <th className="px-4 py-3">Correo Electrónico</th>
-                            <th className="px-4 py-3">Rol / Nivel</th>
-                            <th className="px-4 py-3">Estado</th>
-                            <th className="px-4 py-3 text-right">Acciones</th>
+                            <th scope="col" className="px-4 py-3">
+                                Usuario
+                            </th>
+                            <th scope="col" className="px-4 py-3">
+                                Correo Electrónico
+                            </th>
+                            <th scope="col" className="px-4 py-3">
+                                Rol / Nivel
+                            </th>
+                            <th scope="col" className="px-4 py-3">
+                                Estado
+                            </th>
+                            <th scope="col" className="px-4 py-3 text-right">
+                                Acciones
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -147,24 +186,31 @@ export default function UsuariosTable({
                                 const isSelf = authUser?.id === user.id;
 
                                 return (
-                                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                                    <tr
+                                        key={user.id}
+                                        className="hover:bg-slate-50 transition-colors"
+                                    >
                                         <td className="px-4 py-3 font-medium text-slate-900">
                                             <div className="flex items-center gap-2">
-                                                <span className={`font-bold ${isInactiveMode ? 'line-through text-slate-500' : 'text-slate-800'}`}>
+                                                <span
+                                                    className={`font-bold ${isInactiveMode ? 'line-through text-slate-500' : 'text-slate-800'}`}
+                                                >
                                                     {user.name}
                                                 </span>
                                                 {isSelf && (
-                                                    <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-blue-100 text-blue-700 rounded-md">
+                                                    <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded-md">
                                                         Tú
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 text-slate-600">{user.email}</td>
+                                        <td className="px-4 py-3 text-slate-600">
+                                            {user.email}
+                                        </td>
                                         <td className="px-4 py-3">
                                             {user.is_general_admin ? (
-                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                                                    <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
                                                     Admin General
                                                 </span>
                                             ) : (
@@ -189,42 +235,64 @@ export default function UsuariosTable({
                                             {!isInactiveMode ? (
                                                 <>
                                                     <button
-                                                        onClick={() => handleToggleAdmin(user)}
+                                                        onClick={() =>
+                                                            handleToggleAdmin(
+                                                                user,
+                                                            )
+                                                        }
                                                         disabled={isSelf}
                                                         title={
                                                             isSelf
                                                                 ? 'No puedes cambiar tu propio rol de Administrador'
                                                                 : user.is_general_admin
-                                                                ? 'Retirar rango de Admin General'
-                                                                : 'Asignar como Admin General'
+                                                                  ? 'Retirar rango de Admin General'
+                                                                  : 'Asignar como Admin General'
                                                         }
                                                         className={`inline-flex items-center justify-center p-2 rounded-lg border transition-all shadow-sm ${
                                                             isSelf
                                                                 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                                                                 : user.is_general_admin
-                                                                ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 border-purple-300 hover:scale-105'
-                                                                : 'bg-slate-50 hover:bg-purple-50 text-slate-600 hover:text-purple-600 border-slate-200 hover:scale-105'
+                                                                  ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-300 '
+                                                                  : 'bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border-slate-200 '
                                                         }`}
                                                     >
                                                         <ShieldCheck className="w-4 h-4" />
                                                     </button>
 
                                                     <button
-                                                        onClick={() => onOpenResetModal(user)}
+                                                        onClick={() =>
+                                                            onOpenResetModal(
+                                                                user,
+                                                            )
+                                                        }
+                                                        aria-label="Resetear Contraseña"
                                                         title="Resetear Contraseña"
-                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm hover:scale-105"
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm"
                                                     >
                                                         <KeyRound className="w-4 h-4" />
                                                     </button>
 
                                                     <button
-                                                        onClick={() => setDeletingUser(user)}
+                                                        onClick={() =>
+                                                            setDeletingUser(
+                                                                user,
+                                                            )
+                                                        }
                                                         disabled={isSelf}
-                                                        title={isSelf ? 'No puedes eliminarte a ti mismo' : 'Desactivar usuario'}
+                                                        aria-label={
+                                                            isSelf
+                                                                ? 'No puedes eliminarte a ti mismo'
+                                                                : 'Desactivar usuario'
+                                                        }
+                                                        title={
+                                                            isSelf
+                                                                ? 'No puedes eliminarte a ti mismo'
+                                                                : 'Desactivar usuario'
+                                                        }
                                                         className={`inline-flex items-center justify-center p-2 rounded-lg border transition-all shadow-sm ${
                                                             isSelf
                                                                 ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                                                : 'bg-amber-50 hover:bg-amber-100 text-amber-600 border-amber-200 hover:scale-105'
+                                                                : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-200 '
                                                         }`}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -233,17 +301,27 @@ export default function UsuariosTable({
                                             ) : (
                                                 <>
                                                     <button
-                                                        onClick={() => setRestoringUser(user)}
+                                                        onClick={() =>
+                                                            setRestoringUser(
+                                                                user,
+                                                            )
+                                                        }
+                                                        aria-label="Restaurar usuario"
                                                         title="Restaurar usuario"
-                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm hover:scale-105"
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm"
                                                     >
                                                         <RotateCcw className="w-4 h-4" />
                                                     </button>
 
                                                     <button
-                                                        onClick={() => setForceDeletingUser(user)}
+                                                        onClick={() =>
+                                                            setForceDeletingUser(
+                                                                user,
+                                                            )
+                                                        }
+                                                        aria-label="Eliminar permanentemente"
                                                         title="Eliminar permanentemente"
-                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105"
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -255,7 +333,10 @@ export default function UsuariosTable({
                             })
                         ) : (
                             <tr>
-                                <td colSpan="5" className="px-4 py-8 text-center text-slate-400">
+                                <td
+                                    colSpan="5"
+                                    className="px-4 py-8 text-center text-slate-600"
+                                >
                                     {isInactiveMode
                                         ? 'No hay usuarios inactivos en el registro.'
                                         : 'No hay usuarios registrados.'}
@@ -275,6 +356,44 @@ export default function UsuariosTable({
                 />
             )}
 
+            <Modal
+                title="Cambiar rol de usuario"
+                show={roleOpen}
+                onClose={() => setRoleOpen(false)}
+                maxWidth="md"
+            >
+                <form
+                    className="p-6"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        if (!roleOpen || !roleTarget || changingRole) return;
+                        postRole(
+                            route('usuarios.toggle-admin', roleTarget.id),
+                            {
+                                preserveScroll: true,
+                                onSuccess: () => setRoleOpen(false),
+                            },
+                        );
+                    }}
+                >
+                    <h2 className="text-lg font-semibold text-slate-900">
+                        Cambiar rol de usuario
+                    </h2>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                        {roleTarget?.is_general_admin ? 'Retirar' : 'Asignar'}{' '}
+                        permisos de administración general a{' '}
+                        <strong>{roleTarget?.name}</strong>.
+                    </p>
+                    <div className="mt-6 flex flex-wrap justify-end gap-3">
+                        <SecondaryButton onClick={() => setRoleOpen(false)}>
+                            Cancelar
+                        </SecondaryButton>
+                        <PrimaryButton disabled={changingRole}>
+                            {changingRole ? 'Guardando…' : 'Confirmar cambio'}
+                        </PrimaryButton>
+                    </div>
+                </form>
+            </Modal>
             {/* Modales Desacoplados */}
             <DeleteUserModal
                 isOpen={!!deletingUser}

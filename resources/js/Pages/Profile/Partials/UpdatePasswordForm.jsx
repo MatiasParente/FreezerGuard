@@ -72,10 +72,9 @@ export default function UpdatePasswordForm({ className = '' }) {
                         }
                         type="password"
                         className="mt-1 block w-full"
-                        autoComplete="current-password"
-                    />
+                        autoComplete="current-password" aria-invalid={!!errors.current_password} aria-describedby={errors.current_password ? 'current_password-error' : undefined} />
 
-                    <InputError
+                    <InputError id="current_password-error"
                         message={errors.current_password}
                         className="mt-2"
                     />
@@ -91,10 +90,9 @@ export default function UpdatePasswordForm({ className = '' }) {
                         onChange={(e) => setData('password', e.target.value)}
                         type="password"
                         className="mt-1 block w-full"
-                        autoComplete="new-password"
-                    />
+                        autoComplete="new-password" aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
                 <div>
@@ -111,10 +109,9 @@ export default function UpdatePasswordForm({ className = '' }) {
                         }
                         type="password"
                         className="mt-1 block w-full"
-                        autoComplete="new-password"
-                    />
+                        autoComplete="new-password" aria-invalid={!!errors.password_confirmation} aria-describedby={errors.password_confirmation ? 'password_confirmation-error' : undefined} />
 
-                    <InputError
+                    <InputError id="password_confirmation-error"
                         message={errors.password_confirmation}
                         className="mt-2"
                     />

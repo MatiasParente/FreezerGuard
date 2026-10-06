@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test:front": "node --test tests/frontend/monitoring.test.js"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",

@@ -26,7 +26,7 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="md">
+        <Modal title="Agregar dispositivo" show={isOpen} onClose={onClose} maxWidth="md">
             <form onSubmit={submitAddForm} className="p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                     Agregar Dispositivo
@@ -35,10 +35,10 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
                 <div className="space-y-4">
                     <div>
                         <InputLabel htmlFor="nombre" value="Nombre del Dispositivo" />
-                        <TextInput id="nombre" type="text" className="mt-1 block w-full" value={addForm.data.nombre} onChange={e => addForm.setData('nombre', e.target.value)} required />
-                        <InputError message={addForm.errors.nombre} className="mt-2" />
+                        <TextInput id="nombre" type="text" className="mt-1 block w-full" value={addForm.data.nombre} onChange={e => addForm.setData('nombre', e.target.value)} required aria-invalid={!!addForm.errors.nombre} aria-describedby={addForm.errors.nombre ? 'nombre-error' : undefined} />
+                        <InputError id="nombre-error" message={addForm.errors.nombre} className="mt-2" />
                     </div>
-                    
+
                     <div>
                         <InputLabel htmlFor="descripcion" value="Descripción" />
                         <textarea id="descripcion" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="3" value={addForm.data.descripcion} onChange={e => addForm.setData('descripcion', e.target.value)} />
@@ -72,16 +72,15 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
                     ) : (
                         <div>
                             <InputLabel htmlFor="nueva_ubicacion" value="Nueva Ubicación del Laboratorio" />
-                            <TextInput 
-                                id="nueva_ubicacion" 
-                                type="text" 
-                                className="mt-1 block w-full" 
-                                value={addForm.data.nueva_ubicacion} 
-                                onChange={e => addForm.setData('nueva_ubicacion', e.target.value)} 
-                                required={addForm.data.is_new_freezer} 
-                                placeholder="Ej: Lab Central 1" 
-                            />
-                            <InputError message={addForm.errors.nueva_ubicacion} className="mt-2" />
+                            <TextInput
+                                id="nueva_ubicacion"
+                                type="text"
+                                className="mt-1 block w-full"
+                                value={addForm.data.nueva_ubicacion}
+                                onChange={e => addForm.setData('nueva_ubicacion', e.target.value)}
+                                required={addForm.data.is_new_freezer}
+                                placeholder="Ej: Lab Central 1" aria-invalid={!!addForm.errors.nueva_ubicacion} aria-describedby={addForm.errors.nueva_ubicacion ? 'nueva_ubicacion-error' : undefined} />
+                            <InputError id="nueva_ubicacion-error" message={addForm.errors.nueva_ubicacion} className="mt-2" />
                         </div>
                     )}
                 </div>

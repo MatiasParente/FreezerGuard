@@ -23,31 +23,31 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-bold leading-tight text-slate-800 uppercase tracking-wider">
+                <h1 className="text-2xl font-semibold leading-tight text-slate-900 tracking-tight">
                     Historial de Mediciones
-                </h2>
+                </h1>
             }
         >
             <Head title="Mediciones" />
 
-            <div className="py-6">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-                    <div className="bg-white shadow-sm sm:rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="w-full">
+                <div className="fg-page">
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                         <div className="p-6 text-gray-900">
-                            
+
                             {/* Filtros Toolbar */}
                             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 items-end">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Suministro Eléctrico</label>
-                                    <select name="bateria" defaultValue={filters?.bateria || ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
+                                    <label htmlFor="mediciones-bateria" className="block text-xs font-semibold text-slate-700 mb-1">Suministro Eléctrico</label>
+                                    <select id="mediciones-bateria" name="bateria" value={filters?.bateria ?? ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
                                         <option value="">Todos</option>
                                         <option value="conectada">En Batería (Corte de Luz)</option>
                                         <option value="bateria">Corriente Eléctrica</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Dispositivo</label>
-                                    <select name="dispositivo_id" defaultValue={filters?.dispositivo_id || ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
+                                    <label htmlFor="mediciones-dispositivo_id" className="block text-xs font-semibold text-slate-700 mb-1">Dispositivo</label>
+                                    <select id="mediciones-dispositivo_id" name="dispositivo_id" value={filters?.dispositivo_id ?? ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
                                         <option value="">Todos los Dispositivos</option>
                                         {dispositivos?.map(d => (
                                             <option key={d.id} value={d.id}>{d.nombre}</option>
@@ -55,25 +55,26 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Temp. Mínima (°C)</label>
-                                    <input type="number" step="0.1" name="min_temp" defaultValue={filters?.min_temp || ''} onBlur={handleFilterChange} onKeyDown={e => e.key === 'Enter' && handleFilterChange(e)} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2" placeholder="Ej: -20" />
+                                    <label htmlFor="mediciones-min_temp" className="block text-xs font-semibold text-slate-700 mb-1">Temp. Mínima (°C)</label>
+                                    <input id="mediciones-min_temp" type="number" step="0.1" name="min_temp" key={filters?.min_temp ?? ''} defaultValue={filters?.min_temp ?? ''} onBlur={handleFilterChange} onKeyDown={e => e.key === 'Enter' && handleFilterChange(e)} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2" placeholder="Ej: -20" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Temp. Máxima (°C)</label>
-                                    <input type="number" step="0.1" name="max_temp" defaultValue={filters?.max_temp || ''} onBlur={handleFilterChange} onKeyDown={e => e.key === 'Enter' && handleFilterChange(e)} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2" placeholder="Ej: -10" />
+                                    <label htmlFor="mediciones-max_temp" className="block text-xs font-semibold text-slate-700 mb-1">Temp. Máxima (°C)</label>
+                                    <input id="mediciones-max_temp" type="number" step="0.1" name="max_temp" key={filters?.max_temp ?? ''} defaultValue={filters?.max_temp ?? ''} onBlur={handleFilterChange} onKeyDown={e => e.key === 'Enter' && handleFilterChange(e)} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2" placeholder="Ej: -10" />
                                 </div>
                             </div>
 
                             {/* Tabla de Mediciones */}
+                            <p className="mb-2 text-xs text-slate-600 sm:hidden">Desliza la tabla para ver todas las columnas.</p>
                             <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full whitespace-nowrap text-left text-sm">
-                                    <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                                    <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                                         <tr>
-                                            <th className="px-6 py-4">Fecha y Hora</th>
-                                            <th className="px-6 py-4">Dispositivo / Laboratorio</th>
-                                            <th className="px-6 py-4">Temperatura</th>
-                                            <th className="px-6 py-4">Corriente Eléctrica</th>
-                                            <th className="px-6 py-4 text-right">Acciones</th>
+                                            <th scope="col" className="px-6 py-4">Fecha y Hora</th>
+                                            <th scope="col" className="px-6 py-4">Dispositivo / Laboratorio</th>
+                                            <th scope="col" className="px-6 py-4">Temperatura</th>
+                                            <th scope="col" className="px-6 py-4">Corriente Eléctrica</th>
+                                            <th scope="col" className="px-6 py-4 text-right">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
@@ -104,10 +105,10 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button 
-                                                        onClick={() => eliminarMedicion(medicion.id)} 
-                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105" 
-                                                        title="Eliminar permanentemente"
+                                                    <button
+                                                        onClick={() => eliminarMedicion(medicion.id)}
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
+                                                        aria-label="Eliminar permanentemente" title="Eliminar permanentemente"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -116,7 +117,7 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                         ))}
                                         {mediciones.data.length === 0 && (
                                             <tr>
-                                                <td colSpan="5" className="px-6 py-8 text-center text-slate-400">
+                                                <td colSpan="5" className="px-6 py-8 text-center text-slate-600">
                                                     No hay mediciones registradas.
                                                 </td>
                                             </tr>

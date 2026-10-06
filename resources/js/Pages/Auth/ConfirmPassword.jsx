@@ -38,10 +38,9 @@ export default function ConfirmPassword() {
                         value={data.password}
                         className="mt-1 block w-full"
                         isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                        onChange={(e) => setData('password', e.target.value)} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">

@@ -37,27 +37,28 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl">
                 <div className="flex items-center gap-2">
                     <div>
-                        <h4 className="text-base font-bold uppercase tracking-wide">Usuarios inactivos</h4>
+                        <h4 className="text-base font-bold tracking-wide">Usuarios inactivos</h4>
                         <p className="text-xs">Usuarios previamente eliminados. Puedes restaurarlos o eliminarlos definitivamente.</p>
                     </div>
                 </div>
                 <button
                     onClick={onToggleInactivos}
-                    className="px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition-colors shadow-sm uppercase tracking-wider"
+                    className="px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition-colors shadow-sm"
                 >
                     Ver activos
                 </button>
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+            <p className="mb-2 text-xs text-slate-600 sm:hidden">Desliza la tabla para ver todas las columnas.</p>
+                            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
                 <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                    <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                         <tr>
-                            <th className="px-4 py-3">Administrador</th>
-                            <th className="px-4 py-3">Correo Electrónico</th>
-                            <th className="px-4 py-3">Estado</th>
-                            <th className="px-4 py-3 text-right">Acciones</th>
+                            <th scope="col" className="px-4 py-3">Administrador</th>
+                            <th scope="col" className="px-4 py-3">Correo Electrónico</th>
+                            <th scope="col" className="px-4 py-3">Estado</th>
+                            <th scope="col" className="px-4 py-3 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -78,7 +79,7 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
                                     <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                                         <button
                                             onClick={() => setRestoringUser(user)}
-                                            title="Restaurar administrador"
+                                            aria-label="Restaurar administrador" title="Restaurar administrador"
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 text-xs font-semibold transition-colors"
                                         >
                                             <RotateCcw className="w-3.5 h-3.5" />
@@ -86,7 +87,7 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
 
                                         <button
                                             onClick={() => setForceDeletingUser(user)}
-                                            title="Eliminar permanentemente"
+                                            aria-label="Eliminar permanentemente" title="Eliminar permanentemente"
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -96,7 +97,7 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="px-4 py-8 text-center text-slate-400">
+                                <td colSpan="4" className="px-4 py-8 text-center text-slate-600">
                                     No hay administradores inactivos en el historial.
                                 </td>
                             </tr>
@@ -115,7 +116,7 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
             )}
 
             {/* Restaurar */}
-            <Modal show={!!restoringUser} onClose={() => setRestoringUser(null)} maxWidth="md">
+            <Modal title="Confirmar cambio de usuario" show={!!restoringUser} onClose={() => setRestoringUser(null)} maxWidth="md">
                 <form onSubmit={handleRestoreSubmit} className="p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-2">
                         Restaurar Administrador
@@ -130,7 +131,7 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
                         <button
                             type="submit"
                             disabled={restoring}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors uppercase tracking-wider"
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors"
                         >
                             {restoring ? 'Restaurando...' : 'Restaurar'}
                         </button>
@@ -139,9 +140,9 @@ export default function HistorialUsuariosTable({ usuariosInactivos, onToggleInac
             </Modal>
 
             {/*eliminar definitivamente */}
-            <Modal show={!!forceDeletingUser} onClose={() => setForceDeletingUser(null)} maxWidth="md">
+            <Modal title="Confirmar cambio de usuario" show={!!forceDeletingUser} onClose={() => setForceDeletingUser(null)} maxWidth="md">
                 <form onSubmit={handleForceDeleteSubmit} className="p-6">
-                    <h2 className="text-lg font-bold text-red-600 mb-2 uppercase tracking-wider">
+                    <h2 className="text-lg font-bold text-red-600 mb-2">
                         Eliminación definitiva
                     </h2>
                     <p className="text-sm text-gray-600 mb-6">

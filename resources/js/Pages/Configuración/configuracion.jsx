@@ -7,12 +7,12 @@ import AddDispositivoModal from '@/Components/Configuracion/AddDispositivoModal'
 import EditDispositivoModal from '@/Components/Configuracion/EditDispositivoModal';
 import SistemaConfigForm from '@/Components/Configuracion/SistemaConfigForm';
 
-export default function configuracion({ 
-    dispositivos, 
-    filters, 
-    freezers, 
-    available_freezers, 
-    configuracionSistema 
+export default function configuracion({
+    dispositivos,
+    filters,
+    freezers,
+    available_freezers,
+    configuracionSistema
 }) {
     // Estado desplegable de los acordeones
     const [mostrarDispositivos, setMostrarDispositivos] = useState(true);
@@ -33,24 +33,23 @@ export default function configuracion({
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-bold leading-tight text-slate-800 uppercase tracking-wider">
+                <h1 className="text-2xl font-semibold leading-tight text-slate-900 tracking-tight">
                     Configuración General
-                </h2>
+                </h1>
             }
         >
             <Head title="Configuración" />
 
-            <div className="py-6">
-                <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+            <div className="w-full">
+                <div className="fg-page">
 
                     {/* DISPOSITIVOS Y SENSORES */}
-                    <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-200">
-                        <div 
-                            className="px-6 py-4 flex justify-between items-center cursor-pointer bg-slate-50/80 hover:bg-slate-100/80 transition-colors border-b border-slate-100"
-                            onClick={() => setMostrarDispositivos(!mostrarDispositivos)}
+                    <div className="bg-white rounded-xl overflow-hidden border border-slate-200">
+                        <div
+                            className="px-6 py-4 flex justify-between items-center bg-slate-50/80 hover:bg-slate-100/80 transition-colors border-b border-slate-100"
                         >
-                            <div className="flex items-center gap-3">
-                                <Cpu className="w-5 h-5 text-indigo-600" />
+                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                                <Cpu className="w-5 h-5 shrink-0 text-indigo-600" />
                                 <h3 className="text-lg font-bold text-slate-900">
                                     {isInactiveMode ? 'Historial de Dispositivos Inactivos' : 'Dispositivos y Sensores Activos'}
                                 </h3>
@@ -58,14 +57,13 @@ export default function configuracion({
                                     {isInactiveMode ? `${dispositivos?.total || 0} inactivos` : `${dispositivos?.total || 0} activos`}
                                 </span>
                             </div>
-                            <button className="text-slate-400 hover:text-slate-600">
+                            <button type="button" aria-label={mostrarDispositivos ? 'Ocultar dispositivos' : 'Mostrar dispositivos'} aria-expanded={mostrarDispositivos} aria-controls="device-settings" onClick={() => setMostrarDispositivos(!mostrarDispositivos)} className="text-slate-600 hover:text-indigo-700">
                                 {mostrarDispositivos ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                             </button>
                         </div>
 
-                        {mostrarDispositivos && (
-                            <div className="p-4 sm:p-6 border-t border-slate-100">
-                                <DispositivosTable 
+                        <div id="device-settings" hidden={!mostrarDispositivos} className="border-t border-slate-100">
+                                <DispositivosTable
                                     dispositivos={dispositivos}
                                     filters={filters}
                                     freezers={freezers}
@@ -73,45 +71,41 @@ export default function configuracion({
                                     onOpenEditModal={openEditModal}
                                 />
                             </div>
-                        )}
                     </div>
 
                     {/* configuracion de el mail y la plantilla */}
-                    <div className="bg-white shadow-sm sm:rounded-2xl overflow-hidden border border-slate-200">
-                        <div 
-                            className="px-6 py-4 flex justify-between items-center cursor-pointer bg-slate-50/80 hover:bg-slate-100/80 transition-colors border-b border-slate-100"
-                            onClick={() => setMostrarCorreos(!mostrarCorreos)}
+                    <div className="bg-white rounded-xl overflow-hidden border border-slate-200">
+                        <div
+                            className="px-6 py-4 flex justify-between items-center bg-slate-50/80 hover:bg-slate-100/80 transition-colors border-b border-slate-100"
                         >
-                            <div className="flex items-center gap-3">
-                                <Mail className="w-5 h-5 text-indigo-600" />
-                                <h3 className="text-lg font-bold text-slate-900">Configuración de Correos</h3>
+                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                                <Mail className="w-5 h-5 shrink-0 text-indigo-600" />
+                                <h3 className="text-lg font-bold text-slate-900">Notificaciones por correo y SMS</h3>
                             </div>
-                            <button className="text-slate-400 hover:text-slate-600">
+                            <button type="button" aria-label={mostrarCorreos ? 'Ocultar configuración de notificaciones' : 'Mostrar configuración de notificaciones'} aria-expanded={mostrarCorreos} aria-controls="notification-settings" onClick={() => setMostrarCorreos(!mostrarCorreos)} className="text-slate-600 hover:text-indigo-700">
                                 {mostrarCorreos ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                             </button>
                         </div>
 
-                        {mostrarCorreos && (
-                            <div className="p-4 sm:p-6 border-t border-slate-100">
-                                <SistemaConfigForm 
+                        <div id="notification-settings" hidden={!mostrarCorreos} className="p-4 sm:p-6 border-t border-slate-100">
+                                <SistemaConfigForm
                                     configuracionSistema={configuracionSistema}
                                 />
                             </div>
-                        )}
                     </div>
 
                 </div>
             </div>
 
             {/* Agregar Dispositivo */}
-            <AddDispositivoModal 
+            <AddDispositivoModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 availableFreezers={available_freezers}
             />
 
             {/* editar Dispositivo */}
-            <EditDispositivoModal 
+            <EditDispositivoModal
                 isOpen={isEditModalOpen}
                 onClose={() => {
                     setIsEditModalOpen(false);

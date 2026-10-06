@@ -16,9 +16,9 @@ export default function RestoreDispositivoModal({ isOpen, onClose, dispositivo }
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="md">
+        <Modal title="Restaurar dispositivo" show={isOpen} onClose={onClose} maxWidth="md">
             <form onSubmit={handleSubmit} className="p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-2 uppercase tracking-wider">
+                <h2 className="text-lg font-bold text-gray-900 mb-2">
                     Restaurar dispositivo
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">
@@ -31,7 +31,7 @@ export default function RestoreDispositivoModal({ isOpen, onClose, dispositivo }
                     <button
                         type="submit"
                         disabled={processing}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors uppercase tracking-wider"
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors"
                     >
                         {processing ? 'Restaurando...' : 'Restaurar'}
                     </button>

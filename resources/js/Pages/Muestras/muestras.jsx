@@ -65,58 +65,59 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-bold leading-tight text-slate-800 uppercase tracking-wider">
+                <h1 className="text-2xl font-semibold leading-tight text-slate-900 tracking-tight">
                     {isHistorial ? 'Historial de Muestras (Inactivas)' : 'Muestras Almacenadas'}
-                </h2>
+                </h1>
             }
         >
             <Head title="Muestras" />
 
-            <div className="py-6">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-                    <div className="bg-white shadow-sm sm:rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="w-full">
+                <div className="fg-page">
+                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                         <div className="p-6 text-gray-900">
-                            
+
                             {/* Toolbar de Filtro y Botones */}
                             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                 <div className="w-full sm:w-64">
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Laboratorio (Freezer)</label>
-                                    <select name="freezer_id" defaultValue={filters?.freezer_id || ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
+                                    <label htmlFor="muestras-freezer_id" className="block text-xs font-semibold text-slate-700 mb-1">Laboratorio (Freezer)</label>
+                                    <select id="muestras-freezer_id" name="freezer_id" value={filters?.freezer_id ?? ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
                                         <option value="">Todos los Laboratorios</option>
                                         {freezers?.map(f => (
                                             <option key={f.id} value={f.id}>{f.ubicacion}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex gap-2 items-center">
+                                <div className="flex flex-wrap gap-2 items-center">
                                     {!isHistorial ? (
                                         <>
-                                            <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest shadow-sm transition ease-in-out duration-150">
+                                            <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 border border-transparent rounded-lg font-semibold text-xs text-white shadow-sm transition ease-in-out duration-150">
                                                 <Plus className="w-4 h-4" /> Agregar Muestra
                                             </button>
-                                            <Link href={route('muestras.muestras', { estado: 'inactivo' })} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                            <Link href={route('muestras.muestras', { estado: 'inactivo' })} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                                 <History className="w-4 h-4" /> Historial Inactivas
                                             </Link>
                                         </>
                                     ) : (
-                                        <Link href={route('muestras.muestras', { estado: 'activo' })} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                        <Link href={route('muestras.muestras', { estado: 'activo' })} className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                             <History className="w-4 h-4" /> Ver Activas
                                         </Link>
                                     )}
                                 </div>
                             </div>
 
+                            <p className="mb-2 text-xs text-slate-600 sm:hidden">Desliza la tabla para ver todas las columnas.</p>
                             <div className="overflow-x-auto rounded-xl border border-slate-200">
                                 <table className="w-full text-left text-sm">
-                                    <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                                    <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                                         <tr>
-                                            <th className="px-4 py-3">Muestra</th>
-                                            <th className="px-4 py-3">Dispositivo / Laboratorio</th>
-                                            <th className="px-4 py-3">Cantidad</th>
-                                            <th className="px-4 py-3">Rango Temp.</th>
-                                            <th className="px-4 py-3">Vencimiento</th>
-                                            <th className="px-4 py-3 text-right">Acciones</th>
-                                            <th className="px-3 py-3 w-10"></th>
+                                            <th scope="col" className="px-4 py-3">Muestra</th>
+                                            <th scope="col" className="px-4 py-3">Dispositivo / Laboratorio</th>
+                                            <th scope="col" className="px-4 py-3">Cantidad</th>
+                                            <th scope="col" className="px-4 py-3">Rango Temp.</th>
+                                            <th scope="col" className="px-4 py-3">Vencimiento</th>
+                                            <th scope="col" className="px-4 py-3 text-right">Acciones</th>
+                                            <th scope="col" className="px-3 py-3 w-10"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
@@ -126,7 +127,7 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                     <td className="px-4 py-3">
                                                         <div className="flex items-center gap-3">
                                                             {muestra.has_active_alert ? (
-                                                                <div className="p-2 bg-red-100 text-red-600 rounded-lg animate-pulse" title="¡Alerta activa en el dispositivo!">
+                                                                <div className="p-2 bg-red-100 text-red-600 rounded-lg" title="¡Alerta activa en el dispositivo!">
                                                                     <AlertCircle className="w-5 h-5" />
                                                                 </div>
                                                             ) : (
@@ -156,42 +157,42 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                     <td className="px-4 py-3 whitespace-nowrap">
                                                         {muestra.vencimiento ? (
                                                             <span className="inline-flex items-center gap-1 text-slate-600 text-xs font-medium">
-                                                                <Calendar className="w-4 h-4 text-slate-400" /> {new Date(muestra.vencimiento).toLocaleDateString()}
+                                                                <Calendar className="w-4 h-4 text-slate-600" /> {new Date(muestra.vencimiento).toLocaleDateString()}
                                                             </span>
                                                         ) : (
-                                                            <span className="text-slate-400 text-xs">Sin vencimiento</span>
+                                                            <span className="text-slate-600 text-xs">Sin vencimiento</span>
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                                                         <div className="flex justify-end gap-2">
-                                                            <button 
-                                                                onClick={(e) => openEditModal(muestra, e)} 
-                                                                className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm hover:scale-105" 
-                                                                title="Modificar Muestra"
+                                                            <button
+                                                                onClick={(e) => openEditModal(muestra, e)}
+                                                                className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm"
+                                                                aria-label="Modificar Muestra" title="Modificar Muestra"
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </button>
                                                             {muestra.estado === 'activo' ? (
-                                                                <button 
-                                                                    onClick={(e) => toggleEstado(muestra, 'inactivo', e)} 
-                                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 transition-all shadow-sm hover:scale-105" 
-                                                                    title="Inhabilitar muestra"
+                                                                <button
+                                                                    onClick={(e) => toggleEstado(muestra, 'inactivo', e)}
+                                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition-all shadow-sm"
+                                                                    aria-label="Inhabilitar muestra" title="Inhabilitar muestra"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </button>
                                                             ) : (
                                                                 <>
-                                                                    <button 
-                                                                        onClick={(e) => toggleEstado(muestra, 'activo', e)} 
-                                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm hover:scale-105" 
-                                                                        title="Restaurar muestra"
+                                                                    <button
+                                                                        onClick={(e) => toggleEstado(muestra, 'activo', e)}
+                                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm"
+                                                                        aria-label="Restaurar muestra" title="Restaurar muestra"
                                                                     >
                                                                         <RotateCcw className="w-4 h-4" />
                                                                     </button>
-                                                                    <button 
-                                                                        onClick={(e) => eliminarMuestra(muestra.id, e)} 
-                                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105" 
-                                                                        title="Eliminar permanentemente"
+                                                                    <button
+                                                                        onClick={(e) => eliminarMuestra(muestra.id, e)}
+                                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
+                                                                        aria-label="Eliminar permanentemente" title="Eliminar permanentemente"
                                                                     >
                                                                         <Trash2 className="w-4 h-4" />
                                                                     </button>
@@ -199,13 +200,13 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 text-slate-400 w-10">
+                                                    <td className="px-3 py-3 w-10"><button type="button" aria-label={expandedRows.includes(muestra.id) ? 'Ocultar detalles' : 'Mostrar detalles'} aria-expanded={expandedRows.includes(muestra.id)} aria-controls={`details-${muestra.id}`} onClick={e => { e.stopPropagation(); toggleRow(muestra.id); }} className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100">
                                                         {expandedRows.includes(muestra.id) ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                                                    </td>
+                                                    </button></td>
                                                 </tr>
                                                 {expandedRows.includes(muestra.id) && (
-                                                    <tr className="bg-slate-50/50">
-                                                        <td colSpan="7" className="px-6 py-4 border-l-4 border-indigo-500 whitespace-normal">
+                                                    <tr id={`details-${muestra.id}`} className="bg-slate-50/50">
+                                                        <td colSpan="7" className="px-6 py-4 whitespace-normal">
                                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm whitespace-normal break-words">
                                                                 <div>
                                                                     <span className="font-semibold text-slate-700 block mb-1">Docentes Responsables:</span>
@@ -214,7 +215,7 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                                             {muestra.users.map(u => <li key={u.id} className="break-words">{u.name} ({u.email})</li>)}
                                                                         </ul>
                                                                     ) : (
-                                                                        <span className="text-slate-400 italic">No asignados</span>
+                                                                        <span className="text-slate-600 italic">No asignados</span>
                                                                     )}
                                                                 </div>
                                                                 <div>
@@ -224,12 +225,12 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                                             {muestra.usuarios.map(u => <li key={u.id} className="break-words">{u.nombre}</li>)}
                                                                         </ul>
                                                                     ) : (
-                                                                        <span className="text-slate-400 italic">No asignados</span>
+                                                                        <span className="text-slate-600 italic">No asignados</span>
                                                                     )}
                                                                 </div>
                                                                 <div className="whitespace-normal break-words">
                                                                     <span className="font-semibold text-slate-700 block mb-1">Observaciones:</span>
-                                                                    <p className="text-slate-600 whitespace-pre-wrap break-words leading-relaxed">{muestra.observaciones || <span className="italic text-slate-400">Sin observación</span>}</p>
+                                                                    <p className="text-slate-600 whitespace-pre-wrap break-words leading-relaxed">{muestra.observaciones || <span className="italic text-slate-600">Sin observación</span>}</p>
                                                                 </div>
                                                             </div>
                                                         </td>
@@ -239,7 +240,7 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                         ))}
                                         {muestras.data.length === 0 && (
                                             <tr>
-                                                <td colSpan="7" className="px-6 py-8 text-center text-slate-400">
+                                                <td colSpan="7" className="px-6 py-8 text-center text-slate-600">
                                                     No hay muestras registradas en este estado.
                                                 </td>
                                             </tr>
@@ -250,16 +251,16 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
 
                         </div>
                     </div>
-                    <Pagination 
-                        links={muestras.links} 
-                        currentPage={muestras.current_page} 
-                        lastPage={muestras.last_page} 
+                    <Pagination
+                        links={muestras.links}
+                        currentPage={muestras.current_page}
+                        lastPage={muestras.last_page}
                     />
                 </div>
             </div>
 
             {/* Modal de Muestra Form desacoplado */}
-            <MuestraFormModal 
+            <MuestraFormModal
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 editingMuestra={editingMuestra}

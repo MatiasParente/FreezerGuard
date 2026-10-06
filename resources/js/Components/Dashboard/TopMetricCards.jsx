@@ -1,100 +1,186 @@
-import { useState } from 'react';
-import { Thermometer, Cpu } from 'lucide-react';
+import { Thermometer, Zap, Battery, Bell, Cpu } from 'lucide-react';
+import { readingState } from '@/lib/monitoring';
 
-export default function TopMetricCards({ 
-    dispositivosConEstado = [], 
-    alertasSinResolverCount = 0, 
-    configuracionSistema = {},
-    selectedDeviceId = null 
-}) {
-    const activeDisp = dispositivosConEstado.find(d => String(d.id) === String(selectedDeviceId)) 
-        || (dispositivosConEstado.length > 0 ? dispositivosConEstado[0] : null);
-
-    const ultimaMedicion = activeDisp?.ultima_medicion;
-    const estaEnBateria = ultimaMedicion ? (ultimaMedicion.bateria === true) : false;
-    const estadoAlertasWeb = activeDisp?.estado_alertas || { temperatura: true, bateria: true, vencimiento: true, inactividad: false };
-
-    const envioEmailActivo = configuracionSistema?.envio_email_activo ?? true;
-    const envioSmsActivo = configuracionSistema?.envio_sms_activo ?? true;
-
+function SettingStatus({ label, value }) {
     return (
-        <div className="space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                
-                {/* temperatura */}
-                <div className="bg-blue-600 text-white p-3.5 rounded-xl shadow-md border border-blue-500 flex flex-col justify-between h-28">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-100">Temperatura</span>
-                    </div>
-                    <div>
-                        <div className="text-2xl font-black font-mono tracking-tight text-white">
-                            {ultimaMedicion ? `${Number(ultimaMedicion.temperatura).toFixed(2)} °C` : 'N/D'}
-                        </div>
-                        <p className="text-[10px] text-blue-200 truncate font-medium">
-                            {activeDisp?.nombre || 'ESP32'}
-                        </p>
-                    </div>
-                </div>
+        <span className="inline-flex flex-wrap gap-1 text-sm text-slate-600">
+            {label}:{' '}
+            <strong
+                className={
+                    value === true
+                        ? 'font-medium text-slate-800'
+                        : 'font-medium text-slate-600'
+                }
+            >
+                {value === true
+                    ? 'Activo'
+                    : value === false
+                      ? 'Desactivado'
+                      : 'Sin configurar'}
+            </strong>
+        </span>
+    );
+}
 
-                {/* corriente eléctrica */}
-                <div className={`p-3.5 rounded-xl shadow-md border flex flex-col justify-between h-28 transition-colors ${
-                    estaEnBateria 
-                        ? 'bg-red-600 text-white border-red-500' 
-                        : 'bg-emerald-600 text-white border-emerald-500'
-                }`}>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/90">Corriente eléctrica</span>
-                    <div>
-                        <div className="text-2xl font-black tracking-tight">
-                            {estaEnBateria ? 'Batería' : 'OK'}
-                        </div>
-                        <p className="text-[10px] text-white/80 font-medium">
-                            {estaEnBateria ? 'Corte de Luz detectado' : 'Red Eléctrica Activa'}
-                        </p>
-                    </div>
-                </div>
-
-                {/* estado canales y alertas */}
-                <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-md border border-slate-800 flex flex-col justify-between h-28">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Canales y alertas Web</span>
-                        {alertasSinResolverCount > 0 && (
-                            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" title={`${alertasSinResolverCount} alertas pendientes`}></span>
-                        )}
-                    </div>
-                    
-                    <div className="space-y-1.5">
-                        {/* Canales SMS / Email */}
-                        <div className="flex gap-1 text-[9px] font-bold pb-1 border-b border-slate-800">
-                            <span className={`px-2 py-0.5 rounded flex-1 text-center truncate ${envioEmailActivo ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
-                                Email: {envioEmailActivo ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded flex-1 text-center truncate ${envioSmsActivo ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-500'}`}>
-                                SMS: {envioSmsActivo ? 'ON' : 'OFF'}
-                            </span>
-                        </div>
-
-                        {/* Triggers del dispositivo */}
-                        <div className="grid grid-cols-3 gap-1 text-[8.5px] font-bold">
-                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.temperatura ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                Temp: {estadoAlertasWeb.temperatura ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.bateria ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                Bat: {estadoAlertasWeb.bateria ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.vencimiento ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                Venc: {estadoAlertasWeb.vencimiento ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.inactividad ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                Inact: {estadoAlertasWeb.inactividad ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1 py-0.5 rounded text-center truncate ${estadoAlertasWeb.modem !== false ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                                Módem: {estadoAlertasWeb.modem !== false ? 'ON' : 'OFF'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
+export default function TopMetricCards({
+    dispositivosConEstado = [],
+    alertasSinResolverCount = 0,
+    configuracionSistema = {},
+    selectedDeviceId = null,
+}) {
+    const devices = selectedDeviceId
+        ? dispositivosConEstado.filter(
+              (d) => String(d.id) === String(selectedDeviceId),
+          )
+        : dispositivosConEstado;
+    const activeDevice = selectedDeviceId ? devices[0] : null;
+    return (
+        <section aria-label="Estado de los dispositivos" className="fg-panel">
+            <div className="fg-panel-heading">
+                <h2 className="text-base font-semibold text-slate-900">
+                    {activeDevice
+                        ? 'Estado del dispositivo'
+                        : 'Estado de los dispositivos'}
+                </h2>
+                <span
+                    className={`fg-status ${alertasSinResolverCount > 0 ? 'bg-red-50 text-red-800' : 'bg-slate-100 text-slate-700'}`}
+                >
+                    <Bell aria-hidden="true" className="h-4 w-4" />
+                    {alertasSinResolverCount} alertas sin resolver{' '}
+                    {selectedDeviceId ? 'del dispositivo' : 'en el sistema'}
+                </span>
             </div>
-        </div>
+            {devices.length === 0 ? (
+                <p className="fg-empty">
+                    No hay dispositivos para mostrar. Registra un dispositivo en
+                    Configuración para comenzar a recibir mediciones.
+                </p>
+            ) : (
+                <div className="divide-y divide-slate-200">
+                    {devices.map((device) => {
+                        const reading = device.ultima_medicion;
+                        const { temperature, battery } = readingState(reading);
+                        return (
+                            <article
+                                key={device.id}
+                                className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6 xl:grid-cols-[1.2fr_1fr_1fr]"
+                            >
+                                <div className="min-w-0">
+                                    <h3 className="flex items-center gap-2 font-semibold text-slate-900">
+                                        <Cpu
+                                            aria-hidden="true"
+                                            className="h-4 w-4 shrink-0 text-slate-500"
+                                        />
+                                        <span className="break-words">
+                                            {device.nombre}
+                                        </span>
+                                    </h3>
+                                    <p className="mt-1 text-sm text-slate-600">
+                                        {device.freezer_ubicacion}
+                                    </p>
+                                    <p className="mt-2 text-xs text-slate-600">
+                                        {reading?.fecha_y_hora
+                                            ? 'Última lectura: ' +
+                                              new Date(
+                                                  reading.fecha_y_hora,
+                                              ).toLocaleString('es-UY')
+                                            : 'Aún no se recibieron mediciones'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="flex items-center gap-1.5 text-sm text-slate-600">
+                                        <Thermometer
+                                            aria-hidden="true"
+                                            className="h-4 w-4"
+                                        />
+                                        Última temperatura
+                                    </p>
+                                    <p className="mt-1 text-3xl font-semibold tabular-nums tracking-tight text-slate-900">
+                                        {temperature === null ? (
+                                            <span className="text-base font-medium text-slate-600">
+                                                Sin mediciones
+                                            </span>
+                                        ) : (
+                                            temperature.toLocaleString(
+                                                'es-UY',
+                                                {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                },
+                                            ) + ' °C'
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-slate-600">
+                                        Suministro eléctrico en la última
+                                        lectura
+                                    </p>
+                                    <span
+                                        className={`fg-status mt-2 ${battery === true ? 'bg-red-50 text-red-800' : 'bg-slate-100 text-slate-700'}`}
+                                    >
+                                        {battery === true ? (
+                                            <Battery
+                                                aria-hidden="true"
+                                                className="h-4 w-4"
+                                            />
+                                        ) : (
+                                            <Zap
+                                                aria-hidden="true"
+                                                className="h-4 w-4"
+                                            />
+                                        )}
+                                        {battery === null
+                                            ? 'Sin mediciones'
+                                            : battery
+                                              ? 'En batería · corte de energía'
+                                              : 'Red eléctrica'}
+                                    </span>
+                                </div>
+                            </article>
+                        );
+                    })}
+                </div>
+            )}
+            <details className="border-t border-slate-200 px-4 py-4 sm:px-6">
+                <summary className="cursor-pointer rounded text-sm font-medium text-slate-700">
+                    Canales de notificación y alertas habilitadas
+                </summary>
+                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
+                    <SettingStatus
+                        label="Correo electrónico"
+                        value={configuracionSistema.envio_email_activo}
+                    />
+                    <SettingStatus
+                        label="SMS"
+                        value={configuracionSistema.envio_sms_activo}
+                    />
+                </div>
+                <div className="mt-4 space-y-3">
+                    {devices.map((device) => (
+                        <div key={device.id} className="text-sm">
+                            <p className="mb-1 font-medium text-slate-800">
+                                {device.nombre}
+                            </p>
+                            <div className="flex flex-wrap gap-x-5 gap-y-2">
+                                {[
+                                    ['temperatura', 'Temperatura'],
+                                    ['bateria', 'Corte de energía'],
+                                    ['vencimiento', 'Vencimiento'],
+                                    ['inactividad', 'Inactividad'],
+                                    ['modem', 'Módulo SMS'],
+                                ].map(([key, label]) => (
+                                    <SettingStatus
+                                        key={key}
+                                        label={label}
+                                        value={device.estado_alertas?.[key]}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </details>
+        </section>
     );
 }

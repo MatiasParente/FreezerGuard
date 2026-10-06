@@ -3,9 +3,9 @@ import Pagination from '@/Components/Pagination';
 import { router } from '@inertiajs/react';
 
 export default function HistorialDispositivosTable({ dispositivosInactivos = { data: [], links: [] } }) {
-    
+
     const handleRestore = (id, nombre) => {
-        if (confirm(`¿Deseas restaurar el dispositivo "${nombre || 'inactivo'}" a la lista de activos?`)) {
+        if (confirm(`¿Deseas restaurar el dispositivo"${nombre || 'inactivo'}" a la lista de activos?`)) {
             router.post(route('configuracion.dispositivo.restore', id), {}, {
                 preserveScroll: true,
             });
@@ -13,7 +13,7 @@ export default function HistorialDispositivosTable({ dispositivosInactivos = { d
     };
 
     const handleForceDelete = (id, nombre) => {
-        if (confirm(`¿Estás seguro de eliminar definitivamente el dispositivo "${nombre || 'inactivo'}"? Se borrarán permanentemente sus mediciones y registros.`)) {
+        if (confirm(`¿Estás seguro de eliminar definitivamente el dispositivo"${nombre || 'inactivo'}"? Se borrarán permanentemente sus mediciones y registros.`)) {
             router.delete(route('configuracion.dispositivo.forceDelete', id), {
                 preserveScroll: true,
             });
@@ -28,14 +28,15 @@ export default function HistorialDispositivosTable({ dispositivosInactivos = { d
                         <strong>Los dispositivos inactivos no procesan alertas.</strong>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                    <p className="mb-2 text-xs text-slate-600 sm:hidden">Desliza la tabla para ver todas las columnas.</p>
+                            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
                         <table className="w-full whitespace-nowrap text-left text-sm text-slate-600">
-                            <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                            <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                                 <tr>
-                                    <th className="px-6 py-4">Dispositivo Inactivo</th>
-                                    <th className="px-6 py-4">Laboratorio</th>
-                                    <th className="px-6 py-4">Fecha Desactivación</th>
-                                    <th className="px-6 py-4 text-right">Acciones</th>
+                                    <th scope="col" className="px-6 py-4">Dispositivo Inactivo</th>
+                                    <th scope="col" className="px-6 py-4">Laboratorio</th>
+                                    <th scope="col" className="px-6 py-4">Fecha Desactivación</th>
+                                    <th scope="col" className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
@@ -48,7 +49,7 @@ export default function HistorialDispositivosTable({ dispositivosInactivos = { d
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-slate-700 line-through">{dispositivo.nombre}</span>
-                                                    <span className="text-xs text-slate-400">{dispositivo.descripcion || 'Sin descripción'}</span>
+                                                    <span className="text-xs text-slate-600">{dispositivo.descripcion || 'Sin descripción'}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -62,15 +63,15 @@ export default function HistorialDispositivosTable({ dispositivosInactivos = { d
                                             <div className="flex justify-end items-center gap-2">
                                                 <button
                                                     onClick={() => handleRestore(dispositivo.id, dispositivo.nombre)}
-                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm hover:scale-105"
-                                                    title="Restaurar Dispositivo"
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm"
+                                                    aria-label="Restaurar Dispositivo" title="Restaurar Dispositivo"
                                                 >
                                                     <RotateCcw className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleForceDelete(dispositivo.id, dispositivo.nombre)}
-                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105"
-                                                    title="Eliminar permanentemente"
+                                                    className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
+                                                    aria-label="Eliminar permanentemente" title="Eliminar permanentemente"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>

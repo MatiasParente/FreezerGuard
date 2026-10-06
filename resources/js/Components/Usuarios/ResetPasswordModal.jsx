@@ -18,9 +18,9 @@ export default function ResetPasswordModal({ isOpen, onClose, user }) {
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="md">
+        <Modal title="Restablecer contraseña" show={isOpen} onClose={onClose} maxWidth="md">
             <form onSubmit={handleReset} className="p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-2 uppercase tracking-wider">
+                <h2 className="text-lg font-bold text-gray-900 mb-2">
                     Resetear Contraseña
                 </h2>
                 <p className="text-sm text-gray-600 mb-4">

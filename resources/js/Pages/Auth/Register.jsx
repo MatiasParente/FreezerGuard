@@ -37,10 +37,9 @@ export default function Register() {
                         autoComplete="name"
                         isFocused={true}
                         onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
+                        required aria-invalid={!!errors.name} aria-describedby={errors.name ? 'name-error' : undefined} />
 
-                    <InputError message={errors.name} className="mt-2" />
+                    <InputError id="name-error" message={errors.name} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -54,10 +53,9 @@ export default function Register() {
                         className="mt-1 block w-full"
                         autoComplete="username"
                         onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
+                        required aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError id="email-error" message={errors.email} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -71,10 +69,9 @@ export default function Register() {
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                         onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
+                        required aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -93,10 +90,9 @@ export default function Register() {
                         onChange={(e) =>
                             setData('password_confirmation', e.target.value)
                         }
-                        required
-                    />
+                        required aria-invalid={!!errors.password_confirmation} aria-describedby={errors.password_confirmation ? 'password_confirmation-error' : undefined} />
 
-                    <InputError
+                    <InputError id="password_confirmation-error"
                         message={errors.password_confirmation}
                         className="mt-2"
                     />

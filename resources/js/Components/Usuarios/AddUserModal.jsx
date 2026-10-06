@@ -29,9 +29,9 @@ export default function AddUserModal({ isOpen, onClose }) {
     };
 
     return (
-        <Modal show={isOpen} onClose={handleClose} maxWidth="md">
+        <Modal title="Agregar usuario" show={isOpen} onClose={handleClose} maxWidth="md">
             <form onSubmit={submit} className="p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider">
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
                     Crear Nuevo Usuario
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">
@@ -50,9 +50,8 @@ export default function AddUserModal({ isOpen, onClose }) {
                             placeholder="Ej: Juan Pérez"
                             isFocused={true}
                             onChange={(e) => setData('name', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.name} className="mt-2" />
+                            required aria-invalid={!!errors.name} aria-describedby={errors.name ? 'name-error' : undefined} />
+                        <InputError id="name-error" message={errors.name} className="mt-2" />
                     </div>
 
                     <div>
@@ -65,9 +64,8 @@ export default function AddUserModal({ isOpen, onClose }) {
                             className="mt-1 block w-full"
                             placeholder="ejemplo@correo.com"
                             onChange={(e) => setData('email', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.email} className="mt-2" />
+                            required aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
+                        <InputError id="email-error" message={errors.email} className="mt-2" />
                     </div>
                 </div>
 

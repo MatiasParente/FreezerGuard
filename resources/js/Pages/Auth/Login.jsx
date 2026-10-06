@@ -4,9 +4,9 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -23,17 +23,19 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Iniciar Sesión" />
+            <Head title="Iniciar sesión" />
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Iniciar sesión</h1>
+            <p className="mb-6 mt-2 text-sm text-slate-600">Ingresa con tu cuenta para consultar el monitoreo.</p>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 text-sm font-medium text-green-700">
                     {status}
                 </div>
             )}
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Correo Electronico" />
+                    <InputLabel htmlFor="email" value="Correo electrónico" />
 
                     <TextInput
                         id="email"
@@ -41,12 +43,12 @@ export default function Login({ status, canResetPassword }) {
                         name="email"
                         value={data.email}
                         className="mt-1 block w-full"
+                        required
                         autoComplete="username"
                         isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
+                        onChange={(e) => setData('email', e.target.value)} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError id="email-error" message={errors.email} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -58,15 +60,15 @@ export default function Login({ status, canResetPassword }) {
                         name="password"
                         value={data.password}
                         className="mt-1 block w-full"
+                        required
                         autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                        onChange={(e) => setData('password', e.target.value)} aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
                 <div className="mt-4 block">
-                    <label className="flex items-center">
+                    <label className="flex min-h-11 items-center">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
@@ -82,7 +84,7 @@ export default function Login({ status, canResetPassword }) {
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="w-full" disabled={processing}>
-                        Iniciar Sesión
+                        {processing ? 'Ingresando…' : 'Iniciar sesión'}
                     </PrimaryButton>
                 </div>
             </form>

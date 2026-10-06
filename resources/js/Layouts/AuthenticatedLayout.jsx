@@ -3,148 +3,142 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import NotificationModal from '@/Components/NotificationModal';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { LayoutDashboard, Bell, Activity, FlaskConical, Settings, User, LogOut, Users } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Bell,
+    Activity,
+    FlaskConical,
+    Settings,
+    User,
+    LogOut,
+    Users,
+    Menu,
+    X,
+} from 'lucide-react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
-
+    const [navigationOpen, setNavigationOpen] = useState(false);
+    const links = [
+        ['dashboard', 'Resumen', LayoutDashboard],
+        ['alertas.alertas', 'Alertas', Bell],
+        ['mediciones.mediciones', 'Mediciones', Activity],
+        ['muestras.muestras', 'Muestras', FlaskConical],
+        ...(user?.is_general_admin
+            ? [
+                  ['configuracion.configuracion', 'Configuración', Settings],
+                  ['usuarios.index', 'Usuarios', Users],
+              ]
+            : []),
+    ];
     return (
-        <div className="min-h-screen bg-gray-100 sm:flex">
-            <nav className="w-full bg-white border-b border-gray-200 sm:w-64 sm:h-screen sm:sticky sm:top-0 sm:overflow-y-auto sm:border-b-0 sm:border-r flex flex-col justify-between shrink-0">
-                <div>
-                    <div className="flex items-center justify-between h-[73px] px-3 sm:px-7 border-b border-gray-100">
-                        <Link href={route('home')} className="flex items-center">
-                            <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                            <span className="ml-2 text-lg font-semibold">FreezerGuard</span>
-                        </Link>
-
-                        <div className="flex items-center sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/*enlaces menu*/}
-                    <div className={`sm:block ${showingNavigationDropdown ? 'block' : 'hidden'}`}>
-                        <div className="px-2 py-4 space-y-1">
-                            <ResponsiveNavLink
-                                href={route('dashboard')}
-                                active={route().current('dashboard')}
-                            >
-                                <LayoutDashboard className="w-5 h-5" />
-                                <span className='ml-2'>Resumen</span>
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                href={route('alertas.alertas')}
-                                active={route().current('alertas.alertas')}
-                            >
-                                <Bell className="w-5 h-5" />
-                                <span className='ml-2'>Alertas</span>
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                href={route('mediciones.mediciones')}
-                                active={route().current('mediciones.mediciones')}
-                            >
-                                <Activity className="w-5 h-5" />
-                                <span className='ml-2'>Mediciones</span>
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                href={route('muestras.muestras')}
-                                active={route().current('muestras.muestras')}
-                            >
-                                <FlaskConical className="w-5 h-5" />
-                                <span className='ml-2'>Muestras</span>
-                            </ResponsiveNavLink>
-                            {user?.is_general_admin && (
-                                <ResponsiveNavLink
-                                    href={route('configuracion.configuracion')}
-                                    active={route().current('configuracion.configuracion')}
-                                >
-                                    <Settings className="w-5 h-5" />
-                                    <span className='ml-2'>Configuración</span>
-                                </ResponsiveNavLink>
-                            )}
-                            {user?.is_general_admin && (
-                                <ResponsiveNavLink
-                                    href={route('usuarios.index')}
-                                    active={route().current('usuarios.*')}
-                                >
-                                    <Users className="w-5 h-5" />
-                                    <span className='ml-2'>Usuarios</span>
-                                </ResponsiveNavLink>
-                            )}
-                        </div>
-                    </div>
+        <div className="fg-shell min-h-[100dvh] bg-slate-50 lg:flex">
+            <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-indigo-700"
+            >
+                Saltar al contenido
+            </a>
+            <nav
+                aria-label="Navegación principal"
+                className="flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:sticky lg:top-0 lg:h-[100dvh] lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r"
+            >
+                <div className="flex min-h-20 items-center justify-between gap-2 border-b border-slate-100 px-4 lg:px-5">
+                    <Link
+                        href={route('dashboard')}
+                        className="flex min-h-11 items-center gap-2.5 rounded-lg"
+                    >
+                        <ApplicationLogo
+                            aria-hidden="true"
+                            className="h-10 w-10 shrink-0"
+                        />
+                        <span className="text-lg font-semibold tracking-tight text-slate-900">
+                            FreezerGuard
+                        </span>
+                    </Link>
+                    <button
+                        type="button"
+                        aria-label={
+                            navigationOpen ? 'Cerrar menú' : 'Abrir menú'
+                        }
+                        aria-expanded={navigationOpen}
+                        aria-controls="main-navigation"
+                        onClick={() => setNavigationOpen((open) => !open)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 lg:hidden"
+                    >
+                        {navigationOpen ? (
+                            <X aria-hidden="true" className="h-5 w-5" />
+                        ) : (
+                            <Menu aria-hidden="true" className="h-5 w-5" />
+                        )}
+                    </button>
                 </div>
-
-                <div className={`border-t border-gray-200 p-4 ${showingNavigationDropdown ? 'block' : 'hidden sm:block'}`}>
-                    <div className="space-y-1">
-                        <ResponsiveNavLink href={route('profile.edit')}>
-                            <User className="w-5 h-5" />
-                            <span className='ml-2'>Perfil</span>
+                <div
+                    id="main-navigation"
+                    className={
+                        (navigationOpen ? 'flex' : 'hidden') +
+                        ' flex-1 flex-col lg:flex'
+                    }
+                >
+                    <div className="space-y-1 p-3">
+                        {links.map(([name, label, Icon]) => (
+                            <ResponsiveNavLink
+                                key={name}
+                                href={route(name)}
+                                active={route().current(
+                                    name === 'usuarios.index'
+                                        ? 'usuarios.*'
+                                        : name,
+                                )}
+                                onClick={() => setNavigationOpen(false)}
+                            >
+                                <Icon
+                                    aria-hidden="true"
+                                    className="h-5 w-5 shrink-0"
+                                />
+                                {label}
+                            </ResponsiveNavLink>
+                        ))}
+                    </div>
+                    <div className="mt-auto space-y-1 border-t border-slate-200 p-3">
+                        <p
+                            className="truncate px-3 py-2 text-sm font-medium text-slate-600"
+                            title={user?.name}
+                        >
+                            {user?.name}
+                        </p>
+                        <ResponsiveNavLink
+                            href={route('profile.edit')}
+                            active={route().current('profile.edit')}
+                        >
+                            <User aria-hidden="true" className="h-5 w-5" />
+                            Perfil
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             method="post"
                             href={route('logout')}
                             as="button"
                         >
-                            <LogOut className="w-5 h-5" />
-                            <span className='ml-2'>Cerrar Sesión</span>
+                            <LogOut aria-hidden="true" className="h-5 w-5" />
+                            Cerrar sesión
                         </ResponsiveNavLink>
                     </div>
                 </div>
             </nav>
-
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex min-w-0 flex-1 flex-col">
                 <NotificationModal />
                 {header && (
-                    <header className="bg-white shadow h-[73px] flex items-center">
-                        <div className="w-full px-4 sm:px-6 lg:px-8">
-                            {header}
-                        </div>
+                    <header className="flex min-h-20 items-center border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
+                        <div className="mx-auto w-full max-w-7xl">{header}</div>
                     </header>
                 )}
-
-                <main className="flex-1 p-6">{children}</main>
+                <main
+                    id="main-content"
+                    tabIndex={-1}
+                    className="min-w-0 flex-1 p-4 outline-none sm:p-6 lg:p-8"
+                >
+                    {children}
+                </main>
             </div>
         </div>
     );

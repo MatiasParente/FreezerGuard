@@ -26,7 +26,7 @@ export default function ForgotPassword({ status }) {
             </div>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 text-sm font-medium text-green-700">
                     {status}
                 </div>
             )}
@@ -39,10 +39,9 @@ export default function ForgotPassword({ status }) {
                     value={data.email}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+                    onChange={(e) => setData('email', e.target.value)} aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
 
-                <InputError message={errors.email} className="mt-2" />
+                <InputError id="email-error" message={errors.email} className="mt-2" />
 
                 <div className="mt-4 flex items-center justify-end">
                     <PrimaryButton className="ms-4" disabled={processing}>

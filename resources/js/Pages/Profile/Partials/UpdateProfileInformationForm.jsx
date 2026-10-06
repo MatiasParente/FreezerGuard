@@ -47,10 +47,9 @@ export default function UpdateProfileInformation({
                         onChange={(e) => setData('name', e.target.value)}
                         required
                         isFocused
-                        autoComplete="name"
-                    />
+                        autoComplete="name" aria-invalid={!!errors.name} aria-describedby={errors.name ? 'name-error' : undefined} />
 
-                    <InputError className="mt-2" message={errors.name} />
+                    <InputError id="name-error" className="mt-2" message={errors.name} />
                 </div>
 
                 <div>
@@ -63,10 +62,9 @@ export default function UpdateProfileInformation({
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
-                        autoComplete="username"
-                    />
+                        autoComplete="username" aria-invalid={!!errors.email} aria-describedby={errors.email ? 'email-error' : undefined} />
 
-                    <InputError className="mt-2" message={errors.email} />
+                    <InputError id="email-error" className="mt-2" message={errors.email} />
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (
@@ -84,7 +82,7 @@ export default function UpdateProfileInformation({
                         </p>
 
                         {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
+                            <div className="mt-2 text-sm font-medium text-green-700">
                                 Se ha enviado un nuevo enlace de verificación a tu
                                 dirección de correo electrónico.
                             </div>

@@ -63,7 +63,7 @@ export default function DeleteUserForm({ className = '' }) {
                 Eliminar cuenta
             </DangerButton>
 
-            <Modal show={confirmingUserDeletion} onClose={closeModal}>
+            <Modal title="Eliminar cuenta" show={confirmingUserDeletion} onClose={closeModal}>
                 <form onSubmit={deleteUser} className="p-6">
                     <h2 className="text-lg font-medium text-gray-900">
                         ¿Estás seguro de que deseas eliminar tu cuenta?
@@ -94,10 +94,9 @@ export default function DeleteUserForm({ className = '' }) {
                             }
                             className="mt-1 block w-3/4"
                             isFocused
-                            placeholder="Contraseña"
-                        />
+                            placeholder="Contraseña" aria-invalid={!!errors.password} aria-describedby={errors.password ? 'password-error' : undefined} />
 
-                        <InputError
+                        <InputError id="password-error"
                             message={errors.password}
                             className="mt-2"
                         />

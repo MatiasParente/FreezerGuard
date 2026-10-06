@@ -45,15 +45,15 @@ export default function ApplicationLogo(props) {
             <g stroke="url(#lineGlow)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                 {/* Traza de conexión superior */}
                 <line x1="158" y1="20" x2="158" y2="80" />
-                
+
                 {/*Vértices geométricos del centro*/}
                 <polygon points="158,80 205,110 205,170 158,200 111,170 111,110" fill="none" opacity="0.9" />
-                
+
                 {/*Cruz/Rayo interno protector*/}
                 <path d="M158 95 V185" strokeWidth="3" />
                 <path d="M125 125 L191 155" strokeWidth="3" />
                 <path d="M191 125 L125 155" strokeWidth="3" />
-                
+
                 {/*Nodos de los vértices*/}
                 <circle cx="158" cy="80" r="4" fill="#60A5FA" />
                 <circle cx="205" cy="110" r="4" fill="#60A5FA" />

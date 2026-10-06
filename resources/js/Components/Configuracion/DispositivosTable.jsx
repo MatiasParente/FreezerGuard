@@ -6,11 +6,11 @@ import DeleteDispositivoModal from '@/Components/Configuracion/DeleteDispositivo
 import RestoreDispositivoModal from '@/Components/Configuracion/RestoreDispositivoModal';
 import ForceDeleteDispositivoModal from '@/Components/Configuracion/ForceDeleteDispositivoModal';
 
-export default function DispositivosTable({ 
-    dispositivos = { data: [], links: [] }, 
-    filters = {}, 
-    freezers = [], 
-    onOpenAddModal, 
+export default function DispositivosTable({
+    dispositivos = { data: [], links: [] },
+    filters = {},
+    freezers = [],
+    onOpenAddModal,
     onOpenEditModal
 }) {
     const isInactiveMode = filters?.estado === 'inactivo';
@@ -53,15 +53,15 @@ export default function DispositivosTable({
         <div>
             <div className="overflow-hidden bg-white sm:rounded-xl">
                 <div className="p-6 text-slate-900">
-                    
+
                     {/* Barra Superior de filtros y botones */}
                     <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div className="w-full sm:w-64">
-                            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Laboratorio (Freezer)</label>
-                            <select 
-                                name="freezer_id" 
-                                value={filters?.freezer_id || ''} 
-                                onChange={handleFilterChange} 
+                            <label htmlFor="DispositivosTable-freezer_id" className="block text-xs font-semibold text-slate-700 mb-1">Laboratorio (Freezer)</label>
+                            <select id="DispositivosTable-freezer_id"
+                                name="freezer_id"
+                                value={filters?.freezer_id || ''}
+                                onChange={handleFilterChange}
                                 className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer"
                             >
                                 <option value="">Todos los laboratorios</option>
@@ -72,30 +72,30 @@ export default function DispositivosTable({
                         </div>
 
                         {/* Botones principales */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             {!isInactiveMode ? (
                                 <>
-                                    <button 
-                                        type="button" 
-                                        onClick={onOpenAddModal} 
-                                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white font-semibold text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg shadow-sm transition ease-in-out duration-150"
+                                    <button
+                                        type="button"
+                                        onClick={onOpenAddModal}
+                                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-sm transition ease-in-out duration-150"
                                     >
                                         <Plus className="w-4 h-4" /> Agregar dispositivo
                                     </button>
-                                    
-                                    <button 
-                                        type="button" 
-                                        onClick={toggleInactiveMode} 
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+
+                                    <button
+                                        type="button"
+                                        onClick={toggleInactiveMode}
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                     >
                                         <History className="w-4 h-4" /> Historial inactivos
                                     </button>
                                 </>
                             ) : (
-                                <button 
-                                    type="button" 
-                                    onClick={toggleInactiveMode} 
-                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                <button
+                                    type="button"
+                                    onClick={toggleInactiveMode}
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-300 rounded-lg font-semibold text-xs text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
                                     <History className="w-4 h-4" /> Ver dispositivos activos
                                 </button>
@@ -104,14 +104,15 @@ export default function DispositivosTable({
                     </div>
 
                     {/* Tabla de Dispositivos */}
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                    <p className="mb-2 text-xs text-slate-600 sm:hidden">Desliza la tabla para ver todas las columnas.</p>
+                            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
                         <table className="w-full whitespace-nowrap text-left text-sm text-slate-600">
-                            <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
+                            <thead className="bg-slate-100/70 text-xs text-slate-700 font-semibold border-b border-slate-200">
                                 <tr>
-                                    <th className="px-6 py-4">{isInactiveMode ? 'Dispositivo Inactivo / Laboratorio' : 'Dispositivo / Laboratorio'}</th>
-                                    <th className="px-6 py-4">Intervalo telemetría</th>
-                                    <th className="px-6 py-4">{isInactiveMode ? 'Fecha Desactivación' : 'Alertas Activas'}</th>
-                                    <th className="px-6 py-4 text-right">Acciones</th>
+                                    <th scope="col" className="px-6 py-4">{isInactiveMode ? 'Dispositivo Inactivo / Laboratorio' : 'Dispositivo / Laboratorio'}</th>
+                                    <th scope="col" className="px-6 py-4">Intervalo telemetría</th>
+                                    <th scope="col" className="px-6 py-4">{isInactiveMode ? 'Fecha Desactivación' : 'Alertas Activas'}</th>
+                                    <th scope="col" className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
@@ -119,14 +120,14 @@ export default function DispositivosTable({
                                     <tr key={dispositivo.id} className={`hover:bg-slate-50 transition-colors ${isInactiveMode ? 'bg-slate-50/50' : ''}`}>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className={`p-2 rounded-lg ${isInactiveMode ? 'text-slate-400' : 'text-indigo-700'}`}>
+                                                <div className={`p-2 rounded-lg ${isInactiveMode ? 'text-slate-600' : 'text-indigo-700'}`}>
                                                     <Cpu className="w-5 h-5" />
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className={`font-semibold ${isInactiveMode ? 'text-slate-600 line-through' : 'text-slate-900'}`}>
                                                         {dispositivo.nombre}
                                                     </span>
-                                                    <span className="text-xs text-slate-400">{dispositivo.freezer?.ubicacion || 'No asignado'}</span>
+                                                    <span className="text-xs text-slate-600">{dispositivo.freezer?.ubicacion || 'No asignado'}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -146,7 +147,7 @@ export default function DispositivosTable({
                                                         <span className="px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700 rounded border border-amber-100">Batería</span>
                                                     )}
                                                     {dispositivo.alerta_vencimiento_activa && (
-                                                        <span className="px-2 py-0.5 text-xs font-medium bg-purple-50 text-purple-700 rounded border border-purple-100">Vencimiento</span>
+                                                        <span className="px-2 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700 rounded border border-indigo-100">Vencimiento</span>
                                                     )}
                                                     {dispositivo.alerta_inactividad_activa && (
                                                         <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded border border-blue-100">Inactividad</span>
@@ -162,17 +163,17 @@ export default function DispositivosTable({
                                             <div className="flex justify-end items-center gap-2">
                                                 {!isInactiveMode ? (
                                                     <>
-                                                        <button 
+                                                        <button
                                                             onClick={() => onOpenEditModal(dispositivo)}
-                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm hover:scale-105"
-                                                            title="Configurar Parámetros"
+                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 transition-all shadow-sm"
+                                                            aria-label="Configurar Parámetros" title="Configurar Parámetros"
                                                         >
                                                             <Settings className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleSoftDelete(dispositivo)}
-                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105"
-                                                            title="Desactivar Dispositivo"
+                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
+                                                            aria-label="Desactivar Dispositivo" title="Desactivar Dispositivo"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
@@ -181,15 +182,15 @@ export default function DispositivosTable({
                                                     <>
                                                         <button
                                                             onClick={() => handleRestore(dispositivo)}
-                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm hover:scale-105"
-                                                            title="Restaurar Dispositivo"
+                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 transition-all shadow-sm"
+                                                            aria-label="Restaurar Dispositivo" title="Restaurar Dispositivo"
                                                         >
                                                             <RotateCcw className="w-4 h-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleForceDelete(dispositivo)}
-                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm hover:scale-105"
-                                                            title="Eliminar permanentemente"
+                                                            className="inline-flex items-center justify-center p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-all shadow-sm"
+                                                            aria-label="Eliminar permanentemente" title="Eliminar permanentemente"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
@@ -219,19 +220,19 @@ export default function DispositivosTable({
             />
 
             {/* Modales de Confirmación */}
-            <DeleteDispositivoModal 
+            <DeleteDispositivoModal
                 isOpen={deletingDispositivo !== null}
                 onClose={() => setDeletingDispositivo(null)}
                 dispositivo={deletingDispositivo}
             />
 
-            <RestoreDispositivoModal 
+            <RestoreDispositivoModal
                 isOpen={restoringDispositivo !== null}
                 onClose={() => setRestoringDispositivo(null)}
                 dispositivo={restoringDispositivo}
             />
 
-            <ForceDeleteDispositivoModal 
+            <ForceDeleteDispositivoModal
                 isOpen={forceDeletingDispositivo !== null}
                 onClose={() => setForceDeletingDispositivo(null)}
                 dispositivo={forceDeletingDispositivo}

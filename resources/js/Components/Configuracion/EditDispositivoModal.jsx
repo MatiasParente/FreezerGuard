@@ -53,7 +53,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="2xl">
+        <Modal title="Configuración del dispositivo" show={isOpen} onClose={onClose} maxWidth="2xl">
             <form onSubmit={submitEditForm} className="p-6">
                 <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
                     <Settings className="w-6 h-6 text-indigo-600" />
@@ -63,48 +63,48 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
+
                     {/* Datos Básicos */}
                     <div className="space-y-4 md:col-span-2 bg-slate-50 p-4 rounded-lg border border-slate-200">
                         <h3 className="font-semibold text-slate-800 text-sm flex items-center gap-1.5">
-                            <Cpu className="w-4 h-4 text-purple-600" /> Datos principales
+                            <Cpu className="w-4 h-4 text-indigo-600" /> Datos principales
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="md:col-span-1">
                                 <InputLabel htmlFor="edit_nombre" value="Nombre del dispositivo" />
-                                <TextInput id="edit_nombre" type="text" className="mt-1 block w-full" value={editForm.data.nombre} onChange={e => editForm.setData('nombre', e.target.value)} required />
-                                <InputError message={editForm.errors.nombre} className="mt-2" />
+                                <TextInput id="edit_nombre" type="text" className="mt-1 block w-full" value={editForm.data.nombre} onChange={e => editForm.setData('nombre', e.target.value)} required aria-invalid={!!editForm.errors.nombre} aria-describedby={editForm.errors.nombre ? 'edit_nombre-error' : undefined} />
+                                <InputError id="edit_nombre-error" message={editForm.errors.nombre} className="mt-2" />
                             </div>
                             <div className="md:col-span-1">
                                 <InputLabel htmlFor="edit_descripcion" value="Descripción" />
-                                <TextInput id="edit_descripcion" type="text" className="mt-1 block w-full" value={editForm.data.descripcion} onChange={e => editForm.setData('descripcion', e.target.value)} />
-                                <InputError message={editForm.errors.descripcion} className="mt-2" />
+                                <TextInput id="edit_descripcion" type="text" className="mt-1 block w-full" value={editForm.data.descripcion} onChange={e => editForm.setData('descripcion', e.target.value)} aria-invalid={!!editForm.errors.descripcion} aria-describedby={editForm.errors.descripcion ? 'edit_descripcion-error' : undefined} />
+                                <InputError id="edit_descripcion-error" message={editForm.errors.descripcion} className="mt-2" />
                             </div>
                             <div className="md:col-span-1">
                                 <InputLabel htmlFor="intervalo_telemetria" value="Envío mediciones (Seg)" />
-                                <TextInput id="intervalo_telemetria" type="number" min="1" max="3600" className="mt-1 block w-full" value={editForm.data.intervalo_telemetria} onChange={e => editForm.setData('intervalo_telemetria', e.target.value)} required />
-                                <InputError message={editForm.errors.intervalo_telemetria} className="mt-2" />
+                                <TextInput id="intervalo_telemetria" type="number" min="1" max="3600" className="mt-1 block w-full" value={editForm.data.intervalo_telemetria} onChange={e => editForm.setData('intervalo_telemetria', e.target.value)} required aria-invalid={!!editForm.errors.intervalo_telemetria} aria-describedby={editForm.errors.intervalo_telemetria ? 'intervalo_telemetria-error' : undefined} />
+                                <InputError id="intervalo_telemetria-error" message={editForm.errors.intervalo_telemetria} className="mt-2" />
                             </div>
                         </div>
                     </div>
 
                     {/* Configuración SMS*/}
-                    <div className="space-y-4 md:col-span-2 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
-                        <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
-                            <PhoneCall className="w-4 h-4 text-purple-600" /> Configuración SMS
+                    <div className="space-y-4 md:col-span-2 bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+                        <h3 className="font-semibold text-indigo-900 text-sm flex items-center gap-1.5">
+                            <PhoneCall className="w-4 h-4 text-indigo-600" /> Configuración SMS
                         </h3>
                         <div>
                             <InputLabel htmlFor="telefonos_sms" value="Número(s) de teléfono para SMS" />
                             <TextInput id="telefonos_sms" type="text" placeholder="+59898485023, +59899123456" className="mt-1 block w-full text-xs" value={editForm.data.telefonos_sms} onChange={e => editForm.setData('telefonos_sms', e.target.value)} />
-                            <p className="text-[11px] text-purple-700 mt-1">Si son varios números de teléfono, sepáralos por comas.</p>
+                            <p className="text-xs text-indigo-700 mt-1">Si son varios números de teléfono, sepáralos por comas.</p>
                             <InputError message={editForm.errors.telefonos_sms} className="mt-1" />
                         </div>
                     </div>
 
                     {/* Control de alertas */}
-                    <div className="space-y-3 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
-                        <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
-                            <Bell className="w-4 h-4 text-purple-600" /> Estado de alertas
+                    <div className="space-y-3 bg-indigo-50/50 p-4 rounded-lg border border-indigo-100">
+                        <h3 className="font-semibold text-indigo-900 text-sm flex items-center gap-1.5">
+                            <Bell className="w-4 h-4 text-indigo-600" /> Estado de alertas
                         </h3>
 
                         <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
@@ -138,7 +138,7 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                         </label>
 
                         <div className="space-y-1 border-t border-red-100/50 pt-1 mt-1">
-                            <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
                                     <input
                                         type="checkbox"
@@ -149,17 +149,17 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                                     <span>Inactividad sin telemetría</span>
                                 </label>
                                 <div className="flex items-center gap-1.5 bg-white px-2 py-0.5 rounded border border-gray-200">
-                                    <span className="text-[11px] text-gray-500 font-medium">Límite:</span>
+                                    <span className="text-xs text-gray-500 font-medium">Límite:</span>
                                     <input
                                         type="number"
                                         min="1"
                                         max="10080"
-                                        title="Minutos de inactividad"
-                                        className="w-14 py-0.5 px-1 text-xs text-center rounded border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
+                                        aria-label="Minutos de inactividad" title="Minutos de inactividad"
+                                        className="w-24 py-0.5 px-1 text-xs text-center rounded border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 font-mono"
                                         value={editForm.data.minutos_inactividad}
                                         onChange={e => editForm.setData('minutos_inactividad', e.target.value)}
                                     />
-                                    <span className="text-[11px] text-gray-500 font-medium">min</span>
+                                    <span className="text-xs text-gray-500 font-medium">min</span>
                                 </div>
                             </div>
                             <InputError message={editForm.errors.minutos_inactividad} className="mt-1" />
@@ -186,11 +186,13 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
                         </p>
                         <div>
                             <InputLabel htmlFor="temp_min_default" value="Temperatura mínima (°C)" />
-                            <TextInput id="temp_min_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_min_default} onChange={e => editForm.setData('temp_min_default', e.target.value)} required />
+                            <TextInput id="temp_min_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_min_default} onChange={e => editForm.setData('temp_min_default', e.target.value)} required aria-invalid={!!editForm.errors.temp_min_default} aria-describedby={editForm.errors.temp_min_default ? 'temp_min_default-error' : undefined} />
+                            <InputError id="temp_min_default-error" message={editForm.errors.temp_min_default} className="mt-2" />
                         </div>
                         <div>
                             <InputLabel htmlFor="temp_max_default" value="Temperatura máxima (°C)" />
-                            <TextInput id="temp_max_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_max_default} onChange={e => editForm.setData('temp_max_default', e.target.value)} required />
+                            <TextInput id="temp_max_default" type="number" step="0.1" className="mt-1 block w-full" value={editForm.data.temp_max_default} onChange={e => editForm.setData('temp_max_default', e.target.value)} required aria-invalid={!!editForm.errors.temp_max_default} aria-describedby={editForm.errors.temp_max_default ? 'temp_max_default-error' : undefined} />
+                            <InputError id="temp_max_default-error" message={editForm.errors.temp_max_default} className="mt-2" />
                         </div>
                     </div>
 
