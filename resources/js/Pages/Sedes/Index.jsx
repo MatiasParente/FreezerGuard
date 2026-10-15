@@ -214,7 +214,7 @@ export default function Index({ sedes, freezersSinLaboratorio, usuarios, filtros
                     </div>
 
                     {/* Tabs de navegación */}
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center justify-center gap-3">
                         {[
                             ['estructura', `Estructura (${sedes.length})`, Building2],
                             ['participantes', `Participantes (${usuarios.total})`, Users],

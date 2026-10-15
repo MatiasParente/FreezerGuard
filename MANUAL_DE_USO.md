@@ -209,7 +209,7 @@ Ubicado en la ruta **/mediciones**, este módulo funciona como la bitácora de a
 
 Accesible desde **/muestras**, es el catálogo de todo el material biológico, químico y reactivos custodiados en los freezers.
 
-<!-- No hay captura dedicada de la pantalla de muestras actualmente -->
+![Muestras](imagenes/Muestras.PNG)
 
 ### 6.1 Indicador Visual de Riesgo en Freezer
 Si un freezer experimenta una falla térmica o un corte de energía, todas las muestras almacenadas en ese equipo se resaltarán automáticamente con fondo rojizo y un ícono de advertencia pulsante. Esto permite al personal identificar al instante qué material debe ser reubicado con urgencia.
@@ -245,7 +245,7 @@ Para preservar la trazabilidad científica de las investigaciones, las muestras 
 
 Accesible desde **/alertas**, constituye el centro neurálgico de incidentes de la plataforma.
 
-![Alertas del Dashboard](imagenes/alertas%20dashboard.PNG)
+![Alertas del Dashboard](imagenes/alertas dashboard.PNG)
 
 ### 7.1 Estados de Alerta: Pendiente vs Resuelta
 * **Icono Rojo `Pendiente`:** El problema persiste o aún no ha sido verificado por un operador.
@@ -274,7 +274,7 @@ Cuando se produce una alerta crítica, el sistema despacha correos automáticos 
 
 Accesible únicamente para usuarios con permisos directivos o de administración general desde **/usuarios**.
 
-<!-- No hay captura dedicada de la pantalla de usuarios actualmente -->
+![Usuarios](imagenes/usuarios.PNG)
 
 ### 8.1 Creación de Usuarios
 * **Botón `CREAR USUARIO`:** Despliega un formulario modal donde se ingresan:
@@ -320,6 +320,8 @@ La pestaña **Estructura** muestra una guía de pasos y la jerarquía organizaci
 
 ### 9.2 Asignación de Freezers a Laboratorios
 
+![Asignación de Freezers](imagenes/sedes.PNG)
+
 En la sección inferior de la pestaña Estructura se muestra la lista de **Freezers sin Laboratorio** (pendientes de asignación). Para cada freezer:
 * Selecciona el laboratorio de destino del desplegable (organizado como *"Sede / Laboratorio"*).
 * Presiona **Asignar** para vincular el freezer al laboratorio.
@@ -330,6 +332,8 @@ En la sección inferior de la pestaña Estructura se muestra la lista de **Freez
 ### 9.3 Participantes de Muestras
 
 La pestaña **Participantes** permite gestionar a los alumnos y colaboradores que participan de muestras pero no tienen cuenta de acceso al sistema.
+
+![Participantes](imagenes/participantes.PNG)
 
 * **Botón `Crear Participante`:** Despliega un formulario con:
   * Nombre completo.
@@ -360,6 +364,9 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 ![Configuración de Dispositivos](imagenes/configuracion.PNG)
 
 * **Botón `AGREGAR DISPOSITIVO`:** Permite registrar una nueva placa ESP32 y asociarla a un freezer existente o crear una nueva ubicación física de laboratorio (ej. *"Lab Biología Molecular - Freezer 3"*).
+
+![Configurar Dispositivo](imagenes/configurar dispositivo.PNG)
+
 * **Botón `Configurar Dispositivo`:** Despliega el modal de ajuste fino del microcontrolador:
   1. **Envío de Telemetría (Segundos):** Frecuencia con la que el ESP32 transmite datos vía WiFi/MQTT (por defecto: `5 segundos`).
   2. **Números de Teléfono para SMS:** Números móviles de guardia (ej: `+59898485023, +59899123456`) que recibirán mensajes de texto urgentes si falla la red o sube la temperatura.
@@ -375,7 +382,7 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 
 ### 10.2 Parámetros Globales del Sistema
 
-![Configurar Dispositivo](imagenes/configurar%20dispositivo.PNG)
+![Configurar correo](imagenes/correos.PNG)
 
 * **Frecuencia de Envío de Correos:** Intervalo en minutos en el que el servidor recalcula y reenvía recordatorios de contingencias no resueltas (ej. cada `1 minuto`).
 * **Email por Defecto del Sistema:** Casilla de correo institucional que recibe copia de auditoría de todas las incidencias registradas en el centro.
@@ -410,8 +417,6 @@ Haciendo clic en tu nombre en la parte inferior de la barra lateral izquierda y 
 ## 12. Glosario Visual de Botones e Iconos
 
 A continuación se detalla la función de cada botón presente en la aplicación web:
-
-<!-- La iconografía se describe en la tabla a continuación -->
 
 | Icono / Botón | Color | Ubicación en la Web | Acción que realiza |
 |---|---|---|---|
