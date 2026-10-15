@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="chartSh" x="-2%" y="-2%" width="104%" height="108%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+  </defs>
+
+  <rect width="900" height="480" fill="#f8fafc"/>
+
+  <!-- Main Container -->
+  <g transform="translate(30, 20)" filter="url(#chartSh)">
+    <rect width="840" height="440" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+
+    <!-- Header Toolbar -->
+    <rect width="840" height="60" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="0" y="44" width="840" height="16" fill="#f8fafc"/> <!-- unround bottom corners -->
+    <line x1="0" y1="60" x2="840" y2="60" stroke="#e2e8f0"/>
+
+    <!-- Title & Thermometer Icon -->
+    <g transform="translate(24, 20)">
+      <circle cx="10" cy="10" r="10" fill="#e0e7ff"/>
+      <path d="M10 5 v7 M8 12 a3 3 0 1 0 4 0" stroke="#4f46e5" stroke-width="2" fill="none"/>
+      <text x="30" y="16" font-size="14" font-weight="800" fill="#0f172a">MONITOREO DE TEMPERATURA EN TIEMPO REAL</text>
+    </g>
+
+    <!-- Range Buttons Group -->
+    <g transform="translate(560, 16)">
+      <rect x="0" y="0" width="220" height="28" rx="8" fill="#e2e8f0"/>
+      <!-- Active Button: 5 -->
+      <rect x="2" y="2" width="68" height="24" rx="6" fill="#ffffff" filter="url(#chartSh)"/>
+      <text x="36" y="18" font-size="11" font-weight="700" fill="#4338ca" text-anchor="middle">Últimos 5</text>
+      
+      <!-- Inactive 30 -->
+      <text x="110" y="18" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">Últimos 30</text>
+      <!-- Inactive 100 -->
+      <text x="182" y="18" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">Últimos 100</text>
+    </g>
+    <!-- Chevron Up (Collapse) -->
+    <path d="M805 32 L812 25 L819 32" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Device Visibility Filter Bar -->
+    <g transform="translate(24, 76)">
+      <rect x="0" y="0" width="792" height="42" rx="10" fill="#f8fafc" stroke="#f1f5f9"/>
+      <text x="14" y="25" font-size="11" font-weight="700" fill="#475569">VISIBILIDAD POR DISPOSITIVO:</text>
+
+      <!-- Pill 1: Active Device 1 (Blue) -->
+      <g transform="translate(190, 8)">
+        <rect x="0" y="0" width="180" height="26" rx="13" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+        <!-- Eye Icon -->
+        <path d="M12 13 C15 9, 21 9, 24 13 C21 17, 15 17, 12 13 Z M18 13 A2 2 0 1 0 18 13.01" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+        <line x1="30" y1="13" x2="44" y2="13" stroke="#2563eb" stroke-width="3" stroke-dasharray="4,2"/>
+        <text x="50" y="17" font-size="11" font-weight="700" fill="#1e293b">ESP32 Lab Central</text>
+      </g>
+
+      <!-- Pill 2: Inactive Device 2 (Strikethrough / EyeOff) -->
+      <g transform="translate(382, 8)">
+        <rect x="0" y="0" width="190" height="26" rx="13" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <!-- EyeOff Icon -->
+        <path d="M12 13 C15 9, 21 9, 24 13 C21 17, 15 17, 12 13 Z M10 7 L26 19" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+        <line x1="30" y1="13" x2="44" y2="13" stroke="#cbd5e1" stroke-width="3"/>
+        <text x="50" y="17" font-size="11" font-weight="600" fill="#94a3b8" text-decoration="line-through">ESP32 Lab Bioquímica</text>
+      </g>
+    </g>
+
+    <!-- Chart Grid & Axis -->
+    <g transform="translate(60, 140)">
+      <!-- Horizontal Grid Lines -->
+      <line x1="0" y1="40" x2="720" y2="40" stroke="#f1f5f9" stroke-width="1.5"/>
+      <text x="-12" y="44" font-size="11" font-weight="600" fill="#94a3b8" text-anchor="end">-15°C</text>
+
+      <line x1="0" y1="100" x2="720" y2="100" stroke="#f1f5f9" stroke-width="1.5"/>
+      <text x="-12" y="104" font-size="11" font-weight="600" fill="#94a3b8" text-anchor="end">-20°C</text>
+
+      <line x1="0" y1="160" x2="720" y2="160" stroke="#f1f5f9" stroke-width="1.5"/>
+      <text x="-12" y="164" font-size="11" font-weight="600" fill="#94a3b8" text-anchor="end">-25°C</text>
+
+      <!-- Base Axis -->
+      <line x1="0" y1="210" x2="720" y2="210" stroke="#cbd5e1" stroke-width="1.5"/>
+      
+      <!-- X-Axis Labels (Time & Date) -->
+      <g transform="translate(40, 226)" text-anchor="middle">
+        <text y="0" font-size="10" font-weight="700" fill="#475569">18:05:12</text>
+        <text y="12" font-size="9" fill="#94a3b8">14/10</text>
+      </g>
+      <g transform="translate(200, 226)" text-anchor="middle">
+        <text y="0" font-size="10" font-weight="700" fill="#475569">18:10:14</text>
+        <text y="12" font-size="9" fill="#94a3b8">14/10</text>
+      </g>
+      <g transform="translate(360, 226)" text-anchor="middle">
+        <text y="0" font-size="10" font-weight="700" fill="#475569">18:15:15</text>
+        <text y="12" font-size="9" fill="#94a3b8">14/10</text>
+      </g>
+      <g transform="translate(520, 226)" text-anchor="middle">
+        <text y="0" font-size="10" font-weight="700" fill="#475569">18:20:18</text>
+        <text y="12" font-size="9" fill="#94a3b8">14/10</text>
+      </g>
+      <g transform="translate(680, 226)" text-anchor="middle">
+        <text y="0" font-size="10" font-weight="700" fill="#475569">18:25:20</text>
+        <text y="12" font-size="9" fill="#94a3b8">14/10</text>
+      </g>
+
+      <!-- Line Graph: Blue dashed line -->
+      <path d="M 40 120 L 200 110 L 360 118 L 520 102 L 680 115" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="6,4"/>
+      <!-- Points -->
+      <circle cx="40" cy="120" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+      <circle cx="200" cy="110" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+      <circle cx="360" cy="118" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+      <circle cx="520" cy="102" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+      <circle cx="680" cy="115" r="4" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+
+      <!-- Tooltip Box on Point 4 -->
+      <g transform="translate(460, 30)" filter="url(#chartSh)">
+        <rect width="130" height="62" rx="8" fill="#1e293b"/>
+        <polygon points="65,62 58,70 72,62" fill="#1e293b"/>
+        <text x="10" y="18" font-size="10" font-weight="700" fill="#94a3b8">18:20:18 • 14/10</text>
+        <text x="10" y="36" font-size="13" font-weight="900" fill="#60a5fa" font-family="monospace">-21.40 °C</text>
+        <text x="10" y="52" font-size="9" font-weight="600" fill="#34d399">ESP32 Lab Central (OK)</text>
+      </g>
+    </g>
+  </g>
+</svg>

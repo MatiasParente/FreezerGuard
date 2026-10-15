@@ -24,7 +24,7 @@ String generarMensajeSMS(String tipoAlerta);
 // ============================================================
 
 const char* WIFI_SSID = "DispositivosIOT";
-const char* WIFI_PASSWORD = "IOT_UTEC.-";
+const char* WIFI_PASSWORD = "";
 
 const char* SERVER_URL = "https://tip-proymf26.tipyenaccion.net/api/telemetry";
 const char* API_KEY = "fg_sec_9nQBt2sF1bLJAEGlR";
@@ -179,7 +179,7 @@ bool enviarAT(
 }
 
 // ============================================================
-// GENERAR MENSAJE CON PLANTILLA DE LA PÁGINA WEB
+// GENERAR MENSAJE DE ALERTA CON PLANTILLA DE LA PÁGINA WEB
 // ============================================================
 
 String generarMensajeSMS(String tipoAlerta) {
@@ -527,16 +527,16 @@ bool enviarSMS(const String& mensaje, bool esEventoPrioritario, bool esPrueba) {
 }
 
 // ============================================================
-// SMS DE INICIO
+// SMS DE INICIO (HARDCODEADO POR DEFECTO)
 // ============================================================
 
 void enviarSMSInicio() {
-    String mensaje = generarMensajeSMS("DISPOSITIVO INICIADO");
+    String mensaje = "FREEZERGUARD: inicio correcto.\nDispositivo operativo.\nTemp: " + String(temperaturaActual, 1) + " C";
     enviarSMS(mensaje, false, false);
 }
 
 // ============================================================
-// SMS DE PRUEBA (SOLICITADO DESDE WEB O MONITOR SERIAL)
+// SMS DE PRUEBA (HARDCODEADO POR DEFECTO)
 // ============================================================
 
 void enviarSMSPrueba() {

@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="100%" height="100%" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="msh" x="-2%" y="-2%" width="104%" height="108%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+  </defs>
+
+  <rect width="900" height="360" fill="#f8fafc"/>
+
+  <!-- Main Container -->
+  <g transform="translate(30, 20)" filter="url(#msh)">
+    <rect width="840" height="320" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+
+    <!-- Header Toolbar -->
+    <rect width="840" height="60" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+    <rect x="0" y="44" width="840" height="16" fill="#f8fafc"/>
+    <line x1="0" y1="60" x2="840" y2="60" stroke="#e2e8f0"/>
+
+    <!-- Title & Flask Icon -->
+    <g transform="translate(24, 20)">
+      <circle cx="10" cy="10" r="10" fill="#f3e8ff"/>
+      <path d="M7 6 h6 M9 6 v3 L6 14 a2 2 0 0 0 2 2 h4 a2 2 0 0 0 2 -2 L11 9 v-3" stroke="#9333ea" stroke-width="1.8" fill="none"/>
+      <text x="30" y="16" font-size="14" font-weight="800" fill="#0f172a">MUESTRAS POR VENCER (CONTROL DE INTEGRIDAD)</text>
+    </g>
+    <!-- Chevron Up -->
+    <path d="M805 32 L812 25 L819 32" stroke="#64748b" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Filter Buttons Bar -->
+    <g transform="translate(24, 76)">
+      <!-- Filter 1: Vencidas -->
+      <rect x="0" y="0" width="100" height="28" rx="14" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+      <text x="50" y="18" font-size="11" font-weight="700" fill="#991b1b" text-anchor="middle">Vencidas</text>
+
+      <!-- Filter 2: Por Vencer (<3 días) Active -->
+      <rect x="112" y="0" width="170" height="28" rx="14" fill="#fef3c7" stroke="#fde047" stroke-width="2"/>
+      <text x="197" y="18" font-size="11" font-weight="800" fill="#854d0e" text-anchor="middle">Por vencer (&lt; 3 días)</text>
+
+      <!-- Filter 3: Vigentes (+3 días) -->
+      <rect x="294" y="0" width="160" height="28" rx="14" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+      <text x="374" y="18" font-size="11" font-weight="700" fill="#166534" text-anchor="middle">Vigentes (+3 días)</text>
+    </g>
+
+    <!-- Cards Grid -->
+    <g transform="translate(24, 122)">
+      
+      <!-- Sample Card 1: Por Vencer (Amarillo) -->
+      <g filter="url(#msh)">
+        <rect x="0" y="0" width="250" height="150" rx="12" fill="#fffbeb" stroke="#fde68a" stroke-width="1.5"/>
+        <g transform="translate(16, 16)">
+          <circle cx="12" cy="12" r="12" fill="#fef3c7"/>
+          <path d="M9 8 h6 M11 8 v2 L8 15 a1 1 0 0 0 1 1 h6 a1 1 0 0 0 1 -1 L13 10 v-2" stroke="#b45309" stroke-width="1.5" fill="none"/>
+          <text x="32" y="12" font-size="13" font-weight="800" fill="#92400e">Insulina Recombinante</text>
+          <text x="32" y="26" font-size="10" font-weight="700" fill="#b45309">¡Vence en 2 días!</text>
+          
+          <g transform="translate(0, 46)">
+            <text y="0" font-size="11" fill="#78350f"><tspan font-weight="700">Vence:</tspan> 16/10/2026</text>
+            <text y="18" font-size="11" fill="#78350f"><tspan font-weight="700">Rango:</tspan> -25.0°C a -18.0°C</text>
+            <text y="36" font-size="10" font-weight="700" fill="#92400e">Freezer Lab Central (P1)</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- Sample Card 2: Vigente (Verde) -->
+      <g transform="translate(270, 0)" filter="url(#msh)">
+        <rect x="0" y="0" width="250" height="150" rx="12" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+        <g transform="translate(16, 16)">
+          <circle cx="12" cy="12" r="12" fill="#dcfce7"/>
+          <path d="M9 8 h6 M11 8 v2 L8 15 a1 1 0 0 0 1 1 h6 a1 1 0 0 0 1 -1 L13 10 v-2" stroke="#16a34a" stroke-width="1.5" fill="none"/>
+          <text x="32" y="12" font-size="13" font-weight="800" fill="#166534">Suero Fetal Bovino</text>
+          <text x="32" y="26" font-size="10" font-weight="600" fill="#15803d">Vigente (Estado OK)</text>
+          
+          <g transform="translate(0, 46)">
+            <text y="0" font-size="11" fill="#14532d"><tspan font-weight="700">Vence:</tspan> 28/11/2026</text>
+            <text y="18" font-size="11" fill="#14532d"><tspan font-weight="700">Rango:</tspan> -20.0°C a -10.0°C</text>
+            <text y="36" font-size="10" font-weight="700" fill="#166534">Freezer Lab Bioquímica</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- Sample Card 3: Vencida (Rojo) -->
+      <g transform="translate(540, 0)" filter="url(#msh)">
+        <rect x="0" y="0" width="250" height="150" rx="12" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+        <g transform="translate(16, 16)">
+          <circle cx="12" cy="12" r="12" fill="#fee2e2"/>
+          <path d="M9 8 h6 M11 8 v2 L8 15 a1 1 0 0 0 1 1 h6 a1 1 0 0 0 1 -1 L13 10 v-2" stroke="#dc2626" stroke-width="1.5" fill="none"/>
+          <text x="32" y="12" font-size="13" font-weight="800" fill="#991b1b">Enzima Taq Polimerasa</text>
+          <text x="32" y="26" font-size="10" font-weight="800" fill="#b91c1c">¡Muestra Vencida!</text>
+          
+          <g transform="translate(0, 46)">
+            <text y="0" font-size="11" fill="#7f1d1d"><tspan font-weight="700">Venció:</tspan> 10/10/2026</text>
+            <text y="18" font-size="11" fill="#7f1d1d"><tspan font-weight="700">Rango:</tspan> -22.0°C a -15.0°C</text>
+            <text y="36" font-size="10" font-weight="700" fill="#991b1b">Freezer Lab Central (P2)</text>
+          </g>
+        </g>
+      </g>
+
+    </g>
+  </g>
+</svg>

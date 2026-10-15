@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" height="100%" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="btnSh" x="-2%" y="-2%" width="104%" height="108%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.06" />
+    </filter>
+  </defs>
+
+  <rect width="960" height="480" fill="#f8fafc"/>
+
+  <!-- Main Container -->
+  <g transform="translate(30, 20)" filter="url(#btnSh)">
+    <rect width="900" height="440" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+
+    <!-- Header -->
+    <g transform="translate(24, 24)">
+      <text font-size="16" font-weight="800" fill="#1e293b" letter-spacing="0.5">GUÍA RÁPIDA: ICONOGRAFÍA Y BOTONES DE ACCIÓN</text>
+      <text y="18" font-size="11" fill="#64748b">Referencia visual de los controles interactivos utilizados en toda la plataforma</text>
+    </g>
+
+    <!-- Grid of Buttons -->
+    <g transform="translate(24, 70)">
+      
+      <!-- Col 1 -->
+      <g transform="translate(0, 0)">
+        <!-- 1. Agregar Muestra / Dispositivo -->
+        <g transform="translate(0, 0)">
+          <rect width="32" height="32" rx="8" fill="#4f46e5"/>
+          <path d="M16 10 v12 M10 16 h12" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Agregar Muestra / Dispositivo / Usuario</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Abre el formulario modal de creación.</text>
+        </g>
+
+        <!-- 2. Modificar / Editar -->
+        <g transform="translate(0, 48)">
+          <rect width="32" height="32" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+          <path d="M10 22 l2 -6 l8 -8 l4 4 l-8 8 z" stroke="#4f46e5" stroke-width="1.5" fill="none"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Modificar Registro / Editar Observación</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Permite actualizar datos o agregar notas a una alerta.</text>
+        </g>
+
+        <!-- 3. Desactivar / Inhabilitar -->
+        <g transform="translate(0, 96)">
+          <rect width="32" height="32" rx="8" fill="#fef3c7" stroke="#fde68a"/>
+          <path d="M10 19 h12 M12 19 v6 M18 19 v6" stroke="#d97706" stroke-width="1.5"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Inhabilitar / Mover a Inactivos</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Soft Delete: Desactiva sin borrar datos históricos.</text>
+        </g>
+
+        <!-- 4. Eliminar Definitivamente -->
+        <g transform="translate(0, 144)">
+          <rect width="32" height="32" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+          <path d="M10 19 h12 M12 19 v6 M18 19 v6 M13 9 h6" stroke="#dc2626" stroke-width="1.5"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Eliminar Definitivamente</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Hard Delete: Elimina irreversiblemente previa confirmación.</text>
+        </g>
+
+        <!-- 5. Restaurar Registro -->
+        <g transform="translate(0, 192)">
+          <rect width="32" height="32" rx="8" fill="#dcfce7" stroke="#bbf7d0"/>
+          <path d="M16 10 a6 6 0 1 0 5 3 M21 9 v4 h-4" stroke="#16a34a" stroke-width="1.8" fill="none"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Restaurar Registro Inactivo</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Reactiva muestras, usuarios o dispositivos dados de baja.</text>
+        </g>
+      </g>
+
+      <!-- Col 2 -->
+      <g transform="translate(440, 0)">
+        <!-- 6. Alternar Rol Admin -->
+        <g transform="translate(0, 0)">
+          <rect width="32" height="32" rx="8" fill="#f3e8ff" stroke="#d8b4fe"/>
+          <path d="M16 9 l6 3 v4 c0 5 -6 8 -6 8 s-6 -3 -6 -8 v-4 z" stroke="#7e22ce" stroke-width="1.5" fill="none"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Alternar Permisos de Admin General</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Otorga o retira privilegios de configuración y usuarios.</text>
+        </g>
+
+        <!-- 7. Resetear Contraseña -->
+        <g transform="translate(0, 48)">
+          <rect width="32" height="32" rx="8" fill="#eef2ff" stroke="#c7d2fe"/>
+          <circle cx="14" cy="16" r="3.5" stroke="#4f46e5" stroke-width="1.5" fill="none"/>
+          <path d="M18 16 h6 v4 M21 16 v2" stroke="#4f46e5" stroke-width="1.5"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Restablecer Contraseña de Usuario</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Asigna una nueva clave provisoria o definitiva.</text>
+        </g>
+
+        <!-- 8. Probar SMS -->
+        <g transform="translate(0, 96)">
+          <rect width="32" height="32" rx="8" fill="#f3e8ff" stroke="#d8b4fe"/>
+          <path d="M10 16 l12 -6 l-6 12 l-2 -4 z" fill="#7e22ce"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Probar Envío SMS</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Envía una señal al ESP32 para emitir un SMS de prueba.</text>
+        </g>
+
+        <!-- 9. Visibilidad Gráfica (Eye / EyeOff) -->
+        <g transform="translate(0, 144)">
+          <rect width="32" height="32" rx="8" fill="#ffffff" stroke="#93c5fd"/>
+          <path d="M8 16 C12 11, 20 11, 24 16 C20 21, 12 21, 8 16 Z M16 16 A2.5 2.5 0 1 0 16 16.01" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Visibilidad de Curva Térmica</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Oculta o muestra la serie de un freezer en el gráfico.</text>
+        </g>
+
+        <!-- 10. Historial Inactivos / Activos -->
+        <g transform="translate(0, 192)">
+          <rect width="32" height="32" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+          <circle cx="16" cy="16" r="6" stroke="#475569" stroke-width="1.5" fill="none"/>
+          <path d="M16 13 v3 h3" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+          <text x="44" y="16" font-size="12" font-weight="700" fill="#1e293b">Alternar Historial / Activos</text>
+          <text x="44" y="28" font-size="10" fill="#64748b">Cambia la vista entre elementos vigentes y archivados.</text>
+        </g>
+      </g>
+
+    </g>
+
+    <!-- Bottom Tip Banner -->
+    <g transform="translate(24, 345)">
+      <rect width="852" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+      <circle cx="28" cy="30" r="12" fill="#dbeafe"/>
+      <text x="28" y="34" font-size="12" font-weight="800" fill="#1d4ed8" text-anchor="middle">i</text>
+      <text x="50" y="26" font-size="11" font-weight="800" fill="#1e40af">Consejo de usabilidad para operadores:</text>
+      <text x="50" y="42" font-size="10.5" fill="#2563eb">Hacer clic en cualquier fila de la tabla de Muestras o Alertas expande el desglose completo con docentes, alumnos y notas técnicas.</text>
+    </g>
+  </g>
+</svg>

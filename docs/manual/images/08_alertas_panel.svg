@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 580" width="100%" height="100%" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <filter id="altSh" x="-2%" y="-2%" width="104%" height="108%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+  </defs>
+
+  <rect width="1024" height="580" fill="#f8fafc"/>
+
+  <!-- Main Container -->
+  <g transform="translate(30, 20)" filter="url(#altSh)">
+    <rect width="964" height="540" rx="16" fill="#ffffff" stroke="#e2e8f0"/>
+
+    <!-- Header & Toolbar -->
+    <g transform="translate(24, 24)">
+      <text font-size="16" font-weight="800" fill="#1e293b" letter-spacing="0.5">ALERTAS GENERADAS</text>
+      <text y="18" font-size="11" fill="#64748b">Registro de incidentes térmicos, cortes de energía y fallas de conectividad</text>
+
+      <!-- Filters -->
+      <g transform="translate(0, 36)">
+        <rect width="916" height="52" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+        
+        <!-- Filter Estado -->
+        <g transform="translate(14, 10)">
+          <text font-size="10" font-weight="700" fill="#475569">ESTADO</text>
+          <rect y="12" width="160" height="26" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+          <text x="10" y="29" font-size="11" font-weight="600" fill="#1e293b">Todos los Estados</text>
+          <path d="M142 24 L146 28 L150 24" stroke="#64748b" stroke-width="1.5" fill="none"/>
+        </g>
+
+        <!-- Filter Dispositivo -->
+        <g transform="translate(190, 10)">
+          <text font-size="10" font-weight="700" fill="#475569">DISPOSITIVO</text>
+          <rect y="12" width="200" height="26" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+          <text x="10" y="29" font-size="11" font-weight="600" fill="#1e293b">Todos los Dispositivos</text>
+          <path d="M182 24 L186 28 L190 24" stroke="#64748b" stroke-width="1.5" fill="none"/>
+        </g>
+
+        <!-- Filter Tipo -->
+        <g transform="translate(406, 10)">
+          <text font-size="10" font-weight="700" fill="#475569">TIPO DE ALERTA</text>
+          <rect y="12" width="200" height="26" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+          <text x="10" y="29" font-size="11" font-weight="600" fill="#1e293b">Todos los Tipos</text>
+          <path d="M182 24 L186 28 L190 24" stroke="#64748b" stroke-width="1.5" fill="none"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- Table of Alerts -->
+    <g transform="translate(24, 130)">
+      <rect width="916" height="380" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+      
+      <!-- Table Head -->
+      <rect width="916" height="34" rx="10" fill="#f1f5f9"/>
+      <rect y="24" width="916" height="10" fill="#f1f5f9"/>
+      <line x1="0" y1="34" x2="916" y2="34" stroke="#e2e8f0"/>
+
+      <text x="20" y="22" font-size="10.5" font-weight="800" fill="#475569">ESTADO</text>
+      <text x="150" y="22" font-size="10.5" font-weight="800" fill="#475569">FECHA Y HORA</text>
+      <text x="320" y="22" font-size="10.5" font-weight="800" fill="#475569">TIPO DE ALERTA</text>
+      <text x="540" y="22" font-size="10.5" font-weight="800" fill="#475569">DISPOSITIVO / LABORATORIO</text>
+      <text x="820" y="22" font-size="10.5" font-weight="800" fill="#475569" text-anchor="end">ACCIONES</text>
+
+      <!-- ROW 1: Alerta PENDIENTE (Expandida) -->
+      <g transform="translate(0, 34)">
+        <rect width="916" height="48" fill="#ffffff"/>
+        
+        <!-- Status Badge: Pendiente -->
+        <g transform="translate(20, 12)">
+          <rect width="96" height="24" rx="12" fill="#fee2e2" stroke="#fca5a5"/>
+          <circle cx="12" cy="12" r="4" fill="#dc2626"/>
+          <text x="22" y="16" font-size="10.5" font-weight="800" fill="#991b1b">Pendiente</text>
+        </g>
+
+        <!-- Date & Time -->
+        <text x="150" y="28" font-size="11" font-weight="600" fill="#475569" font-family="monospace">14/10/2026, 17:45:10</text>
+
+        <!-- Alert Type -->
+        <text x="320" y="28" font-size="12" font-weight="800" fill="#dc2626">Temperatura Fuera de Rango</text>
+
+        <!-- Device -->
+        <text x="540" y="28" font-size="11" font-weight="600" fill="#1e293b">ESP32 Lab Central • <tspan fill="#64748b">Freezer Lab 1</tspan></text>
+
+        <!-- Actions -->
+        <g transform="translate(770, 10)">
+          <!-- Edit Observation -->
+          <rect width="28" height="28" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+          <path d="M8 20 l2 -6 l8 -8 l4 4 l-8 8 z" stroke="#4f46e5" stroke-width="1.3" fill="none"/>
+
+          <!-- Delete -->
+          <rect x="34" width="28" height="28" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+          <path d="M42 19 h12 M44 19 v6 M52 19 v6" stroke="#dc2626" stroke-width="1.3"/>
+
+          <!-- Chevron Up (Expanded) -->
+          <path d="M74 20 L79 15 L84 20" stroke="#475569" stroke-width="2" fill="none"/>
+        </g>
+        <line x1="0" y1="48" x2="916" y2="48" stroke="#e2e8f0"/>
+      </g>
+
+      <!-- Row 1 Expanded Details -->
+      <g transform="translate(0, 82)">
+        <rect width="916" height="92" fill="#f8fafc"/>
+        <rect width="4" height="92" fill="#ef4444"/> <!-- Red accent border -->
+
+        <!-- Muestras Afectadas -->
+        <g transform="translate(20, 14)">
+          <text font-size="11" font-weight="800" fill="#1e293b">Muestras Afectadas en Freezer:</text>
+          <text y="18" font-size="10.5" font-weight="700" fill="#b91c1c">• Insulina Recombinante Lote B</text>
+          <text y="32" font-size="10" fill="#64748b">Docente: Dra. Sonia Rocha | Alumno: Matías P.</text>
+        </g>
+
+        <!-- Duración & Temp Origen -->
+        <g transform="translate(340, 14)">
+          <text font-size="11" font-weight="800" fill="#1e293b">Duración del Evento:</text>
+          <text y="18" font-size="11" font-weight="700" fill="#dc2626">En progreso (35 min transcurridos)</text>
+          
+          <text y="36" font-size="11" font-weight="800" fill="#1e293b">Temp. Detectada al Dispararse:</text>
+          <g transform="translate(0, 42)">
+            <rect width="84" height="20" rx="4" fill="#fee2e2" stroke="#fca5a5"/>
+            <text x="42" y="14" font-size="10.5" font-weight="800" fill="#991b1b" font-family="monospace" text-anchor="middle">-8.40 °C</text>
+          </g>
+        </g>
+
+        <!-- Observación de Bitácora -->
+        <g transform="translate(620, 14)">
+          <text font-size="11" font-weight="800" fill="#1e293b">Bitácora / Observación:</text>
+          <text y="18" font-size="10.5" fill="#475569">"Se detectó puerta semiabierta tras retiro de muestra.</text>
+          <text y="32" font-size="10.5" fill="#475569">Operador concurrió a cerrar correctamente."</text>
+        </g>
+        <line x1="0" y1="92" x2="916" y2="92" stroke="#e2e8f0"/>
+      </g>
+
+      <!-- ROW 2: Alerta RESUELTA -->
+      <g transform="translate(0, 174)">
+        <rect width="916" height="48" fill="#ffffff"/>
+        
+        <!-- Status Badge: Resuelta -->
+        <g transform="translate(20, 10)">
+          <rect width="96" height="24" rx="12" fill="#dcfce7" stroke="#bbf7d0"/>
+          <path d="M8 12 L11 15 L16 9" stroke="#16a34a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <text x="22" y="16" font-size="10.5" font-weight="800" fill="#15803d">Resuelta</text>
+          <text x="0" y="34" font-size="9" fill="#64748b">14/10 16:30</text>
+        </g>
+
+        <!-- Date & Time -->
+        <text x="150" y="28" font-size="11" font-weight="600" fill="#475569" font-family="monospace">14/10/2026, 15:10:00</text>
+
+        <!-- Alert Type -->
+        <text x="320" y="28" font-size="12" font-weight="700" fill="#1e293b">Corte de Energía Eléctrica</text>
+
+        <!-- Device -->
+        <text x="540" y="28" font-size="11" font-weight="600" fill="#1e293b">ESP32 Lab Bioquímica • <tspan fill="#64748b">Freezer Lab 2</tspan></text>
+
+        <!-- Actions -->
+        <g transform="translate(770, 10)">
+          <rect width="28" height="28" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+          <path d="M8 20 l2 -6 l8 -8 l4 4 l-8 8 z" stroke="#4f46e5" stroke-width="1.3" fill="none"/>
+
+          <rect x="34" width="28" height="28" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+          <path d="M42 19 h12 M44 19 v6 M52 19 v6" stroke="#dc2626" stroke-width="1.3"/>
+
+          <!-- Chevron Down -->
+          <path d="M74 15 L79 20 L84 15" stroke="#475569" stroke-width="2" fill="none"/>
+        </g>
+        <line x1="0" y1="48" x2="916" y2="48" stroke="#f1f5f9"/>
+      </g>
+
+    </g>
+  </g>
+</svg>
