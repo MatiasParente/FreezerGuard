@@ -52,7 +52,7 @@ class DashboardController extends Controller
             ];
         });
 
-        // Alertas sin resolver (conteo total)
+        // Alertas sin resolver
         $alertasSinResolverCount = SedeAccess::scope(AlertaGenerada::where('estado', '!=', 2), $request->user(), 'dispositivo.freezer.laboratorio')->count();
 
         // Últimas 100 mediciones para gráfico en tiempo real

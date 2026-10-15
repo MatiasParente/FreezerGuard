@@ -25,66 +25,101 @@ En contextos de investigación académica y profesional, la preservación de mue
 
 Ante las deficiencias de comunicación que presenta el equipamiento actual y la necesidad crítica de resguardar las investigaciones de la sede, se evidencia una clara oportunidad para el desarrollo de este proyecto final de carrera. La vulnerabilidad identificada y el riesgo sobre la posible pérdida del material justifican la intervención técnica.
 
-Este repositorio específico aloja el código fuente implementado en Arduino IDE para el dispositivo físico encargado de:
+**FreezerGuard** implementa:
 
-* Implementar un módulo de hardware embebido para la adquisición automatizada de datos térmicos y de estado del freezer, garantizando un método de lectura no intrusivo.
-
-* Desarrollar un mecanismo de detección de fallas operativas, orientado a identificar interrupciones en el suministro eléctrico y pérdidas de conectividad de los dispositivos de campo.
-
-* Transmitir la información recolectada de manera inalámbrica para posibilitar una visualización remota y en tiempo real.
+* Un módulo de hardware embebido (ESP32) para la adquisición automatizada de datos térmicos y de estado del freezer, garantizando un método de lectura no intrusivo.
+* Un mecanismo de detección de fallas operativas, orientado a identificar interrupciones en el suministro eléctrico y pérdidas de conectividad de los dispositivos de campo.
+* Transmisión inalámbrica de la información recolectada para posibilitar una visualización remota y en tiempo real.
+* Notificaciones automáticas por correo electrónico y SMS ante alertas críticas.
 
 ---
 
-## Aplicación Web – Manual de Uso
+## Capturas de Pantalla
 
-### 1. Iniciar Sesión
-Los usuarios acceden a la aplicación mediante la página **/login**. Se ingresan **correo electrónico** y **contraseña**. Opcionalmente, se puede marcar **Recordarme** para mantener la sesión activa.
+### Inicio de Sesión
+![Inicio de Sesión](imagenes/Iniciar%20sesion.PNG)
 
-### 2. Dashboard (Resumen)
-Una vez autenticado, el usuario es redirigido al **Dashboard** que muestra un resumen general:
-- Estado actual del freezer (temperatura, conexión).
-- Últimas mediciones.
-- Alertas críticas recientes.
+### Panel de Control (Dashboard)
+![Tarjetas métricas del Dashboard](imagenes/cajas.PNG)
 
-### 3. Muestras y Mediciones
-- **Muestras**: listado de las muestras almacenadas, con información de identificación y rango de temperatura requerido.
-- **Mediciones**: tabla de lecturas históricas (fecha/hora, temperatura, humedad). Se pueden filtrar por rango de fechas o por muestra.
+### Gráfico de Monitoreo en Tiempo Real
+![Gráfico en Tiempo Real](imagenes/grafica.PNG)
 
-### 4. Configuración del Dispositivo
-En la sección **Configuración** se pueden definir parámetros del dispositivo:
-- Umbrales de temperatura y humedad.
-- Intervalo de envío de datos.
-- Actualizar el firmware del módulo Arduino (subiendo un archivo binario).
+### Muestras por Vencer
+![Acordeón de Muestras por Vencer](imagenes/vencimiento.PNG)
 
-### 5. Gestión de Usuarios
-Solo usuarios con rol **Administrador** pueden:
-- Crear, editar o eliminar cuentas.
-- Asignar roles (Administrador, Operador, Visor).
-- Restablecer contraseñas.
+### Alertas del Dashboard
+![Alertas Recientes](imagenes/alertas%20dashboard.PNG)
 
-### 6. Alertas
-El sistema genera **alertas** automáticas cuando se supera algún umbral o se pierde la conexión. En la sección **Alertas** el usuario puede:
-- Ver listado de alertas activas.
-- Marcar una alerta como **resuelta** (se envía notificación por email).
-- Configurar canales de notificación (email, SMS).
+### Historial de Mediciones
+![Historial de Mediciones](imagenes/mediciones.PNG)
 
-### 7. Comunicación con el Dispositivo
-El frontend se comunica con el backend vía API REST. El backend, a su vez, mantiene una conexión MQTT con el módulo Arduino instalado en el freezer. Cada medida es publicada en un tópico MQTT y el servidor la persiste en la base de datos, permitiendo su visualización en tiempo real.
+### Configuración de Dispositivos
+![Configuración de Dispositivos](imagenes/configuracion.PNG)
 
-### 8. Flujo de Trabajo Típico
-1. El usuario inicia sesión.
-2. Revisa el **Dashboard** para confirmar que el freezer está dentro de los parámetros.
-3. Si hay una alerta, la inspecciona en la sección **Alertas** y toma acción (ej. ajustar temperatura, revisar conexión).
-4. Consulta o exporta mediciones desde **Mediciones** para generar informes.
-5. Mantiene la configuración del dispositivo al día en **Configuración**.
+### Configurar Dispositivo Individual
+![Modal de Configuración de Dispositivo](imagenes/configurar%20dispositivo.PNG)
+
+---
+
+## Funcionalidades Principales
+
+### Dashboard en Tiempo Real
+- **Tarjetas métricas** con temperatura actual, estado eléctrico y canales de alerta.
+- **Gráfico interactivo** con actualización automática cada 4 segundos.
+- **Muestras por vencer** organizadas por urgencia (vencidas, próximas, vigentes).
+- **Alertas recientes** con indicador de pendientes.
+- **Selector de dispositivo** para filtrar todas las métricas por freezer.
+
+### Gestión de Muestras
+- Registro de muestras con rangos térmicos, vencimiento y freezer asignado.
+- Asignación de docentes responsables y alumnos participantes.
+- Indicador visual de riesgo cuando un freezer tiene fallas.
+- Inhabilitación lógica, historial de inactivas y restauración.
+- **Notificación por correo** automática al asignar un docente a una muestra.
+
+### Centro de Alertas
+- Alertas automáticas por temperatura fuera de rango, corte de energía, vencimiento, inactividad y fallo del módulo SMS.
+- Resolución remota vía enlace seguro por correo electrónico.
+- Bitácora de observaciones por cada incidente.
+
+### Sedes y Laboratorios
+- Organización jerárquica: Sedes → Laboratorios → Freezers.
+- Asignación de freezers a laboratorios específicos.
+- Gestión de participantes de muestras (alumnos sin acceso al sistema).
+- **Notificación por correo** al asignar un usuario a una sede.
+- Control de acceso por sede (cada usuario solo ve los datos de sus sedes asignadas).
+
+### Gestión de Usuarios
+- Creación de usuarios con envío automático de credenciales por correo.
+- Roles: Docente (usuario estándar) y Administrador General.
+- Restablecimiento de contraseñas con notificación por email.
+- Baja lógica, historial de inactivos y restauración.
+- Asignación de sedes con notificación automática.
+
+### Configuración de Dispositivos y Notificaciones
+- Registro y parametrización de placas ESP32.
+- Configuración de umbrales, teléfonos SMS y disparadores de alerta por dispositivo.
+- **Prueba de SMS** individual desde la configuración de cada dispositivo.
+- Plantillas personalizables para correos y SMS de alerta con variables dinámicas.
+- Canales de despacho configurables (Email y SMS) con activación/desactivación global.
+
+### Notificaciones por Correo Electrónico
+El sistema envía correos automáticos en los siguientes eventos:
+- **Creación de usuario:** Credenciales de acceso con botón directo para iniciar sesión.
+- **Restablecimiento de contraseña:** Nueva contraseña con acceso directo a la plataforma.
+- **Asignación a sede:** Notificación al usuario con las sedes asignadas.
+- **Asignación a muestra:** Notificación al docente con detalles de la muestra (título, freezer, rango térmico, vencimiento).
+- **Alertas críticas:** Correo con detalle del incidente y enlace de resolución remota.
 
 ---
 
 ## Arquitectura del Sistema
-- **Frontend**: React + InertiaJS, utiliza componentes Blade para renderizado.
-- **Backend**: Laravel PHP, API REST y controlador de eventos MQTT.
-- **Dispositivo**: Arduino con módulo Wi‑Fi, envía datos vía MQTT.
-- **Base de datos**: MySQL para almacenar usuarios, mediciones y alertas.
+- **Frontend**: React + InertiaJS con Tailwind CSS.
+- **Backend**: Laravel (PHP), controladores RESTful con Inertia.
+- **Dispositivo**: ESP32 con sensores de temperatura y detección de red 220V, módulo SIM800L para SMS.
+- **Base de datos**: PostgreSQL (Supabase) / SQLite para desarrollo local.
+- **Correos**: Configuración SMTP (Gmail, Mailtrap, etc.) con plantillas Blade Markdown.
 
 ---
 
@@ -185,6 +220,12 @@ Abre en el navegador la URL configurada, por ejemplo:
 https://freezerguard.tudominio.com
 ```
 Deberías ver la pantalla de login de la aplicación.
+
+---
+
+## Documentación Completa
+
+Para una guía detallada de todas las funcionalidades con capturas de pantalla, consulta el [Manual de Uso](MANUAL_DE_USO.md).
 
 ---
 

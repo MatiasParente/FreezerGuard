@@ -1,5 +1,5 @@
-import { useForm, router } from '@inertiajs/react';
-import { Mail, MessageSquare, Send } from 'lucide-react';
+import { useForm } from '@inertiajs/react';
+import { Mail, MessageSquare } from 'lucide-react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -19,12 +19,6 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
     const submitSistemaForm = (e) => {
         e.preventDefault();
         sistemaForm.put(route('configuracion.sistema.update'), {
-            preserveScroll: true,
-        });
-    };
-
-    const handleProbarSMS = () => {
-        router.post(route('configuracion.probar-sms'), {}, {
             preserveScroll: true,
         });
     };
@@ -106,15 +100,6 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                                 <MessageSquare className="w-4 h-4 text-purple-600" /> Canal mensajes de texto (SMS)
                             </h4>
                             <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={handleProbarSMS}
-                                    title="Enviar SMS de prueba al número asignado al dispositivo"
-                                    className="flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-2.5 py-1 rounded-md border border-purple-300 transition"
-                                >
-                                    <Send className="w-3.5 h-3.5 text-purple-700" />
-                                    Probar SMS
-                                </button>
                                 <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-900 bg-white px-2.5 py-1 rounded-md border border-purple-200">
                                     <input
                                         type="checkbox"

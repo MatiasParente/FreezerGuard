@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DocenteAsignadoMuestraMail;
 use App\Models\Muestra;
 use App\Models\Freezer;
 use App\Models\User;
@@ -31,7 +33,6 @@ class MuestrasController extends Controller
 
         $muestras = $query->orderBy('fecha_inicio', 'desc')->paginate(10)->withQueryString();
 
-        // Procesar has_active_alert y ordenar
         $muestrasCollection = collect($muestras->items())->map(function ($muestra) {
             $hasAlert = false;
             if ($muestra->freezer && $muestra->freezer->dispositivo) {
@@ -43,7 +44,6 @@ class MuestrasController extends Controller
             return $muestra;
         })->sortByDesc('has_active_alert')->values();
 
-        // Set the modified items back to the paginator
         $muestras->setCollection($muestrasCollection);
 
         return Inertia::render('Muestras/muestras', [
@@ -102,6 +102,9 @@ class MuestrasController extends Controller
             $muestra->users()->attach($validated['users_ids']);
         }
 
+        // Enviar mail a los docentes asignados
+        $this->notificarDocentesAsignados($muestra, $validated['users_ids'] ?? []);
+
         return redirect()->back()->with('success', 'Muestra creada exitosamente.');
     }
 
@@ -128,6 +131,8 @@ class MuestrasController extends Controller
             'users_ids' => $validated['users_ids'] ?? $muestra->users()->withTrashed()->pluck('users.id')->all(),
             'usuarios_ids' => $validated['usuarios_ids'] ?? $muestra->usuarios()->pluck('usuarios.id')->all(),
         ]));
+        $docentesAntes = $muestra->users()->withTrashed()->pluck('users.id')->all();
+
         $muestra->update($validated);
 
         if (isset($validated['usuarios_ids'])) {
@@ -135,6 +140,9 @@ class MuestrasController extends Controller
         }
         if (isset($validated['users_ids'])) {
             $muestra->users()->sync($validated['users_ids']);
+            // Enviar mail solo a los docentes nuevos
+            $docentesNuevosIds = array_diff($validated['users_ids'], $docentesAntes);
+            $this->notificarDocentesAsignados($muestra, $docentesNuevosIds);
         }
 
         return redirect()->back()->with('success', 'Muestra actualizada exitosamente.');
@@ -164,6 +172,23 @@ class MuestrasController extends Controller
         }
         if (!empty($data['usuarios_ids']) && Usuario::whereIn('id', $data['usuarios_ids'])->whereDoesntHave('sedes', fn ($q) => $q->where('sedes.id', $sedeId))->exists()) {
             throw ValidationException::withMessages(['usuarios_ids' => 'Los participantes deben pertenecer a la sede del freezer.']);
+        }
+    }
+
+    private function notificarDocentesAsignados(Muestra $muestra, array $userIds): void
+    {
+        if (empty($userIds)) {
+            return;
+        }
+
+        $docentes = User::whereIn('id', $userIds)->get();
+        $muestra->load('freezer');
+
+        foreach ($docentes as $docente) {
+            try {
+                Mail::to($docente->email)->send(new DocenteAsignadoMuestraMail($docente, $muestra));
+            } catch (\Exception $e) {
+            }
         }
     }
 }

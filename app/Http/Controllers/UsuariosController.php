@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NuevoUsuarioCreadoMail;
 use App\Mail\PasswordResetAdminMail;
+use App\Mail\UsuarioAsignadoSedeMail;
 use App\Mail\UsuarioDesactivadoMail;
 use App\Mail\UsuarioRestauradoMail;
 use App\Mail\UsuarioEliminadoDefinitivoMail;
@@ -20,9 +21,6 @@ use Inertia\Response;
 
 class UsuariosController extends Controller
 {
-    /**
-     * Display a listing of users/administrators.
-     */
     public function index(Request $request): Response
     {
         $estado = $request->input('estado', 'activo');
@@ -61,9 +59,6 @@ class UsuariosController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created user/administrator in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -96,6 +91,16 @@ class UsuariosController extends Controller
             return redirect()->back()->with('warning', 'Usuario creado correctamente, pero no se pudo enviar el correo de credenciales: ' . $e->getMessage());
         }
 
+        // Enviar mail de asignación a sedes
+        try {
+            $sedesAsignadas = Sede::whereIn('id', $request->input('sede_ids'))->get();
+            if ($sedesAsignadas->isNotEmpty()) {
+                Mail::to($user->email)->send(new UsuarioAsignadoSedeMail($user, $sedesAsignadas));
+            }
+        } catch (\Exception $e) {
+            // No interrumpir el flujo si falla el correo de sedes
+        }
+
         return redirect()->back()->with('success', "Usuario {$user->name} creado correctamente. Se envió la contraseña de 8 caracteres a {$user->email}.");
     }
 
@@ -106,13 +111,27 @@ class UsuariosController extends Controller
             'sede_ids.*' => ['required', 'integer', 'distinct', 'exists:sedes,id'],
         ]);
         SedeAccess::validateSampleMembership($user, $data['sede_ids']);
+
+        $sedesAntes = $user->sedes()->pluck('sedes.id')->all();
+        $sedesNuevasIds = array_diff($data['sede_ids'], $sedesAntes);
+
         $user->sedes()->sync($data['sede_ids']);
+
+        // Enviar mail solo por las sedes nuevas
+        if (!empty($sedesNuevasIds)) {
+            try {
+                $sedesNuevas = Sede::whereIn('id', $sedesNuevasIds)->get();
+                if ($sedesNuevas->isNotEmpty()) {
+                    Mail::to($user->email)->send(new UsuarioAsignadoSedeMail($user, $sedesNuevas));
+                }
+            } catch (\Exception $e) {
+                return back()->with('warning', 'Sedes actualizadas, pero no se pudo enviar la notificación por correo.');
+            }
+        }
+
         return back()->with('success', 'Sedes asignadas al usuario.');
     }
 
-    /**
-     * Reset the password for an existing user.
-     */
     public function resetPassword(Request $request, string $id): RedirectResponse
     {
         $user = User::withTrashed()->findOrFail($id);
@@ -134,9 +153,6 @@ class UsuariosController extends Controller
         return redirect()->back()->with('success', "Contraseña restablecida con éxito para {$user->name}. Se envió la nueva clave a {$user->email}.");
     }
 
-    /**
-     * Toggle General Admin role for a user (except self).
-     */
     public function toggleAdmin(Request $request, string $id): RedirectResponse
     {
         $user = User::withTrashed()->findOrFail($id);
@@ -155,9 +171,6 @@ class UsuariosController extends Controller
         return redirect()->back()->with('success', $mensaje);
     }
 
-    /**
-     * Soft delete a user.
-     */
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if ($user->id === $request->user()->id) {
@@ -176,9 +189,6 @@ class UsuariosController extends Controller
         return redirect()->back()->with('success', "El usuario {$user->name} ha sido desactivado y se le ha notificado por correo.");
     }
 
-    /**
-     * Restore a soft deleted user.
-     */
     public function restore(string $id): RedirectResponse
     {
         $user = User::onlyTrashed()->findOrFail($id);
@@ -194,9 +204,6 @@ class UsuariosController extends Controller
         return redirect()->back()->with('success', "El usuario {$user->name} ha sido restaurado exitosamente y se le ha notificado por correo.");
     }
 
-    /**
-     * Force delete a soft deleted user.
-     */
     public function forceDelete(Request $request, string $id): RedirectResponse
     {
         $user = User::onlyTrashed()->findOrFail($id);

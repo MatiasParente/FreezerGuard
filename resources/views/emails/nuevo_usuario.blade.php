@@ -10,6 +10,10 @@ Se ha creado exitosamente tu cuenta de administrador en el sistema.
 
 Por razones de seguridad, te recomendamos ingresar al sistema y cambiar tu contraseña desde tu perfil.
 
+<x-mail::button :url="$loginUrl" color="primary">
+Iniciar Sesión
+</x-mail::button>
+
 Gracias,<br>
 El equipo de {{ config('app.name') }}
 </x-mail::message>

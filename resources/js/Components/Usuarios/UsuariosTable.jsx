@@ -2,7 +2,7 @@ import Pagination from '@/Components/Pagination';
 import TextInput from '@/Components/TextInput';
 import { usePage, router, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { KeyRound, Trash2, UserPlus, ShieldCheck, User as UserIcon, RotateCcw, Search, History } from 'lucide-react';
+import { KeyRound, Trash2, UserPlus, ShieldCheck, User as UserIcon, RotateCcw, Search, History, MapPin } from 'lucide-react';
 import DeleteUserModal from '@/Components/Usuarios/DeleteUserModal';
 import RestoreUserModal from '@/Components/Usuarios/RestoreUserModal';
 import ForceDeleteUserModal from '@/Components/Usuarios/ForceDeleteUserModal';
@@ -193,7 +193,12 @@ export default function UsuariosTable({
                                         <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                                             {!isInactiveMode ? (
                                                 <>
-                                                    <button type="button" onClick={() => { setEditingSedes(user); siteForm.setData('sede_ids', user.sedes?.map(s => s.id) || []); }} className="rounded-lg border border-indigo-200 px-2 py-1 text-xs text-indigo-700">Sedes</button>
+                                                    <button type="button" onClick={() => { setEditingSedes(user); siteForm.setData('sede_ids', user.sedes?.map(s => s.id) || []); }}
+                                                        title="Gestionar sedes"
+                                                        className="inline-flex items-center justify-center p-2 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-600 border border-teal-200 transition-all shadow-sm hover:scale-105"
+                                                    >
+                                                        <MapPin className="w-4 h-4" />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleToggleAdmin(user)}
                                                         disabled={isSelf}

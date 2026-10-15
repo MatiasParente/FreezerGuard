@@ -35,13 +35,18 @@
    - 8.2 [Asignación de Rol Administrador General](#82-asignación-de-rol-administrador-general)
    - 8.3 [Restablecimiento de Contraseñas](#83-restablecimiento-de-contraseñas)
    - 8.4 [Baja Lógica y Eliminación Definitiva](#84-baja-lógica-y-eliminación-definitiva)
-9. [Configuración de Dispositivos y Notificaciones (Administrador General)](#9-configuración-de-dispositivos-y-notificaciones-administrador-general)
-   - 9.1 [Dispositivos Hardware (ESP32)](#91-dispositivos-hardware-esp32)
-   - 9.2 [Parámetros Globales del Sistema](#92-parámetros-globales-del-sistema)
-   - 9.3 [Canales de Despacho: Email y SMS con Prueba GSM](#93-canales-de-despacho-email-y-sms-con-prueba-gsm)
-10. [Perfil de Usuario y Sesión](#10-perfil-de-usuario-y-sesión)
-11. [Glosario Visual de Botones e Iconos](#11-glosario-visual-de-botones-e-iconos)
-12. [Protocolo de Contingencia ante Incidentes Reales](#12-protocolo-de-contingencia-ante-incidentes-reales)
+9. [Sedes y Laboratorios (Administrador General)](#9-sedes-y-laboratorios-administrador-general)
+   - 9.1 [Estructura: Sedes y Laboratorios](#91-estructura-sedes-y-laboratorios)
+   - 9.2 [Asignación de Freezers a Laboratorios](#92-asignación-de-freezers-a-laboratorios)
+   - 9.3 [Participantes de Muestras](#93-participantes-de-muestras)
+   - 9.4 [Notificaciones por Correo](#94-notificaciones-por-correo)
+10. [Configuración de Dispositivos y Notificaciones (Administrador General)](#10-configuración-de-dispositivos-y-notificaciones-administrador-general)
+   - 10.1 [Dispositivos Hardware (ESP32)](#101-dispositivos-hardware-esp32)
+   - 10.2 [Parámetros Globales del Sistema](#102-parámetros-globales-del-sistema)
+   - 10.3 [Canales de Despacho: Email y SMS con Prueba GSM](#103-canales-de-despacho-email-y-sms-con-prueba-gsm)
+11. [Perfil de Usuario y Sesión](#11-perfil-de-usuario-y-sesión)
+12. [Glosario Visual de Botones e Iconos](#12-glosario-visual-de-botones-e-iconos)
+13. [Protocolo de Contingencia ante Incidentes Reales](#13-protocolo-de-contingencia-ante-incidentes-reales)
 
 ---
 
@@ -76,7 +81,7 @@ La plataforma distingue dos niveles de acceso para garantizar la seguridad del l
 
 | Nivel | Rol en la Web | Permisos Principales |
 |---|---|---|
-| **Investigador / Docente / Alumno** | *Usuario Estándar* | Visualizar el Dashboard en tiempo real, filtrar y consultar el historial de mediciones, registrar y editar muestras de su autoría o laboratorio, ver alertas activas y añadir observaciones de resolución. |
+| **Docente** | *Usuario Estándar* | Visualizar el Dashboard en tiempo real, filtrar y consultar el historial de mediciones, registrar y editar muestras de su autoría o laboratorio, ver alertas activas y añadir observaciones de resolución. |
 | **Encargado de Laboratorio / Soporte** | *Admin General* | Todos los permisos de usuario estándar, más: Crear y dar de baja usuarios, promover administradores, resetear claves, vincular nuevos módulos ESP32, modificar umbrales de telemetría, teléfonos de guardia SMS y plantillas de correo. |
 
 ---
@@ -85,7 +90,7 @@ La plataforma distingue dos niveles de acceso para garantizar la seguridad del l
 
 Para ingresar al sistema, dirígete en tu navegador a la ruta **/login** (por ejemplo: `https://freezerguard.tudominio.com/login` o `http://127.0.0.1:8000/login`).
 
-![Pantalla de Inicio de Sesión](docs/manual/images/01_login_screen.svg)
+![Pantalla de Inicio de Sesión](imagenes/Iniciar%20sesion.PNG)
 
 ### Elementos y Controles de la Pantalla:
 1. **Campo `Correo Electrónico`:** Ingresa la cuenta de correo institucional con la que fuiste dado de alta (ejemplo: `docente@utec.edu.uy`).
@@ -101,7 +106,7 @@ Para ingresar al sistema, dirígete en tu navegador a la ruta **/login** (por ej
 
 Al autenticarte, accederás a la vista general del sistema. Esta pantalla centraliza el estado térmico, energético y operativo de los freezers vinculados.
 
-![Panel de Control Principal](docs/manual/images/02_dashboard_overview.svg)
+![Panel de Control Principal](imagenes/cajas.PNG)
 
 ### 4.1 Barra Lateral de Navegación
 Ubicada a la izquierda de la pantalla (o accesible mediante el menú en dispositivos móviles):
@@ -120,21 +125,21 @@ En la parte superior derecha del área de trabajo encontrarás el selector despl
 
 ---
 
-### 4.3 Tarjetas Métricas Superiores (Top Metric Cards)
+### 4.3 Tarjetas Métricas Superiores
 Estas tres tarjetas ofrecen un diagnóstico inmediato en menos de 3 segundos:
 
-![Detalle de Tarjetas Métricas](docs/manual/images/03_dashboard_cards_detail.svg)
+![Detalle de Tarjetas Métricas](imagenes/cajas.PNG)
 
-#### 1. Tarjeta `Temperatura` (Azul)
+#### 1. Tarjeta `Temperatura`
 * **Valor numérico grande:** Indica la última temperatura reportada por el sensor en grados Celsius (con dos decimales, ej. `-21.40 °C`).
 * **Pie de tarjeta:** Informa el nombre del dispositivo emisor y el estado de rango térmico.
 * **Frecuencia:** Se actualiza silenciosamente en segundo plano cada 4 segundos.
 
-#### 2. Tarjeta `Corriente Eléctrica` (Bicolor: Verde o Rojo)
+#### 2. Tarjeta `Corriente Eléctrica`
 * **Estado Verde (`OK - Red Eléctrica Activa`):** Significa que el freezer recibe alimentación eléctrica con normalidad.
 * **Estado Rojo (`Batería - Corte de Luz detectado`):** Es una alerta. El suministro eléctrico de la red se ha interrumpido. El dispositivo de campo está funcionando con su batería de respaldo recargable y el freezer ha dejado de enfriar.
 
-#### 3. Tarjeta `Canales y Alertas Web` (Oscura)
+#### 3. Tarjeta `Canales y Alertas Web`
 * **Indicadores de Canales:** Badges `Email: ON/OFF` y `SMS: ON/OFF` que muestran si los servicios de envío masivo están activos globalmente.
 * **Disparadores de Alerta:** Muestra en verde los tipos de alertas vigiladas: `Temp` (temperatura), `Bat` (corte de luz/batería), `Venc` (vencimiento de muestra), `Inact` (falta de comunicación) y `GSM` (módem celular).
 * **Punto de Alerta:** Si parpadea en color rojo, indica que existen alertas pendientes sin resolver en el laboratorio.
@@ -144,7 +149,7 @@ Estas tres tarjetas ofrecen un diagnóstico inmediato en menos de 3 segundos:
 ### 4.4 Gráfico de Monitoreo en Tiempo Real
 Permite examinar la curva térmica de los freezers con actualización continua.
 
-![Gráfico de Monitoreo en Tiempo Real](docs/manual/images/04_realtime_chart_controls.svg)
+![Gráfico de Monitoreo en Tiempo Real](imagenes/grafica.PNG)
 
 #### Controles del Gráfico:
 * **Botón Acordeón (`ChevronUp / ChevronDown`):** Permite plegar o desplegar la sección del gráfico para ahorrar espacio visual.
@@ -162,7 +167,7 @@ Permite examinar la curva térmica de los freezers con actualización continua.
 ### 4.5 Acordeón de Muestras por Vencer
 Presenta de manera compacta las muestras de laboratorio almacenadas según su proximidad a la fecha de caducidad.
 
-![Acordeón de Muestras](docs/manual/images/05_muestras_accordion.svg)
+![Acordeón de Muestras por Vencer](imagenes/vencimiento.PNG)
 
 * **Filtros por Estado:**
   * `Vencidas` (Rojo): Muestras cuya fecha de caducidad ya ha sido superada.
@@ -184,7 +189,7 @@ Muestra los últimos eventos generados en el sistema:
 
 Ubicado en la ruta **/mediciones**, este módulo funciona como la bitácora de auditoría térmica y energética de todos los dispositivos.
 
-![Historial de Mediciones](docs/manual/images/06_mediciones_toolbar_table.svg)
+![Historial de Mediciones](imagenes/mediciones.PNG)
 
 ### Barra de Filtros:
 1. **`Suministro Eléctrico`:** Filtra las filas según la fuente de energía:
@@ -204,7 +209,7 @@ Ubicado en la ruta **/mediciones**, este módulo funciona como la bitácora de a
 
 Accesible desde **/muestras**, es el catálogo de todo el material biológico, químico y reactivos custodiados en los freezers.
 
-![Muestras Almacenadas](docs/manual/images/07_muestras_table_modal.svg)
+<!-- No hay captura dedicada de la pantalla de muestras actualmente -->
 
 ### 6.1 Indicador Visual de Riesgo en Freezer
 Si un freezer experimenta una falla térmica o un corte de energía, todas las muestras almacenadas en ese equipo se resaltarán automáticamente con fondo rojizo y un ícono de advertencia pulsante. Esto permite al personal identificar al instante qué material debe ser reubicado con urgencia.
@@ -240,7 +245,7 @@ Para preservar la trazabilidad científica de las investigaciones, las muestras 
 
 Accesible desde **/alertas**, constituye el centro neurálgico de incidentes de la plataforma.
 
-![Alertas Generadas](docs/manual/images/08_alertas_panel.svg)
+![Alertas del Dashboard](imagenes/alertas%20dashboard.PNG)
 
 ### 7.1 Estados de Alerta: Pendiente vs Resuelta
 * **Icono Rojo `Pendiente`:** El problema persiste o aún no ha sido verificado por un operador.
@@ -269,7 +274,7 @@ Cuando se produce una alerta crítica, el sistema despacha correos automáticos 
 
 Accesible únicamente para usuarios con permisos directivos o de administración general desde **/usuarios**.
 
-![Gestión de Usuarios](docs/manual/images/09_usuarios_panel.svg)
+<!-- No hay captura dedicada de la pantalla de usuarios actualmente -->
 
 ### 8.1 Creación de Usuarios
 * **Botón `CREAR USUARIO`:** Despliega un formulario modal donde se ingresan:
@@ -291,13 +296,68 @@ Accesible únicamente para usuarios con permisos directivos o de administración
 
 ---
 
-## 9. Configuración de Dispositivos y Notificaciones (Administrador General)
+## 9. Sedes y Laboratorios (Administrador General)
+
+Accesible desde **/sedes**, este módulo permite organizar la estructura física del centro en sedes y laboratorios, asignar freezers a laboratorios y gestionar participantes de muestras.
+
+La pantalla presenta tres tarjetas métricas superiores con la cantidad total de sedes, laboratorios y personas asignadas. Debajo, dos pestañas permiten alternar entre la vista de **Estructura** y la de **Participantes**.
+
+### 9.1 Estructura: Sedes y Laboratorios
+
+La pestaña **Estructura** muestra una guía de pasos y la jerarquía organizacional:
+
+#### Crear una Sede
+* **Botón `Nueva Sede`:** Despliega un formulario donde se ingresa el nombre de la sede (ej. *"Sede Paysandú"*, *"Sede Montevideo"*).
+* Una vez creada, la sede aparece en la lista con sus laboratorios, personas asignadas e indicadores de cantidad.
+
+#### Crear un Laboratorio
+* **Botón `Nuevo Laboratorio`:** Despliega un formulario donde se selecciona la sede a la que pertenece y se ingresa el nombre (ej. *"Lab Biología Molecular"*, *"Lab Química Analítica"*).
+* Los laboratorios se muestran anidados dentro de su sede correspondiente.
+
+#### Renombrar y Eliminar
+* **Botón lápiz:** Permite renombrar una sede o laboratorio existente.
+* **Botón eliminar (tacho rojo):** Elimina la sede o laboratorio. Solo es posible si no tiene laboratorios, freezers o personas asignadas respectivamente.
+
+### 9.2 Asignación de Freezers a Laboratorios
+
+En la sección inferior de la pestaña Estructura se muestra la lista de **Freezers sin Laboratorio** (pendientes de asignación). Para cada freezer:
+* Selecciona el laboratorio de destino del desplegable (organizado como *"Sede / Laboratorio"*).
+* Presiona **Asignar** para vincular el freezer al laboratorio.
+* Un freezer ya asignado puede ser movido a otro laboratorio con el botón **Mover**.
+
+> **Nota:** No se permite asignar un freezer a un laboratorio de otra sede si ya tiene responsables o participantes de muestras que no pertenecen a esa sede.
+
+### 9.3 Participantes de Muestras
+
+La pestaña **Participantes** permite gestionar a los alumnos y colaboradores que participan de muestras pero no tienen cuenta de acceso al sistema.
+
+* **Botón `Crear Participante`:** Despliega un formulario con:
+  * Nombre completo.
+  * Correo electrónico.
+  * Teléfono (opcional).
+  * Sedes a las que pertenece (una o más).
+* **Buscador:** Permite filtrar participantes por nombre o correo electrónico.
+* **Tabla de participantes:** Muestra nombre, correo, teléfono y las sedes asignadas con badges de color.
+* **Edición:** Cada participante puede expandirse para modificar sus datos o cambiar sus sedes.
+
+### 9.4 Notificaciones por Correo
+
+El sistema envía notificaciones automáticas por correo electrónico en los siguientes eventos relacionados con sedes y asignaciones:
+
+* **Asignación a Sede:** Cuando un administrador asigna un usuario a una o más sedes (ya sea al crear el usuario o al modificar sus sedes), el usuario recibe un correo informándole las sedes a las que fue asignado.
+* **Asignación a Muestra:** Cuando un docente es asignado como responsable de una muestra (al crear o editar una muestra), recibe un correo con los detalles de la muestra: título, freezer, rango térmico y fecha de vencimiento.
+
+Todos los correos incluyen un botón directo para iniciar sesión en la plataforma.
+
+---
+
+## 10. Configuración de Dispositivos y Notificaciones (Administrador General)
 
 Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con la plataforma web y definir las políticas globales de alerta.
 
-### 9.1 Dispositivos Hardware (ESP32)
+### 10.1 Dispositivos Hardware (ESP32)
 
-![Configuración de Dispositivos ESP32](docs/manual/images/10_configuracion_dispositivos.svg)
+![Configuración de Dispositivos](imagenes/configuracion.PNG)
 
 * **Botón `AGREGAR DISPOSITIVO`:** Permite registrar una nueva placa ESP32 y asociarla a un freezer existente o crear una nueva ubicación física de laboratorio (ej. *"Lab Biología Molecular - Freezer 3"*).
 * **Botón `Configurar Dispositivo`:** Despliega el modal de ajuste fino del microcontrolador:
@@ -313,22 +373,22 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 
 ---
 
-### 9.2 Parámetros Globales del Sistema
+### 10.2 Parámetros Globales del Sistema
 
-![Configuración Global y Canales](docs/manual/images/11_configuracion_sistema_canales.svg)
+![Configurar Dispositivo](imagenes/configurar%20dispositivo.PNG)
 
 * **Frecuencia de Envío de Correos:** Intervalo en minutos en el que el servidor recalcula y reenvía recordatorios de contingencias no resueltas (ej. cada `1 minuto`).
 * **Email por Defecto del Sistema:** Casilla de correo institucional que recibe copia de auditoría de todas las incidencias registradas en el centro.
 
 ---
 
-### 9.3 Canales de Despacho: Email y SMS con Prueba GSM
+### 10.3 Canales de Despacho: Email y SMS con Prueba GSM
 * **Canal Correo Electrónico:**
   * Casilla de activación global `Activar correos`.
   * *Asunto del correo y Plantilla del cuerpo:* Personalizables para incluir datos dinámicos.
 * **Canal Mensajes de Texto (SMS):**
   * Casilla de activación `Activar SMS`.
-  * **Botón `PROBAR SMS`:** Envía una orden inmediata a la placa ESP32 para que despache un SMS de prueba al número configurado. Es fundamental para comprobar que el módulo SIM800L, la antena y el saldo de la tarjeta SIM operan correctamente antes de dejar el freezer en producción.
+  * **Botón `PROBAR SMS`:** Ubicado dentro de la configuración de cada dispositivo individual (junto al campo de número de teléfono SMS), envía una orden a la placa ESP32 para que despache un SMS de prueba al número configurado en ese dispositivo. Es fundamental para comprobar que el módulo SIM800L, la antena y el saldo de la tarjeta SIM operan correctamente antes de dejar el freezer en producción.
 * **Variables Dinámicas Disponibles en Plantillas:**
   * `{dispositivo}`: Nombre del ESP32 emisor.
   * `{freezer}`: Nombre o ubicación del freezer afectado.
@@ -338,7 +398,7 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 
 ---
 
-## 10. Perfil de Usuario y Sesión
+## 11. Perfil de Usuario y Sesión
 
 Haciendo clic en tu nombre en la parte inferior de la barra lateral izquierda y seleccionando **Perfil** (`/profile`):
 * **Información de Perfil:** Permite actualizar tu nombre y dirección de correo electrónico.
@@ -347,11 +407,11 @@ Haciendo clic en tu nombre en la parte inferior de la barra lateral izquierda y 
 
 ---
 
-## 11. Glosario Visual de Botones e Iconos
+## 12. Glosario Visual de Botones e Iconos
 
 A continuación se detalla la función de cada botón presente en la aplicación web:
 
-![Iconografía y Botones de Acción](docs/manual/images/12_botones_guia_rapida.svg)
+<!-- La iconografía se describe en la tabla a continuación -->
 
 | Icono / Botón | Color | Ubicación en la Web | Acción que realiza |
 |---|---|---|---|
@@ -362,7 +422,8 @@ A continuación se detalla la función de cada botón presente en la aplicación
 | **Flecha Circular** | Verde Esmeralda | Historial Inactivos (Muestras/Usuarios) | **Restaurar:** Reactiva un registro archivado y lo regresa a la lista activa. |
 | **Escudo** | Púrpura | Tabla de Usuarios | **Alternar Rol:** Promueve a un usuario a Administrador General o retira sus permisos. |
 | **Llave** | Azul / Índigo | Tabla de Usuarios | **Resetear Clave:** Asigna una nueva contraseña de emergencia a un usuario. |
-| **Probar SMS** | Morado | Configuración de Sistema | Ordena al ESP32 enviar un SMS de prueba para validar que funcione el modulo SMS. |
+| **Probar SMS** | Morado | Configuración del Dispositivo (junto al teléfono) | Ordena al ESP32 enviar un SMS de prueba para validar que funcione el módulo SMS. |
+| **Pin / Marcador (MapPin)** | Teal | Tabla de Usuarios | **Gestionar Sedes:** Permite asignar o modificar las sedes de un usuario. |
 | **Tuerca** | Índigo | Tabla de Dispositivos | Abre la parametrización avanzada del microcontrolador ESP32. |
 | **Ojo** | Azul / Gris | Gráfico en Tiempo Real | Muestra u oculta la curva térmica de un freezer específico en la gráfica. |
 | **Historial** | Blanco / Borde Gris | Muestras, Usuarios, Dispositivos | Alterna la vista entre elementos activos y el historial de archivados. |
@@ -370,7 +431,7 @@ A continuación se detalla la función de cada botón presente en la aplicación
 
 ---
 
-## 12. Protocolo de Contingencia ante Incidentes Reales
+## 13. Protocolo de Contingencia ante Incidentes Reales
 
 Como usuario u operador responsable de laboratorio, sigue estas pautas operativas ante cada tipo de alerta:
 

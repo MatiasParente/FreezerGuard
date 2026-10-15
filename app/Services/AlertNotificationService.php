@@ -57,9 +57,7 @@ class AlertNotificationService
         return $emails->toArray();
     }
 
-    /**
-     * Enviar mail de alerta inicial (Estado 0 -> 1) a todos los destinatarios consolidados en un solo correo.
-     */
+    //Enviar mail de alerta inicial (Estado 0 -> 1) a todos los destinatarios consolidados en un solo correo.
     public static function enviarNotificacionAlerta(AlertaGenerada $alertaGenerada): void
     {
         if ($alertaGenerada->estado !== 0) return;
@@ -113,9 +111,7 @@ class AlertNotificationService
         }
     }
 
-    /**
-     * Enviar mail de confirmación al resolver una alerta (Manual o Auto-resolución).
-     */
+    // Enviar mail de confirmación al resolver una alerta
     public static function resolverAlertaYNotificar(AlertaGenerada $alertaGenerada, string $observacion = 'Resuelto'): void
     {
         $ahora = now('America/Montevideo');
@@ -152,9 +148,7 @@ class AlertNotificationService
         ));
     }
 
-    /**
-     * Evaluar auto-resolución de alertas pendientes con margen de estabilidad de 5 minutos.
-     */
+    // Evaluar auto-resolución de alertas pendientes con margen de estabilidad de 5 minutos.
     public static function procesarAutoResoluciones(?int $dispositivoId = null): void
     {
         $ahora = now('America/Montevideo');
@@ -273,9 +267,7 @@ class AlertNotificationService
         }
     }
 
-    /**
-     * Auxiliar para comprobar si todas las mediciones de una colección están en el rango térmico seguro.
-     */
+    // Auxiliar para comprobar si todas las mediciones de una colección están en el rango térmico seguro.
     private static function validarTemperaturaEnRango(Dispositivo $dispositivo, $mediciones): bool
     {
         $muestrasActivasConRango = collect();

@@ -151,18 +151,14 @@ class ConfiguracionController extends Controller
         return redirect()->back()->with('success', 'Configuración del sistema, canales y plantillas de alerta actualizadas.');
     }
 
-    public function probarSMS(Request $request): RedirectResponse
+    public function probarSMS(Request $request, Dispositivo $dispositivo): RedirectResponse
     {
-        $dispositivo = Dispositivo::whereNotNull('telefonos_sms')
-            ->where('telefonos_sms', '!=', '')
-            ->first();
-
-        if (!$dispositivo) {
-            return redirect()->back()->withErrors(['error' => 'No hay ningún dispositivo configurado con número de teléfono para la prueba.']);
+        if (!$dispositivo->telefonos_sms) {
+            return redirect()->back()->withErrors(['error' => 'Este dispositivo no tiene números de teléfono configurados para SMS.']);
         }
 
         $dispositivo->update(['solicitud_sms_prueba' => true]);
 
-        return redirect()->back()->with('success', "Solicitud de prueba enviada al dispositivo. La ESP32 enviará un SMS a {$dispositivo->telefonos_sms} en su próximo reporte.");
+        return redirect()->back()->with('success', "Solicitud de prueba enviada a «{$dispositivo->nombre}». La ESP32 enviará un SMS a {$dispositivo->telefonos_sms} en su próximo reporte.");
     }
 }

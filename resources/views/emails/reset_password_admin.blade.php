@@ -9,6 +9,10 @@ Un Administrador General ha generado una nueva contraseña para tu cuenta en **{
 
 Te recomendamos iniciar sesión y actualizar tu contraseña desde la sección Perfil.
 
+<x-mail::button :url="$loginUrl" color="primary">
+Iniciar Sesión
+</x-mail::button>
+
 Gracias,<br>
 El equipo de {{ config('app.name') }}
 </x-mail::message>

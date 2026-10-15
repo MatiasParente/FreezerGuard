@@ -4,9 +4,9 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { useEffect } from 'react';
-import { Settings, Cpu, Bell, Thermometer, PhoneCall } from 'lucide-react';
+import { Settings, Cpu, Bell, Thermometer, PhoneCall, Send } from 'lucide-react';
 
 export default function EditDispositivoModal({ isOpen, onClose, dispositivo = null }) {
     const editForm = useForm({
@@ -90,9 +90,27 @@ export default function EditDispositivoModal({ isOpen, onClose, dispositivo = nu
 
                     {/* Configuración SMS*/}
                     <div className="space-y-4 md:col-span-2 bg-purple-50/50 p-4 rounded-lg border border-purple-100">
-                        <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
-                            <PhoneCall className="w-4 h-4 text-purple-600" /> Configuración SMS
-                        </h3>
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-purple-900 text-sm flex items-center gap-1.5">
+                                <PhoneCall className="w-4 h-4 text-purple-600" /> Configuración SMS
+                            </h3>
+                            {dispositivo && (
+                                <button
+                                    type="button"
+                                    disabled={!editForm.data.telefonos_sms}
+                                    onClick={() => {
+                                        router.post(route('configuracion.probar-sms', dispositivo.id), {}, {
+                                            preserveScroll: true,
+                                        });
+                                    }}
+                                    title={editForm.data.telefonos_sms ? 'Enviar SMS de prueba a los números configurados' : 'Configura un número de teléfono primero'}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-100 hover:bg-purple-200 px-2.5 py-1 rounded-md border border-purple-300 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    <Send className="w-3.5 h-3.5 text-purple-700" />
+                                    Probar SMS
+                                </button>
+                            )}
+                        </div>
                         <div>
                             <InputLabel htmlFor="telefonos_sms" value="Número(s) de teléfono para SMS" />
                             <TextInput id="telefonos_sms" type="text" placeholder="+59898485023, +59899123456" className="mt-1 block w-full text-xs" value={editForm.data.telefonos_sms} onChange={e => editForm.setData('telefonos_sms', e.target.value)} />

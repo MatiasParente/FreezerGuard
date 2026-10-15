@@ -16,18 +16,12 @@ class NuevoUsuarioCreadoMail extends Mailable
     public User $user;
     public string $plainPassword;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(User $user, string $plainPassword)
     {
         $this->user = $user;
         $this->plainPassword = $plainPassword;
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -35,9 +29,6 @@ class NuevoUsuarioCreadoMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -50,11 +41,6 @@ class NuevoUsuarioCreadoMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];
