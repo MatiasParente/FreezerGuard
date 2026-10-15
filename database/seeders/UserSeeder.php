@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Sede;
 
 class UserSeeder extends Seeder
 {
@@ -12,7 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
+        $user = User::updateOrCreate(
             ['email' => 'matias.parente@estudiantes.utec.edu.uy'],
             [
                 'name' => 'Matias Parente',
@@ -21,5 +22,6 @@ class UserSeeder extends Seeder
                 'password' => bcrypt('password123'),
             ]
         );
+        $user->sedes()->syncWithoutDetaching(Sede::where('nombre', 'Sede demo')->firstOrFail()->id);
     }
 }

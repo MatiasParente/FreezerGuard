@@ -9,13 +9,14 @@ use App\Models\Medicion;
 use App\Models\AlertaGenerada;
 use App\Models\Dispositivo;
 use App\Models\Freezer;
+use App\Support\SedeAccess;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
         // Muestras por vencer
-        $muestras = Muestra::with('freezer.dispositivo')->get()->map(function($muestra) {
+        $muestras = SedeAccess::scope(Muestra::with('freezer.dispositivo'), $request->user(), 'freezer.laboratorio')->get()->map(function($muestra) {
             $dias = $muestra->vencimiento ? now()->diffInDays($muestra->vencimiento, false) : null;
             if ($dias === null) {
                 $estado = 'Sin Vencimiento';
@@ -31,7 +32,7 @@ class DashboardController extends Controller
         });
 
         // Lista de dispositivos con su última medición y estado de alertas para las Tarjetas Superiores
-        $dispositivosConEstado = Dispositivo::with('freezer')->get()->map(function($disp) {
+        $dispositivosConEstado = SedeAccess::scope(Dispositivo::with('freezer'), $request->user(), 'freezer.laboratorio')->get()->map(function($disp) {
             $ultimaMedicion = Medicion::where('dispositivo_id', $disp->id)
                 ->orderBy('fecha_y_hora', 'desc')
                 ->first();
@@ -52,10 +53,10 @@ class DashboardController extends Controller
         });
 
         // Alertas sin resolver (conteo total)
-        $alertasSinResolverCount = AlertaGenerada::where('estado', '!=', 2)->count();
+        $alertasSinResolverCount = SedeAccess::scope(AlertaGenerada::where('estado', '!=', 2), $request->user(), 'dispositivo.freezer.laboratorio')->count();
 
         // Últimas 100 mediciones para gráfico en tiempo real
-        $ultimasMediciones = Medicion::with('dispositivo')
+        $ultimasMediciones = SedeAccess::scope(Medicion::with('dispositivo'), $request->user(), 'dispositivo.freezer.laboratorio')
             ->orderBy('fecha_y_hora', 'desc')
             ->take(100)
             ->get()
@@ -72,7 +73,7 @@ class DashboardController extends Controller
             });
 
         // Alertas paginadas
-        $alertas = AlertaGenerada::with(['dispositivo.freezer', 'alerta'])
+        $alertas = SedeAccess::scope(AlertaGenerada::with(['dispositivo.freezer', 'alerta']), $request->user(), 'dispositivo.freezer.laboratorio')
             ->where(function($q) {
                 $q->where('estado', '!=', 2)
                   ->orWhere('fecha_y_hora', '>=', now()->subDays(30));
@@ -82,7 +83,7 @@ class DashboardController extends Controller
             ->withQueryString();
 
         // Freezers para desplegable de muestras
-        $freezers = Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get();
+        $freezers = SedeAccess::scope(Freezer::select('id', 'ubicacion'), $request->user())->orderBy('ubicacion')->get();
 
         return Inertia::render('Dashboard', [
             'muestras' => $muestras,

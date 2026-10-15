@@ -6,6 +6,7 @@ use App\Http\Controllers\MuestrasController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\AlertasController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SedesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,13 +30,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::controller(MedicionesController::class)->group(function () {
+Route::middleware('auth')->controller(MedicionesController::class)->group(function () {
     Route::get('/mediciones', 'index')->name('mediciones.mediciones');
     Route::get('/mediciones/{medicion}', 'show')->name('mediciones.show');
     Route::delete('/mediciones/{medicion}', 'destroy')->name('mediciones.destroy');
 });
 
-Route::controller(MuestrasController::class)->group(function () {
+Route::middleware('auth')->controller(MuestrasController::class)->group(function () {
     Route::get('/muestras', 'index')->name('muestras.muestras');
     Route::post('/muestras', 'store')->name('muestras.store');
     Route::put('/muestras/{muestra}', 'update')->name('muestras.update');
@@ -56,9 +57,9 @@ Route::middleware(['auth', 'admin.general'])->controller(ConfiguracionController
     Route::get('/configuracion/{configuracion}', 'show')->name('configuracion.show');
 });
 
-Route::controller(AlertasController::class)->group(function () {
+Route::middleware('auth')->controller(AlertasController::class)->group(function () {
     Route::get('/alertas', 'index')->name('alertas.alertas');
-    Route::get('/alertas/{alerta}', 'show')->name('alertas.show');
+    Route::get('/alertas/{alertaGenerada}', 'show')->name('alertas.show');
     Route::put('/alertas/{alertaGenerada}', 'update')->name('alertas.update');
     Route::delete('/alertas/{alertaGenerada}', 'destroy')->name('alertas.destroy');
 });
@@ -66,11 +67,25 @@ Route::controller(AlertasController::class)->group(function () {
 Route::middleware(['auth', 'admin.general'])->controller(\App\Http\Controllers\UsuariosController::class)->group(function () {
     Route::get('/usuarios', 'index')->name('usuarios.index');
     Route::post('/usuarios', 'store')->name('usuarios.store');
+    Route::put('/usuarios/{user}/sedes', 'updateSedes')->name('usuarios.sedes.update');
     Route::post('/usuarios/{id}/reset-password', 'resetPassword')->name('usuarios.reset-password');
     Route::post('/usuarios/{id}/toggle-admin', 'toggleAdmin')->name('usuarios.toggle-admin');
     Route::delete('/usuarios/{user}', 'destroy')->name('usuarios.destroy');
     Route::post('/usuarios/{id}/restore', 'restore')->name('usuarios.restore');
     Route::delete('/usuarios/{id}/force-delete', 'forceDelete')->name('usuarios.force-delete');
+});
+
+Route::middleware(['auth', 'admin.general'])->controller(SedesController::class)->group(function () {
+    Route::get('/sedes', 'index')->name('sedes.index');
+    Route::post('/sedes', 'store')->name('sedes.store');
+    Route::put('/sedes/{sede}', 'update')->name('sedes.update');
+    Route::delete('/sedes/{sede}', 'destroy')->name('sedes.destroy');
+    Route::post('/laboratorios', 'storeLaboratorio')->name('laboratorios.store');
+    Route::put('/laboratorios/{laboratorio}', 'updateLaboratorio')->name('laboratorios.update');
+    Route::delete('/laboratorios/{laboratorio}', 'destroyLaboratorio')->name('laboratorios.destroy');
+    Route::put('/freezers/{freezer}/laboratorio', 'assignFreezer')->name('freezers.laboratorio.update');
+    Route::post('/participantes', 'storeParticipante')->name('participantes.store');
+    Route::put('/participantes/{usuario}', 'updateParticipante')->name('participantes.update');
 });
 
 require __DIR__.'/auth.php';

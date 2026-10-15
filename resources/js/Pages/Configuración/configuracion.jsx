@@ -12,6 +12,7 @@ export default function configuracion({
     filters, 
     freezers, 
     available_freezers, 
+    laboratorios = [],
     configuracionSistema 
 }) {
     // Estado desplegable de los acordeones
@@ -108,6 +109,7 @@ export default function configuracion({
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 availableFreezers={available_freezers}
+                laboratorios={laboratorios}
             />
 
             {/* editar Dispositivo */}

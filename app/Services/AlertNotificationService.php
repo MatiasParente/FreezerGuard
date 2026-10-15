@@ -12,6 +12,7 @@ use App\Models\ConfiguracionSistema;
 use App\Mail\AlertaTemperaturaMail;
 use App\Mail\AlertaResueltaMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Carbon\Carbon;
 
@@ -27,18 +28,20 @@ class AlertNotificationService
 
         $freezer = $dispositivo?->freezer;
         if ($freezer) {
+            $sedeId = $freezer->laboratorio?->sede_id;
             // Admins del freezer
             foreach ($freezer->users as $u) {
-                if (!empty($u->email)) $emails->push($u->email);
+                if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
             }
 
             // Usuarios asignados a las muestras activas del freezer
             foreach ($freezer->muestras as $muestra) {
+                if ($muestra->estado !== 'activo') continue;
                 foreach ($muestra->users as $u) {
-                    if (!empty($u->email)) $emails->push($u->email);
+                    if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
                 }
                 foreach ($muestra->usuarios as $u) {
-                    if (!empty($u->email)) $emails->push($u->email);
+                    if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
                 }
             }
         }
@@ -51,14 +54,6 @@ class AlertNotificationService
         // Limpiar espacios y quitar duplicados
         $emails = $emails->map(fn($e) => trim($e))->filter()->unique()->values();
 
-        // Si no hay correos ni en muestra ni en default, avisar al usuario del sistema
-        if ($emails->isEmpty()) {
-            $firstUserEmail = User::first()?->email;
-            if ($firstUserEmail) {
-                $emails->push($firstUserEmail);
-            }
-        }
-
         return $emails->toArray();
     }
 
@@ -67,12 +62,11 @@ class AlertNotificationService
      */
     public static function enviarNotificacionAlerta(AlertaGenerada $alertaGenerada): void
     {
+        if ($alertaGenerada->estado !== 0) return;
+
         $config = ConfiguracionSistema::getSolo();
 
         if (!$config->envio_email_activo) {
-            if ($alertaGenerada->estado == 0) {
-                $alertaGenerada->update(['estado' => 1]);
-            }
             return;
         }
 
@@ -83,7 +77,15 @@ class AlertNotificationService
         $alerta = $alertaGenerada->alerta;
 
         $destinatarios = self::obtenerDestinatarios($dispositivo);
-        if (empty($destinatarios)) return;
+        if (empty($destinatarios)) {
+            Log::warning('Alerta pendiente sin destinatarios de correo', [
+                'alerta_generada_id' => $alertaGenerada->id,
+                'dispositivo_id' => $dispositivo->id,
+                'freezer_sin_laboratorio' => $freezer && !$freezer->laboratorio_id,
+                'respaldo_global_configurado' => !empty($config->email_default),
+            ]);
+            return;
+        }
 
         // Firma firmada para resolución vía link
         $rutaRelativa = URL::signedRoute('alertas.resolver', ['alertaGenerada' => $alertaGenerada->id], null, false);
@@ -91,17 +93,23 @@ class AlertNotificationService
 
         $ultimaMedicion = $dispositivo->mediciones()->latest('fecha_y_hora')->first();
 
-        Mail::to($destinatarios)->queue(new AlertaTemperaturaMail(
-            $freezer,
-            $dispositivo,
-            $alerta,
-            $urlResolucion,
-            $alertaGenerada->fecha_y_hora,
-            $ultimaMedicion?->temperatura
-        ));
+        // Reservar la transición antes de encolar: dos workers pueden haber leído el mismo estado 0.
+        if (AlertaGenerada::whereKey($alertaGenerada->id)->where('estado', 0)->update(['estado' => 1]) === 0) return;
+        $alertaGenerada->estado = 1;
 
-        if ($alertaGenerada->estado == 0) {
-            $alertaGenerada->update(['estado' => 1]);
+        try {
+            Mail::to($destinatarios)->queue(new AlertaTemperaturaMail(
+                $freezer,
+                $dispositivo,
+                $alerta,
+                $urlResolucion,
+                $alertaGenerada->fecha_y_hora,
+                $ultimaMedicion?->temperatura
+            ));
+        } catch (\Throwable $e) {
+            AlertaGenerada::whereKey($alertaGenerada->id)->where('estado', 1)->update(['estado' => 0]);
+            $alertaGenerada->estado = 0;
+            throw $e;
         }
     }
 

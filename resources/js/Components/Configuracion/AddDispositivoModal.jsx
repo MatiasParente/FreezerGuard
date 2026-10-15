@@ -6,13 +6,14 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { useForm } from '@inertiajs/react';
 
-export default function AddDispositivoModal({ isOpen, onClose, availableFreezers = [] }) {
+export default function AddDispositivoModal({ isOpen, onClose, availableFreezers = [], laboratorios = [] }) {
     const addForm = useForm({
         nombre: '',
         descripcion: '',
         freezer_id: '',
         is_new_freezer: false,
         nueva_ubicacion: '',
+        laboratorio_id: '',
     });
 
     const submitAddForm = (e) => {
@@ -54,7 +55,7 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
                             onChange={(e) => addForm.setData('is_new_freezer', e.target.checked)}
                         />
                         <label htmlFor="is_new_freezer" className="ml-2 block text-sm text-gray-900">
-                            Crear nuevo laboratorio (Freezer)
+                            Crear nuevo freezer
                         </label>
                     </div>
 
@@ -70,8 +71,8 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
                             <InputError message={addForm.errors.freezer_id} className="mt-2" />
                         </div>
                     ) : (
-                        <div>
-                            <InputLabel htmlFor="nueva_ubicacion" value="Nueva Ubicación del Laboratorio" />
+                        <div className="space-y-3">
+                            <InputLabel htmlFor="nueva_ubicacion" value="Ubicación del nuevo freezer" />
                             <TextInput 
                                 id="nueva_ubicacion" 
                                 type="text" 
@@ -79,9 +80,15 @@ export default function AddDispositivoModal({ isOpen, onClose, availableFreezers
                                 value={addForm.data.nueva_ubicacion} 
                                 onChange={e => addForm.setData('nueva_ubicacion', e.target.value)} 
                                 required={addForm.data.is_new_freezer} 
-                                placeholder="Ej: Lab Central 1" 
+                                placeholder="Ej: Congelador 1"
                             />
                             <InputError message={addForm.errors.nueva_ubicacion} className="mt-2" />
+                            <InputLabel htmlFor="laboratorio_id" value="Laboratorio del freezer" />
+                            <select id="laboratorio_id" className="mt-1 block w-full rounded-md border-gray-300" value={addForm.data.laboratorio_id} onChange={e => addForm.setData('laboratorio_id', e.target.value)} required={addForm.data.is_new_freezer}>
+                                <option value="">Seleccione un laboratorio...</option>
+                                {laboratorios.map(l => <option key={l.id} value={l.id}>{l.sede?.nombre} / {l.nombre}</option>)}
+                            </select>
+                            <InputError message={addForm.errors.laboratorio_id} className="mt-2" />
                         </div>
                     )}
                 </div>

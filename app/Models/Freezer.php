@@ -9,7 +9,13 @@ class Freezer extends Model
 {
     protected $fillable = [
         'ubicacion',
+        'laboratorio_id',
     ];
+
+    public function laboratorio()
+    {
+        return $this->belongsTo(Laboratorio::class);
+    }
 
     //obtener las muestras del freezer
     public function muestras(): HasMany

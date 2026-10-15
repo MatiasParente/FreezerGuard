@@ -21,4 +21,9 @@ class Usuario extends Model
     {
         return $this->belongsToMany(Muestra::class);
     }
+
+    public function sedes()
+    {
+        return $this->belongsToMany(Sede::class);
+    }
 }

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\AlertaGenerada;
+use App\Models\Dispositivo;
+use App\Support\SedeAccess;
 
 class AlertasController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AlertaGenerada::with(['dispositivo.freezer.muestras.users', 'dispositivo.freezer.muestras.usuarios', 'alerta']);
+        $query = SedeAccess::scope(AlertaGenerada::with(['dispositivo.freezer.muestras.users', 'dispositivo.freezer.muestras.usuarios', 'alerta']), $request->user(), 'dispositivo.freezer.laboratorio');
 
         if ($request->filled('dispositivo_id')) {
             $query->where('dispositivo_id', $request->dispositivo_id);
@@ -40,13 +42,14 @@ class AlertasController extends Controller
         return Inertia::render('Alertas/alertas', [
             'alertas' => $paginatedAlertas,
             'filters' => $request->only(['dispositivo_id', 'estado', 'tipo']),
-            'dispositivos' => \App\Models\Dispositivo::select('id', 'nombre')->orderBy('nombre')->get(),
+            'dispositivos' => SedeAccess::scope(Dispositivo::select('id', 'nombre'), $request->user(), 'freezer.laboratorio')->orderBy('nombre')->get(),
             'tipos' => \App\Models\Alerta::select('id', 'tipo as nombre')->get(),
         ]);
     }
 
-    public function show(AlertaGenerada $alertaGenerada)
+    public function show(Request $request, AlertaGenerada $alertaGenerada)
     {
+        $alertaGenerada = SedeAccess::find(AlertaGenerada::query(), $request->user(), 'dispositivo.freezer.laboratorio', $alertaGenerada->id);
         $alertaGenerada->load(['dispositivo.freezer.muestras.users', 'dispositivo.freezer.muestras.usuarios', 'alerta']);
 
         return Inertia::render('Alertas/alertas', [
@@ -56,6 +59,7 @@ class AlertasController extends Controller
 
     public function update(Request $request, AlertaGenerada $alertaGenerada)
     {
+        $alertaGenerada = SedeAccess::find(AlertaGenerada::query(), $request->user(), 'dispositivo.freezer.laboratorio', $alertaGenerada->id);
         $request->validate([
             'observacion' => 'nullable|string|max:1000',
         ]);
@@ -67,8 +71,9 @@ class AlertasController extends Controller
         return back()->with('success', 'Observación actualizada correctamente.');
     }
 
-    public function destroy(AlertaGenerada $alertaGenerada)
+    public function destroy(Request $request, AlertaGenerada $alertaGenerada)
     {
+        $alertaGenerada = SedeAccess::find(AlertaGenerada::query(), $request->user(), 'dispositivo.freezer.laboratorio', $alertaGenerada->id);
         $alertaGenerada->delete();
         return redirect()->back()->with('success', 'Alerta eliminada permanentemente.');
     }

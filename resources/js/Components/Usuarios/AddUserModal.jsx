@@ -6,10 +6,11 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
 
-export default function AddUserModal({ isOpen, onClose }) {
+export default function AddUserModal({ isOpen, onClose, sedes = [] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
+        sede_ids: [],
     });
 
     const submit = (e) => {
@@ -69,6 +70,14 @@ export default function AddUserModal({ isOpen, onClose }) {
                         />
                         <InputError message={errors.email} className="mt-2" />
                     </div>
+                    <fieldset>
+                        <legend className="text-sm font-medium text-gray-700">Sedes asignadas</legend>
+                        {sedes.map(sede => <label key={sede.id} className="mt-2 flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={data.sede_ids.includes(sede.id)} onChange={e => setData('sede_ids', e.target.checked ? [...data.sede_ids, sede.id] : data.sede_ids.filter(id => id !== sede.id))} />
+                            {sede.nombre}
+                        </label>)}
+                        <InputError message={errors.sede_ids} className="mt-2" />
+                    </fieldset>
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">

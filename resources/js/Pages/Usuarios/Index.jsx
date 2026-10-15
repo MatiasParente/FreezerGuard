@@ -6,7 +6,7 @@ import UsuariosTable from '@/Components/Usuarios/UsuariosTable';
 import AddUserModal from '@/Components/Usuarios/AddUserModal';
 import ResetPasswordModal from '@/Components/Usuarios/ResetPasswordModal';
 
-export default function Index({ usuarios, filters, totalActivos, totalInactivos }) {
+export default function Index({ usuarios, filters, totalActivos, totalInactivos, sedes = [] }) {
     const { flash, errors } = usePage().props;
 
     // Estados de modales
@@ -79,6 +79,7 @@ export default function Index({ usuarios, filters, totalActivos, totalInactivos 
                     <div className="bg-white shadow-sm sm:rounded-2xl border border-slate-200 p-6">
                         <UsuariosTable
                             usuarios={usuarios}
+                            sedes={sedes}
                             filters={filters}
                             onOpenAddModal={() => setIsAddModalOpen(true)}
                             onOpenResetModal={(user) => setResettingUser(user)}
@@ -91,6 +92,7 @@ export default function Index({ usuarios, filters, totalActivos, totalInactivos 
             {/* modales */}
             <AddUserModal
                 isOpen={isAddModalOpen}
+                sedes={sedes}
                 onClose={() => setIsAddModalOpen(false)}
             />
 

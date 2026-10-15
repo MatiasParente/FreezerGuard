@@ -104,6 +104,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                             )}
                             {user?.is_general_admin && (
+                                <ResponsiveNavLink href={route('sedes.index')} active={route().current('sedes.*')}>
+                                    <FlaskConical className="w-5 h-5" />
+                                    <span className="ml-2">Sedes y laboratorios</span>
+                                </ResponsiveNavLink>
+                            )}
+                            {user?.is_general_admin && (
                                 <ResponsiveNavLink
                                     href={route('usuarios.index')}
                                     active={route().current('usuarios.*')}

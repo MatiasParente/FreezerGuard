@@ -6,6 +6,10 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Dispositivo;
+use App\Models\Freezer;
+use App\Models\Laboratorio;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ConfiguracionController extends Controller
 {
@@ -36,7 +40,8 @@ class ConfiguracionController extends Controller
                 'freezer_id' => $request->input('freezer_id'),
             ],
             'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
-            'available_freezers' => \App\Models\Freezer::doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
+            'available_freezers' => Freezer::whereNotNull('laboratorio_id')->doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
+            'laboratorios' => Laboratorio::with('sede:id,nombre')->orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
             'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
         ]);
     }
@@ -59,22 +64,23 @@ class ConfiguracionController extends Controller
             'is_new_freezer' => 'required|boolean',
             'freezer_id' => 'required_if:is_new_freezer,false|nullable|exists:freezers,id|unique:dispositivos,freezer_id',
             'nueva_ubicacion' => 'required_if:is_new_freezer,true|nullable|string|max:255',
+            'laboratorio_id' => 'required_if:is_new_freezer,true|nullable|exists:laboratorios,id',
         ]);
 
-        if ($validated['is_new_freezer']) {
-            $freezer = \App\Models\Freezer::create([
-                'ubicacion' => $validated['nueva_ubicacion'],
-            ]);
-            $freezerId = $freezer->id;
-        } else {
-            $freezerId = $validated['freezer_id'];
+        if (!$validated['is_new_freezer'] && !Freezer::whereKey($validated['freezer_id'])->whereNotNull('laboratorio_id')->exists()) {
+            throw ValidationException::withMessages(['freezer_id' => 'Asigna primero este freezer a un laboratorio.']);
         }
 
-        Dispositivo::create([
-            'nombre' => $validated['nombre'],
-            'descripcion' => $validated['descripcion'] ?? null,
-            'freezer_id' => $freezerId,
-        ]);
+        DB::transaction(function () use ($validated) {
+            $freezerId = $validated['is_new_freezer']
+                ? Freezer::create(['ubicacion' => $validated['nueva_ubicacion'], 'laboratorio_id' => $validated['laboratorio_id']])->id
+                : $validated['freezer_id'];
+            Dispositivo::create([
+                'nombre' => $validated['nombre'],
+                'descripcion' => $validated['descripcion'] ?? null,
+                'freezer_id' => $freezerId,
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Dispositivo creado exitosamente.');
     }

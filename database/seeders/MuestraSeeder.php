@@ -7,6 +7,7 @@ use App\Models\Muestra;
 use App\Models\User;
 use App\Models\Usuario;
 use App\Models\Freezer;
+use App\Models\Sede;
 
 class MuestraSeeder extends Seeder
 {
@@ -16,6 +17,8 @@ class MuestraSeeder extends Seeder
     public function run(): void
     {
         $admin = User::first(); 
+        $sede = Sede::where('nombre', 'Sede demo')->firstOrFail();
+        $admin->sedes()->syncWithoutDetaching($sede->id);
         $freezer1 = Freezer::where('ubicacion', 'Laboratorio Principal')->first();
         
         //crear un par de estudiatnes
@@ -28,6 +31,8 @@ class MuestraSeeder extends Seeder
             ['email' => 'maria.gomez@estudiante.com'],
             ['nombre' => 'Maria Gomez', 'telefono' => '22222222']
         );
+        $estudiante1->sedes()->syncWithoutDetaching($sede->id);
+        $estudiante2->sedes()->syncWithoutDetaching($sede->id);
 
         //crear una muestra solo para estudiantes (Admin no asignado)
         $muestra1 = Muestra::create([

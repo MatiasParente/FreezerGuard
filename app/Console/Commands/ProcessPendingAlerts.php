@@ -24,7 +24,7 @@ class ProcessPendingAlerts extends Command
         AlertNotificationService::procesarAutoResoluciones();
 
         // 2. Buscar alertas pendientes de envío (estado 0 = nuevo, 1 = enviado)
-        $alertas = AlertaGenerada::where('estado', '<', 2)->get();
+        $alertas = AlertaGenerada::where('estado', 0)->get();
         
         foreach ($alertas as $alertaGenerada) {
             AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);

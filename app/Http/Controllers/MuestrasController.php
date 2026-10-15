@@ -5,14 +5,19 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Muestra;
+use App\Models\Freezer;
+use App\Models\User;
+use App\Models\Usuario;
+use App\Support\SedeAccess;
+use Illuminate\Validation\ValidationException;
 
 class MuestrasController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Muestra::with(['freezer.dispositivo.alertasGeneradas' => function ($q) {
+        $query = SedeAccess::scope(Muestra::with(['freezer.dispositivo.alertasGeneradas' => function ($q) {
             $q->where('estado', 1); // 1 = Pendiente
-        }, 'users', 'usuarios']);
+        }, 'users', 'usuarios']), $request->user(), 'freezer.laboratorio');
 
         if ($request->filled('freezer_id')) {
             $query->where('freezer_id', $request->freezer_id);
@@ -44,14 +49,15 @@ class MuestrasController extends Controller
         return Inertia::render('Muestras/muestras', [
             'muestras' => $muestras,
             'filters' => $request->only(['freezer_id', 'estado']),
-            'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
-            'users' => \App\Models\User::select('id', 'name', 'email')->get(),
-            'usuarios' => \App\Models\Usuario::select('id', 'nombre', 'email')->get(),
+            'freezers' => SedeAccess::scope(Freezer::select('id', 'ubicacion', 'laboratorio_id')->with(['laboratorio.sede', 'dispositivo:id,freezer_id,nombre']), $request->user())->orderBy('ubicacion')->get(),
+            'users' => $request->user()->is_general_admin ? User::with('sedes:id')->select('id', 'name', 'email')->get() : User::with('sedes:id')->whereHas('sedes', fn ($q) => $q->whereIn('sedes.id', $request->user()->sedes()->select('sedes.id')))->select('id', 'name', 'email')->get(),
+            'usuarios' => $request->user()->is_general_admin ? Usuario::with('sedes:id')->select('id', 'nombre', 'email')->get() : Usuario::with('sedes:id')->whereHas('sedes', fn ($q) => $q->whereIn('sedes.id', $request->user()->sedes()->select('sedes.id')))->select('id', 'nombre', 'email')->get(),
         ]);
     }
 
-    public function show(Muestra $muestra)
+    public function show(Request $request, Muestra $muestra)
     {
+        $muestra = SedeAccess::find(Muestra::query(), $request->user(), 'freezer.laboratorio', $muestra->id);
         $muestra->load(['freezer.dispositivo', 'users', 'usuarios']);
 
         return Inertia::render('Muestras/show', [
@@ -76,6 +82,7 @@ class MuestrasController extends Controller
             'users_ids.*' => 'exists:users,id',
         ]);
 
+        $this->validateAssignments($request, $validated);
         $validated['temperatura_minima'] = $validated['temperatura_minima'] ?? -25.0;
         $validated['temperatura_maxima'] = $validated['temperatura_maxima'] ?? -10.0;
         $validated['estado'] = 'activo';
@@ -83,7 +90,7 @@ class MuestrasController extends Controller
 
         // Si no hay docentes asignados, asignar el usuario actual por defecto
         if (empty($validated['users_ids'])) {
-            $validated['users_ids'] = [auth()->id()];
+            $validated['users_ids'] = $request->user()->is_general_admin ? [] : [$request->user()->id];
         }
 
         $muestra = Muestra::create($validated);
@@ -100,6 +107,7 @@ class MuestrasController extends Controller
 
     public function update(Request $request, Muestra $muestra)
     {
+        $muestra = SedeAccess::find(Muestra::query(), $request->user(), 'freezer.laboratorio', $muestra->id);
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
@@ -116,6 +124,10 @@ class MuestrasController extends Controller
             'users_ids.*' => 'exists:users,id',
         ]);
 
+        $this->validateAssignments($request, array_merge($validated, [
+            'users_ids' => $validated['users_ids'] ?? $muestra->users()->withTrashed()->pluck('users.id')->all(),
+            'usuarios_ids' => $validated['usuarios_ids'] ?? $muestra->usuarios()->pluck('usuarios.id')->all(),
+        ]));
         $muestra->update($validated);
 
         if (isset($validated['usuarios_ids'])) {
@@ -128,13 +140,30 @@ class MuestrasController extends Controller
         return redirect()->back()->with('success', 'Muestra actualizada exitosamente.');
     }
 
-    public function destroy(Muestra $muestra)
+    public function destroy(Request $request, Muestra $muestra)
     {
+        $muestra = SedeAccess::find(Muestra::query(), $request->user(), 'freezer.laboratorio', $muestra->id);
         if ($muestra->estado !== 'inactivo') {
             return redirect()->back()->with('error', 'Solo se pueden eliminar muestras inactivas.');
         }
 
         $muestra->delete();
         return redirect()->back()->with('success', 'Muestra eliminada permanentemente.');
+    }
+
+    private function validateAssignments(Request $request, array $data): void
+    {
+        $freezer = SedeAccess::scope(Freezer::with('laboratorio'), $request->user())->find($data['freezer_id']);
+        if (!$freezer?->laboratorio) {
+            throw ValidationException::withMessages(['freezer_id' => 'El freezer debe pertenecer a un laboratorio de una sede permitida.']);
+        }
+        $sedeId = $freezer->laboratorio->sede_id;
+        $userIds = $data['users_ids'] ?? ($request->isMethod('post') && !$request->user()->is_general_admin ? [$request->user()->id] : []);
+        if ($userIds && User::withTrashed()->whereIn('id', $userIds)->whereDoesntHave('sedes', fn ($q) => $q->where('sedes.id', $sedeId))->exists()) {
+            throw ValidationException::withMessages(['users_ids' => 'Los usuarios deben pertenecer a la sede del freezer.']);
+        }
+        if (!empty($data['usuarios_ids']) && Usuario::whereIn('id', $data['usuarios_ids'])->whereDoesntHave('sedes', fn ($q) => $q->where('sedes.id', $sedeId))->exists()) {
+            throw ValidationException::withMessages(['usuarios_ids' => 'Los participantes deben pertenecer a la sede del freezer.']);
+        }
     }
 }

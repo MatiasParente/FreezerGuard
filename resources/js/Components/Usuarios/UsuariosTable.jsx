@@ -1,6 +1,6 @@
 import Pagination from '@/Components/Pagination';
 import TextInput from '@/Components/TextInput';
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { KeyRound, Trash2, UserPlus, ShieldCheck, User as UserIcon, RotateCcw, Search, History } from 'lucide-react';
 import DeleteUserModal from '@/Components/Usuarios/DeleteUserModal';
@@ -9,6 +9,7 @@ import ForceDeleteUserModal from '@/Components/Usuarios/ForceDeleteUserModal';
 
 export default function UsuariosTable({
     usuarios,
+    sedes = [],
     filters = { estado: 'activo', search: '' },
     onOpenAddModal,
     onOpenResetModal,
@@ -27,6 +28,8 @@ export default function UsuariosTable({
     const [deletingUser, setDeletingUser] = useState(null);
     const [restoringUser, setRestoringUser] = useState(null);
     const [forceDeletingUser, setForceDeletingUser] = useState(null);
+    const [editingSedes, setEditingSedes] = useState(null);
+    const siteForm = useForm({ sede_ids: [] });
 
     const handleToggleAdmin = (targetUser) => {
         if (authUser?.id === targetUser.id) return;
@@ -137,6 +140,7 @@ export default function UsuariosTable({
                             <th className="px-4 py-3">Usuario</th>
                             <th className="px-4 py-3">Correo Electrónico</th>
                             <th className="px-4 py-3">Rol / Nivel</th>
+                            <th className="px-4 py-3">Sedes</th>
                             <th className="px-4 py-3">Estado</th>
                             <th className="px-4 py-3 text-right">Acciones</th>
                         </tr>
@@ -174,6 +178,7 @@ export default function UsuariosTable({
                                                 </span>
                                             )}
                                         </td>
+                                        <td className="px-4 py-3 text-xs">{user.sedes?.map(s => s.nombre).join(', ') || 'Sin asignar'}</td>
                                         <td className="px-4 py-3">
                                             {isInactiveMode ? (
                                                 <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
@@ -188,6 +193,7 @@ export default function UsuariosTable({
                                         <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                                             {!isInactiveMode ? (
                                                 <>
+                                                    <button type="button" onClick={() => { setEditingSedes(user); siteForm.setData('sede_ids', user.sedes?.map(s => s.id) || []); }} className="rounded-lg border border-indigo-200 px-2 py-1 text-xs text-indigo-700">Sedes</button>
                                                     <button
                                                         onClick={() => handleToggleAdmin(user)}
                                                         disabled={isSelf}
@@ -255,7 +261,7 @@ export default function UsuariosTable({
                             })
                         ) : (
                             <tr>
-                                <td colSpan="5" className="px-4 py-8 text-center text-slate-400">
+                                <td colSpan="6" className="px-4 py-8 text-center text-slate-400">
                                     {isInactiveMode
                                         ? 'No hay usuarios inactivos en el registro.'
                                         : 'No hay usuarios registrados.'}
@@ -276,6 +282,15 @@ export default function UsuariosTable({
             )}
 
             {/* Modales Desacoplados */}
+            {editingSedes && <div className="rounded-xl border bg-slate-50 p-4">
+                <h4 className="mb-2 font-semibold">Sedes de {editingSedes.name}</h4>
+                <form onSubmit={e => { e.preventDefault(); siteForm.put(route('usuarios.sedes.update', editingSedes.id), { onSuccess: () => setEditingSedes(null) }); }} className="space-y-2">
+                    {sedes.map(s => <label key={s.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={siteForm.data.sede_ids.includes(s.id)} onChange={e => siteForm.setData('sede_ids', e.target.checked ? [...siteForm.data.sede_ids, s.id] : siteForm.data.sede_ids.filter(id => id !== s.id))} />{s.nombre}</label>)}
+                    {siteForm.errors.sede_ids && <p className="text-sm text-red-600">{siteForm.errors.sede_ids}</p>}
+                    <button type="submit" disabled={siteForm.processing} className="rounded bg-indigo-600 px-3 py-2 text-sm text-white">Guardar sedes</button>
+                    <button type="button" onClick={() => setEditingSedes(null)} className="ml-2 text-sm">Cancelar</button>
+                </form>
+            </div>}
             <DeleteUserModal
                 isOpen={!!deletingUser}
                 onClose={() => setDeletingUser(null)}

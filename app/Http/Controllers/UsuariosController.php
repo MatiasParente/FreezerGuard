@@ -8,6 +8,8 @@ use App\Mail\UsuarioDesactivadoMail;
 use App\Mail\UsuarioRestauradoMail;
 use App\Mail\UsuarioEliminadoDefinitivoMail;
 use App\Models\User;
+use App\Models\Sede;
+use App\Support\SedeAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +42,7 @@ class UsuariosController extends Controller
         }
 
         $usuarios = $query->latest($estado === 'inactivo' ? 'deleted_at' : 'created_at')
+            ->with('sedes:id,nombre')
             ->paginate(10)
             ->withQueryString();
 
@@ -54,6 +57,7 @@ class UsuariosController extends Controller
             ],
             'totalActivos' => $totalActivos,
             'totalInactivos' => $totalInactivos,
+            'sedes' => Sede::orderBy('nombre')->get(['id', 'nombre']),
         ]);
     }
 
@@ -65,6 +69,8 @@ class UsuariosController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'sede_ids' => ['required', 'array', 'min:1'],
+            'sede_ids.*' => ['required', 'integer', 'distinct', 'exists:sedes,id'],
         ], [
             'name.required' => 'El nombre de usuario es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -81,6 +87,7 @@ class UsuariosController extends Controller
             'password' => Hash::make($plainPassword),
             'is_general_admin' => false,
         ]);
+        $user->sedes()->sync($request->input('sede_ids'));
 
         // Enviar mail con las credenciales
         try {
@@ -90,6 +97,17 @@ class UsuariosController extends Controller
         }
 
         return redirect()->back()->with('success', "Usuario {$user->name} creado correctamente. Se envió la contraseña de 8 caracteres a {$user->email}.");
+    }
+
+    public function updateSedes(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'sede_ids' => ['required', 'array', 'min:1'],
+            'sede_ids.*' => ['required', 'integer', 'distinct', 'exists:sedes,id'],
+        ]);
+        SedeAccess::validateSampleMembership($user, $data['sede_ids']);
+        $user->sedes()->sync($data['sede_ids']);
+        return back()->with('success', 'Sedes asignadas al usuario.');
     }
 
     /**

@@ -44,4 +44,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Freezer::class);
     }
+
+    public function sedes()
+    {
+        return $this->belongsToMany(Sede::class);
+    }
 }
