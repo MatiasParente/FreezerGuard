@@ -344,14 +344,6 @@ La pestaña **Participantes** permite gestionar a los alumnos y colaboradores qu
 * **Tabla de participantes:** Muestra nombre, correo, teléfono y las sedes asignadas con badges de color.
 * **Edición:** Cada participante puede expandirse para modificar sus datos o cambiar sus sedes.
 
-### 9.4 Notificaciones por Correo
-
-El sistema envía notificaciones automáticas por correo electrónico en los siguientes eventos relacionados con sedes y asignaciones:
-
-* **Asignación a Sede:** Cuando un administrador asigna un usuario a una o más sedes (ya sea al crear el usuario o al modificar sus sedes), el usuario recibe un correo informándole las sedes a las que fue asignado.
-* **Asignación a Muestra:** Cuando un docente es asignado como responsable de una muestra (al crear o editar una muestra), recibe un correo con los detalles de la muestra: título, freezer, rango térmico y fecha de vencimiento.
-
-Todos los correos incluyen un botón directo para iniciar sesión en la plataforma.
 
 ---
 
@@ -405,7 +397,22 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 
 ---
 
-## 11. Perfil de Usuario y Sesión
+### 11 Notificaciones por Correo
+
+El sistema envía notificaciones automáticas por correo electrónico en los siguientes eventos:
+
+* **Asignación a Sede:** Cuando un administrador asigna un usuario a una o más sedes (ya sea al crear el usuario o al modificar sus sedes), el usuario recibe un correo informándole las sedes a las que fue asignado.
+* **Asignación a Muestra:** Cuando un docente es asignado como responsable de una muestra (al crear o editar una muestra), recibe un correo con los detalles de la muestra: título, freezer, rango térmico y fecha de vencimiento.
+* **Creación de Usuario:** Cuando se crea un usuario, se envía un correo con sus credenciales de acceso.
+* **Restablecimiento de Contraseña:** Cuando un usuario restablece su contraseña, recibe un correo con su nueva contraseña.
+* **Eliminar usuario:** Cuando un usuario es eliminado, recibe un correo informándole que su cuenta ha sido eliminada.
+* **Restaurar usuario:** Cuando un usuario es restaurado, recibe un correo informándole que su cuenta ha sido restaurada.
+* **Resolución de Alertas:** Cuando un usuario resuelve una alerta, recibe un correo informándole que la alerta ha sido resuelta.
+* **Envio de alertas:** Cuando ocurre una alerta, se envia automaticamente un correo electronico informando sobre la misma.
+
+---
+
+## 12. Perfil de Usuario y Sesión
 
 Haciendo clic en tu nombre en la parte inferior de la barra lateral izquierda y seleccionando **Perfil** (`/profile`):
 * **Información de Perfil:** Permite actualizar tu nombre y dirección de correo electrónico.
@@ -414,7 +421,7 @@ Haciendo clic en tu nombre en la parte inferior de la barra lateral izquierda y 
 
 ---
 
-## 12. Glosario Visual de Botones e Iconos
+## 13. Glosario Visual de Botones e Iconos
 
 A continuación se detalla la función de cada botón presente en la aplicación web:
 
@@ -436,7 +443,7 @@ A continuación se detalla la función de cada botón presente en la aplicación
 
 ---
 
-## 13. Protocolo de Contingencia ante Incidentes Reales
+## 14. Protocolo de Contingencia ante Incidentes Reales
 
 Como usuario u operador responsable de laboratorio, sigue estas pautas operativas ante cada tipo de alerta:
 
