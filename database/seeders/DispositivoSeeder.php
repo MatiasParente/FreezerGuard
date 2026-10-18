@@ -10,20 +10,21 @@ class DispositivoSeeder extends Seeder
 {
     public function run(): void
     {
-        $freezers = Freezer::all();
+        $map = [
+            'Freezer A1 - Biotecnología' => 'ESP32-UTEC-BIO-01',
+            'Freezer A2 - Biotecnología' => 'ESP32-UTEC-BIO-02',
+        ];
 
-        foreach ($freezers as $freezer) {
+        foreach ($map as $ubicacion => $nombre) {
+            $freezer = Freezer::where('ubicacion', $ubicacion)->firstOrFail();
 
             Dispositivo::updateOrCreate(
+                ['freezer_id' => $freezer->id],
                 [
-                    'freezer_id' => $freezer->id
-                ],
-                [
-                    'nombre' => 'Dispositivo '.$freezer->id,
-                    'descripcion' => 'ESP32 Monitor de temperatura',
+                    'nombre'      => $nombre,
+                    'descripcion' => 'Monitor de temperatura ESP32 con módulo A7670G',
                 ]
             );
-
         }
     }
 }

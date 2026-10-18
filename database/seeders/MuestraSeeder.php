@@ -2,82 +2,76 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Freezer;
 use App\Models\Muestra;
+use App\Models\Sede;
 use App\Models\User;
 use App\Models\Usuario;
-use App\Models\Freezer;
-use App\Models\Sede;
+use Illuminate\Database\Seeder;
 
 class MuestraSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $admin = User::first(); 
-        $sede = Sede::where('nombre', 'Sede demo')->firstOrFail();
-        $admin->sedes()->syncWithoutDetaching($sede->id);
-        $freezer1 = Freezer::where('ubicacion', 'Laboratorio Principal')->first();
-        
-        //crear un par de estudiatnes
-        $estudiante1 = Usuario::firstOrCreate(
-            ['email' => 'juan.perez@estudiante.com'],
-            ['nombre' => 'Juan Perez', 'telefono' => '11111111']
-        );
-        
-        $estudiante2 = Usuario::firstOrCreate(
-            ['email' => 'maria.gomez@estudiante.com'],
-            ['nombre' => 'Maria Gomez', 'telefono' => '22222222']
-        );
-        $estudiante1->sedes()->syncWithoutDetaching($sede->id);
-        $estudiante2->sedes()->syncWithoutDetaching($sede->id);
+        $sedeUtec = Sede::where('nombre', 'UTEC - Fray Bentos')->firstOrFail();
+        $fA1      = Freezer::where('ubicacion', 'Freezer A1 - Biotecnología')->firstOrFail();
+        $fA2      = Freezer::where('ubicacion', 'Freezer A2 - Biotecnología')->firstOrFail();
+        $admin    = User::where('email', 'matiasparente2020@gmail.com')->firstOrFail();
 
-        //crear una muestra solo para estudiantes (Admin no asignado)
-        $muestra1 = Muestra::create([
-            'freezer_id' => $freezer1->id,
-            'titulo' => 'Ensayo Biológico A (Solo Estudiantes)',
-            'descripcion' => 'Ensayo biológico de cepas tipo A para evaluación de resistencia térmica.',
-            'cantidad' => 50,
-            'vencimiento' => now()->addMonths(6),
+        // Participantes
+        $juan = Usuario::firstOrCreate(
+            ['email' => 'juan.perez@estudiante.utec.edu.uy'],
+            ['nombre' => 'Juan Pérez', 'telefono' => '598091111111']
+        );
+        $juan->sedes()->syncWithoutDetaching([$sedeUtec->id]);
+
+        $maria = Usuario::firstOrCreate(
+            ['email' => 'maria.gomez@estudiante.utec.edu.uy'],
+            ['nombre' => 'María Gómez', 'telefono' => '598092222222']
+        );
+        $maria->sedes()->syncWithoutDetaching([$sedeUtec->id]);
+
+        // Muestra 1 — solo estudiantes
+        $m1 = Muestra::create([
+            'freezer_id'         => $fA1->id,
+            'titulo'             => 'Ensayo Biológico A - Cepas Resistentes',
+            'descripcion'        => 'Evaluación de cepas bacterianas con resistencia térmica.',
+            'cantidad'           => 50,
+            'vencimiento'        => now()->addMonths(6),
             'temperatura_minima' => -25.0,
-            'temperatura_maxima' => 29.9,
-            'observaciones' => 'Manipular con equipo de protección nivel 2.',
-            'fecha_inicio' => now(),
+            'temperatura_maxima' => -15.0,
+            'observaciones'      => 'Manipular con EPP nivel 2.',
+            'fecha_inicio'       => now()->subDays(10),
         ]);
-        
-        $muestra1->usuarios()->attach([$estudiante1->id, $estudiante2->id]);
+        $m1->usuarios()->attach([$juan->id, $maria->id]);
 
-        //crear una muestra solo para admin(sin estudiantes)
-        $muestra2 = Muestra::create([
-            'freezer_id' => $freezer1->id,
-            'titulo' => 'Muestra de Referencia (Solo Admin)',
-            'descripcion' => 'Muestra de control y referencia para auditorías internas.',
-            'cantidad' => 10,
-            'vencimiento' => now()->addYears(2),
-            'temperatura_minima' => -30.0,
-            'temperatura_maxima' => 29.9,
-            'observaciones' => 'Acceso restringido únicamente para personal administrador.',
-            'fecha_inicio' => now()->subDays(2),
-        ]);
-
-        $muestra2->users()->attach([$admin->id]);
-
-        //crear una muestra para un grupo mixto(Admin + Estudiantes)
-        $muestra3 = Muestra::create([
-            'freezer_id' => $freezer1->id,
-            'titulo' => 'Proyecto Final (Grupo Mixto)',
-            'descripcion' => 'Proyecto final de biotecnología sobre conservación a largo plazo.',
-            'cantidad' => 120,
-            'vencimiento' => now()->addMonths(3),
+        // Muestra 2 — admin + un estudiante
+        $m2 = Muestra::create([
+            'freezer_id'         => $fA1->id,
+            'titulo'             => 'Proteínas Recombinantes lote PR-2026-01',
+            'descripcion'        => 'Proteínas para desarrollo de kits de diagnóstico rápido.',
+            'cantidad'           => 20,
+            'vencimiento'        => now()->addYear(),
             'temperatura_minima' => -20.0,
-            'temperatura_maxima' => 29.9,
-            'observaciones' => 'Revisar estado de congelación semanalmente.',
-            'fecha_inicio' => now()->subWeek(),
+            'temperatura_maxima' => -15.0,
+            'observaciones'      => 'Almacenar en alícuotas de 500 µL.',
+            'fecha_inicio'       => now()->subDays(5),
         ]);
-        
-        $muestra3->users()->attach([$admin->id]);
-        $muestra3->usuarios()->attach([$estudiante1->id]);
+        $m2->users()->attach([$admin->id]);
+        $m2->usuarios()->attach([$juan->id]);
+
+        // Muestra 3 — solo admin
+        $m3 = Muestra::create([
+            'freezer_id'         => $fA2->id,
+            'titulo'             => 'Muestra de Referencia (Control)',
+            'descripcion'        => 'Muestra de control interno para auditorías.',
+            'cantidad'           => 10,
+            'vencimiento'        => now()->addYears(2),
+            'temperatura_minima' => -20.0,
+            'temperatura_maxima' => -10.0,
+            'observaciones'      => 'Acceso restringido a administradores.',
+            'fecha_inicio'       => now()->subWeek(),
+        ]);
+        $m3->users()->attach([$admin->id]);
     }
 }
