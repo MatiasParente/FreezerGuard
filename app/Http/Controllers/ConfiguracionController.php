@@ -11,6 +11,8 @@ use App\Models\Laboratorio;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
+use App\Support\SedeAccess;
+
 class ConfiguracionController extends Controller
 {
     public function index(Request $request)
@@ -23,7 +25,10 @@ class ConfiguracionController extends Controller
             $query->onlyTrashed();
         }
 
-        $query->with(['freezer', 'mediciones']);
+        $query->with(['freezer.laboratorio.sede', 'mediciones']);
+
+        // Aislar datos por sede para usuarios no admin
+        $query = SedeAccess::scope($query, $request->user(), 'freezer.laboratorio');
 
         if ($request->filled('freezer_id')) {
             $query->where('freezer_id', $request->freezer_id);
@@ -39,9 +44,12 @@ class ConfiguracionController extends Controller
                 'estado' => $estado,
                 'freezer_id' => $request->input('freezer_id'),
             ],
-            'freezers' => \App\Models\Freezer::select('id', 'ubicacion')->orderBy('ubicacion')->get(),
-            'available_freezers' => Freezer::whereNotNull('laboratorio_id')->doesntHave('dispositivo')->select('id', 'ubicacion')->orderBy('ubicacion')->get(),
-            'laboratorios' => Laboratorio::with('sede:id,nombre')->orderBy('nombre')->get(['id', 'nombre', 'sede_id']),
+            'freezers' => SedeAccess::scope(Freezer::with('laboratorio.sede')->select('id', 'ubicacion', 'laboratorio_id'), $request->user())->orderBy('ubicacion')->get(),
+            'available_freezers' => SedeAccess::scope(Freezer::whereNotNull('laboratorio_id')->doesntHave('dispositivo')->select('id', 'ubicacion', 'laboratorio_id'), $request->user())->orderBy('ubicacion')->get(),
+            'laboratorios' => Laboratorio::with('sede:id,nombre')
+                ->when(!$request->user()->is_general_admin, fn ($q) => $q->whereIn('sede_id', $request->user()->sedes()->select('sedes.id')))
+                ->orderBy('nombre')
+                ->get(['id', 'nombre', 'sede_id']),
             'configuracionSistema' => \App\Models\ConfiguracionSistema::getSolo(),
         ]);
     }

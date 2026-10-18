@@ -19,7 +19,6 @@ export default function Dashboard({
 }) {
     const [selectedDeviceId, setSelectedDeviceId] = useState(filters?.dispositivo_id || '');
 
-    // Telemetry polling in background (every 4 seconds for fast config and status sync)
     useEffect(() => {
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible' && !document.hidden) {

@@ -76,7 +76,7 @@ class DashboardController extends Controller
         $alertas = SedeAccess::scope(AlertaGenerada::with(['dispositivo.freezer', 'alerta']), $request->user(), 'dispositivo.freezer.laboratorio')
             ->where(function($q) {
                 $q->where('estado', '!=', 2)
-                  ->orWhere('fecha_y_hora', '>=', now()->subDays(30));
+                ->orWhere('fecha_y_hora', '>=', now()->subDays(30));
             })
             ->orderBy('fecha_y_hora', 'desc')
             ->paginate(10, ['*'], 'alertas_page')

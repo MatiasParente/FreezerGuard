@@ -57,14 +57,14 @@ export default function DispositivosTable({
                     {/* Barra Superior de filtros y botones */}
                     <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                         <div className="w-full sm:w-64">
-                            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Laboratorio (Freezer)</label>
+                            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Freezer</label>
                             <select 
                                 name="freezer_id" 
                                 value={filters?.freezer_id || ''} 
                                 onChange={handleFilterChange} 
                                 className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer"
                             >
-                                <option value="">Todos los laboratorios</option>
+                                <option value="">Todos los freezers</option>
                                 {freezers?.map(f => (
                                     <option key={f.id} value={f.id}>{f.ubicacion}</option>
                                 ))}
@@ -72,7 +72,7 @@ export default function DispositivosTable({
                         </div>
 
                         {/* Botones principales */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             {!isInactiveMode ? (
                                 <>
                                     <button 
@@ -108,7 +108,7 @@ export default function DispositivosTable({
                         <table className="w-full whitespace-nowrap text-left text-sm text-slate-600">
                             <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
                                 <tr>
-                                    <th className="px-6 py-4">{isInactiveMode ? 'Dispositivo Inactivo / Laboratorio' : 'Dispositivo / Laboratorio'}</th>
+                                    <th className="px-6 py-4">{isInactiveMode ? 'Dispositivo Inactivo / Freezer' : 'Dispositivo / Freezer'}</th>
                                     <th className="px-6 py-4">Intervalo telemetría</th>
                                     <th className="px-6 py-4">{isInactiveMode ? 'Fecha Desactivación' : 'Alertas Activas'}</th>
                                     <th className="px-6 py-4 text-right">Acciones</th>
@@ -127,6 +127,9 @@ export default function DispositivosTable({
                                                         {dispositivo.nombre}
                                                     </span>
                                                     <span className="text-xs text-slate-400">{dispositivo.freezer?.ubicacion || 'No asignado'}</span>
+                                                    {dispositivo.freezer?.laboratorio?.nombre && (
+                                                        <span className="text-[11px] text-slate-400">Lab: {dispositivo.freezer.laboratorio.nombre}</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
@@ -150,6 +153,9 @@ export default function DispositivosTable({
                                                     )}
                                                     {dispositivo.alerta_inactividad_activa && (
                                                         <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded border border-blue-100">Inactividad</span>
+                                                    )}
+                                                    {dispositivo.telefonos_sms && (
+                                                        <span className="px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700 rounded border border-green-100">SMS</span>
                                                     )}
                                                 </div>
                                             ) : (

@@ -80,15 +80,15 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                             {/* Toolbar de Filtro y Botones */}
                             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                 <div className="w-full sm:w-64">
-                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Laboratorio (Freezer)</label>
+                                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Freezer</label>
                                     <select name="freezer_id" defaultValue={filters?.freezer_id || ''} onChange={handleFilterChange} className="w-full border-slate-300 rounded-lg shadow-sm text-xs font-medium text-slate-800 focus:ring-indigo-500 focus:border-indigo-500 py-2 cursor-pointer">
-                                        <option value="">Todos los Laboratorios</option>
+                                        <option value="">Todos los Freezers</option>
                                         {freezers?.map(f => (
                                             <option key={f.id} value={f.id}>{f.ubicacion}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="flex gap-2 items-center">
+                                <div className="flex gap-2 items-center flex-wrap">
                                     {!isHistorial ? (
                                         <>
                                             <button onClick={openCreateModal} className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest shadow-sm transition ease-in-out duration-150">
@@ -111,7 +111,7 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                     <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
                                         <tr>
                                             <th className="px-4 py-3">Muestra</th>
-                                            <th className="px-4 py-3">Dispositivo / Laboratorio</th>
+                                            <th className="px-4 py-3">Dispositivo / Freezer</th>
                                             <th className="px-4 py-3">Cantidad</th>
                                             <th className="px-4 py-3">Rango Temp.</th>
                                             <th className="px-4 py-3">Vencimiento</th>
@@ -141,9 +141,12 @@ export default function muestras({ muestras, filters, freezers, users, usuarios 
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3">
-                                                        <span className="text-sm text-slate-500 font-medium whitespace-normal">
-                                                            {muestra.freezer?.dispositivo?.nombre || 'N/A'} • {muestra.freezer?.ubicacion || 'N/A'}
-                                                        </span>
+                                                        <div className="text-sm text-slate-500 font-medium whitespace-normal">
+                                                            <span>{muestra.freezer?.dispositivo?.nombre || 'N/A'} • {muestra.freezer?.ubicacion || 'N/A'}</span>
+                                                            {muestra.freezer?.laboratorio?.nombre && (
+                                                                <span className="block text-[11px] text-slate-400">Lab: {muestra.freezer.laboratorio.nombre}</span>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="px-4 py-3 font-medium text-slate-900">
                                                         {muestra.cantidad}

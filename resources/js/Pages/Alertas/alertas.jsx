@@ -96,7 +96,7 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                             <th className="px-4 py-3">Estado</th>
                                             <th className="px-4 py-3">Fecha y Hora</th>
                                             <th className="px-4 py-3">Tipo de Alerta</th>
-                                            <th className="px-4 py-3">Dispositivo / Laboratorio</th>
+                                            <th className="px-4 py-3">Dispositivo / Freezer</th>
                                             <th className="px-4 py-3 text-right">Acciones</th>
                                             <th className="px-3 py-3 w-10"></th>
                                         </tr>

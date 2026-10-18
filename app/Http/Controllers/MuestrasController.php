@@ -17,7 +17,7 @@ class MuestrasController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SedeAccess::scope(Muestra::with(['freezer.dispositivo.alertasGeneradas' => function ($q) {
+        $query = SedeAccess::scope(Muestra::with(['freezer.laboratorio', 'freezer.dispositivo.alertasGeneradas' => function ($q) {
             $q->where('estado', 1); // 1 = Pendiente
         }, 'users', 'usuarios']), $request->user(), 'freezer.laboratorio');
 
