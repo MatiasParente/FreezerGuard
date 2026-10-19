@@ -94,6 +94,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <FlaskConical className="w-5 h-5" />
                                 <span className='ml-2'>Muestras</span>
                             </ResponsiveNavLink>
+                            <ResponsiveNavLink
+                                href={route('historial-muestras.index')}
+                                active={route().current('historial-muestras.index')}
+                            >
+                                <FlaskConical className="w-5 h-5" />
+                                <span className='ml-2'>Historial de Muestras</span>
+                            </ResponsiveNavLink>
                             {user?.is_general_admin && (
                                 <ResponsiveNavLink
                                     href={route('configuracion.configuracion')}

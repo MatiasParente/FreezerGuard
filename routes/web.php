@@ -10,6 +10,8 @@ use App\Http\Controllers\SedesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\HistorialMuestraController;
+use App\Http\Controllers\UpdateMuestraController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -86,6 +88,16 @@ Route::middleware(['auth', 'admin.general'])->controller(SedesController::class)
     Route::put('/freezers/{freezer}/laboratorio', 'assignFreezer')->name('freezers.laboratorio.update');
     Route::post('/participantes', 'storeParticipante')->name('participantes.store');
     Route::put('/participantes/{usuario}', 'updateParticipante')->name('participantes.update');
+});
+
+Route::middleware('auth')->controller(HistorialMuestraController::class)->group(function (){
+    Route::get('/historial-muestras','index')->name('historial-muestras.index');
+    Route::post('/historial-muestras','store')->name('historial-muestras.store');
+});
+
+Route::middleware('auth')->controller(UpdateMuestraController::class)->group(function (){
+    Route::get('/update-muestra','index')->name('update-muestra.index');
+    Route::post('/update-muestra','store')->name('update-muestra.store');
 });
 
 require __DIR__.'/auth.php';

@@ -20,20 +20,21 @@ export default function Dashboard({
     const [selectedDeviceId, setSelectedDeviceId] = useState(filters?.dispositivo_id || '');
 
     // Telemetry polling in background (every 4 seconds for fast config and status sync)
-    useEffect(() => {
+    /*useEffect(() => {
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible' && !document.hidden) {
-                router.reload({ 
+                 router.reload({ 
                     only: ['ultimasMediciones', 'dispositivosConEstado', 'alertasSinResolverCount', 'configuracionSistema', 'alertas', 'muestras'], 
                     preserveState: true, 
                     preserveScroll: true,
                     replace: true 
-                });
+                }); 
             }
-        }, 4000);
+        }, 100000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, []); 
+    */
 
     const handleDeviceFilterChange = (e) => {
         setSelectedDeviceId(e.target.value);

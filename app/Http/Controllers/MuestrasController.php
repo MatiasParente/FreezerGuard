@@ -10,8 +10,11 @@ use App\Models\Muestra;
 use App\Models\Freezer;
 use App\Models\User;
 use App\Models\Usuario;
+use App\Models\HistorialMuestra;
+use App\Models\UpdateMuestra;
 use App\Support\SedeAccess;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class MuestrasController extends Controller
 {
@@ -93,23 +96,44 @@ class MuestrasController extends Controller
             $validated['users_ids'] = $request->user()->is_general_admin ? [] : [$request->user()->id];
         }
 
-        $muestra = Muestra::create($validated);
+       
 
-        if (!empty($validated['usuarios_ids'])) {
-            $muestra->usuarios()->attach($validated['usuarios_ids']);
-        }
-        if (!empty($validated['users_ids'])) {
-            $muestra->users()->attach($validated['users_ids']);
-        }
+        DB::transaction(function () use ($validated, $request) {
+            $muestra = Muestra::create($validated);
 
-        // Enviar mail a los docentes asignados
-        $this->notificarDocentesAsignados($muestra, $validated['users_ids'] ?? []);
+            if (!empty($validated['users_ids'])) {
+                $muestra->users()->sync($validated['users_ids']);
+            }
 
+            if (!empty($validated['usuarios_ids'])) {
+                $muestra->usuarios()->attach($validated['usuarios_ids']);
+            }
+            
+            HistorialMuestra::create([
+                'muestra_id'     => $muestra->id,
+                'freezer_id'     => $validated['freezer_id'] ?? $muestra->freezer_id,
+                'user_id'        => $request->user()->id,
+                'nombre_muestra' => $muestra->titulo,
+                'accion'         => 'Ingreso',
+                'fecha'          => now(),
+            ]);
+
+            
+            
+
+            // Enviar mail a los docentes asignados
+            $this->notificarDocentesAsignados($muestra, $validated['users_ids'] ?? []);
+
+            
+
+        });
         return redirect()->back()->with('success', 'Muestra creada exitosamente.');
+        
     }
 
     public function update(Request $request, Muestra $muestra)
     {
+
         $muestra = SedeAccess::find(Muestra::query(), $request->user(), 'freezer.laboratorio', $muestra->id);
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
@@ -133,17 +157,64 @@ class MuestrasController extends Controller
         ]));
         $docentesAntes = $muestra->users()->withTrashed()->pluck('users.id')->all();
 
-        $muestra->update($validated);
+        $estadoAnterior = (string) $muestra->estado;
+        $nuevoEstado = (string) $validated['estado'];
+        $tempMinOld = $muestra->temperatura_minima;
+        $tempMaxOld = $muestra->temperatura_maxima;
 
-        if (isset($validated['usuarios_ids'])) {
-            $muestra->usuarios()->sync($validated['usuarios_ids']);
-        }
-        if (isset($validated['users_ids'])) {
-            $muestra->users()->sync($validated['users_ids']);
-            // Enviar mail solo a los docentes nuevos
-            $docentesNuevosIds = array_diff($validated['users_ids'], $docentesAntes);
-            $this->notificarDocentesAsignados($muestra, $docentesNuevosIds);
-        }
+
+        DB::transaction(function () use ($muestra, $validated, $estadoAnterior, $nuevoEstado, $tempMinOld, $tempMaxOld, $docentesAntes, $request) {
+            $muestra->update($validated);
+
+            if (isset($validated['usuarios_ids'])) {
+                $muestra->usuarios()->sync($validated['usuarios_ids']);
+            }
+            if (isset($validated['users_ids'])) {
+                $muestra->users()->sync($validated['users_ids']);
+                // Enviar mail solo a los docentes nuevos
+                $docentesNuevosIds = array_diff($validated['users_ids'], $docentesAntes);
+                $this->notificarDocentesAsignados($muestra, $docentesNuevosIds);
+            }
+
+            if ($estadoAnterior == 'activo' && $muestra->estado === 'inactivo') {
+                HistorialMuestra::create([
+                    'muestra_id'     => $muestra->id,
+                    'freezer_id'     => $muestra->freezer_id,
+                    'user_id'        => $request->user()->id,
+                    'nombre_muestra' => $muestra->titulo,
+                    'accion'         => 'Retiro',
+                    'fecha'          => now(),
+                ]);
+            }else if($estadoAnterior =='inactivo' && $muestra->estado === 'activo'){
+                HistorialMuestra::create([
+                    'muestra_id'     => $muestra->id,
+                    'freezer_id'     => $muestra->freezer_id,
+                    'user_id'        => $request->user()->id,
+                    'nombre_muestra' => $muestra->titulo,
+                    'accion'         => 'Ingreso',
+                    'fecha'          => now(),
+                ]);
+            }
+
+            if($tempMinOld != $muestra->temperatura_minima || $tempMaxOld != $muestra->temperatura_maxima){
+                UpdateMuestra::create([
+                    'muestra_id'    => $muestra->id,
+                    'freezer_id'    => $muestra->freezer_id,
+                    'user_id'       => $request->user()->id,
+                    'nombre_muestra'=> $muestra->titulo,
+                    'temp_min_old'  => $tempMinOld,
+                    'temp_max_old'  => $tempMaxOld,
+                    'temp_min_new'  => $muestra->temperatura_minima,
+                    'temp_max_new'  => $muestra->temperatura_maxima, 
+                    'fecha'          => now(),
+                ]);
+            }
+
+
+        });
+
+        
+
 
         return redirect()->back()->with('success', 'Muestra actualizada exitosamente.');
     }
@@ -154,8 +225,21 @@ class MuestrasController extends Controller
         if ($muestra->estado !== 'inactivo') {
             return redirect()->back()->with('error', 'Solo se pueden eliminar muestras inactivas.');
         }
+        DB::transaction(function () use ($muestra, $request) {
+            //Registro en historial de muestra
 
-        $muestra->delete();
+            HistorialMuestra::create([
+                    'muestra_id'     => null,
+                    'user_id'        => $request->user()->id,
+                    'freezer_id'     => $muestra->freezer_id,
+                    'nombre_muestra' => $muestra->titulo,
+                    'accion'         => 'Eliminacion',
+                    'fecha'          => now(),
+            ]);
+
+            $muestra->delete();
+        });
+        
         return redirect()->back()->with('success', 'Muestra eliminada permanentemente.');
     }
 
