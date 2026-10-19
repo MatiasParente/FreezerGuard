@@ -165,7 +165,7 @@ class UsuariosController extends Controller
         $nuevoRol = !$user->is_general_admin;
         $user->update(['is_general_admin' => $nuevoRol]);
 
-        // Enviar email notificando el cambio de privilegios
+        //Enviar email notificando el cambio de privilegios
         try {
             Mail::to($user->email)->send(new PrivilegiosModificadosMail($user, $nuevoRol));
         } catch (\Exception $e) {
@@ -229,7 +229,6 @@ class UsuariosController extends Controller
         try {
             Mail::to($userEmail)->send(new UsuarioEliminadoDefinitivoMail($user));
         } catch (\Exception $e) {
-            // Continuar con la eliminación
         }
 
         $user->forceDelete();
