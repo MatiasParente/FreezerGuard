@@ -111,6 +111,72 @@ class AlertNotificationService
         }
     }
 
+    /**
+     * Re-enviar emails de alertas que ya fueron enviadas (estado 1) pero siguen sin resolver.
+     * Se re-envía si han pasado al menos `intervalo_correos` minutos desde el último envío.
+     * Usa `updated_at` como marcador del último envío.
+     */
+    public static function reenviarNotificacionesPendientes(): void
+    {
+        $config = ConfiguracionSistema::getSolo();
+
+        if (!$config->envio_email_activo) {
+            return;
+        }
+
+        $intervaloMinutos = (int)($config->intervalo_correos ?? 1);
+        $limiteReenvio = now()->subMinutes($intervaloMinutos);
+
+        // Buscar alertas en estado 1 (ya enviadas) cuyo último envío fue hace más de intervalo_correos minutos
+        $alertasPendientes = AlertaGenerada::with(['dispositivo.freezer', 'dispositivo.mediciones', 'alerta'])
+            ->where('estado', 1)
+            ->where('updated_at', '<=', $limiteReenvio)
+            ->get();
+
+        foreach ($alertasPendientes as $alertaGenerada) {
+            $dispositivo = $alertaGenerada->dispositivo;
+            if (!$dispositivo) continue;
+
+            $freezer = $dispositivo->freezer;
+            $alerta = $alertaGenerada->alerta;
+            if (!$alerta) continue;
+
+            $destinatarios = self::obtenerDestinatarios($dispositivo);
+            if (empty($destinatarios)) continue;
+
+            $rutaRelativa = URL::signedRoute('alertas.resolver', ['alertaGenerada' => $alertaGenerada->id], null, false);
+            $urlResolucion = rtrim(config('app.url'), '/') . $rutaRelativa;
+
+            $ultimaMedicion = $dispositivo->mediciones()->latest('fecha_y_hora')->first();
+
+            try {
+                Mail::to($destinatarios)->queue(new AlertaTemperaturaMail(
+                    $freezer,
+                    $dispositivo,
+                    $alerta,
+                    $urlResolucion,
+                    $alertaGenerada->fecha_y_hora,
+                    $ultimaMedicion?->temperatura
+                ));
+
+                // Actualizar updated_at para marcar el momento del re-envío
+                $alertaGenerada->touch();
+
+                Log::info('Re-envío de alerta programado', [
+                    'alerta_generada_id' => $alertaGenerada->id,
+                    'tipo' => $alerta->tipo,
+                    'dispositivo' => $dispositivo->nombre,
+                    'intervalo_minutos' => $intervaloMinutos,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Error al re-enviar alerta', [
+                    'alerta_generada_id' => $alertaGenerada->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
     // Enviar mail de confirmación al resolver una alerta
     public static function resolverAlertaYNotificar(AlertaGenerada $alertaGenerada, string $observacion = 'Resuelto'): void
     {

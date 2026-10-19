@@ -29,6 +29,9 @@ class ProcessPendingAlerts extends Command
         foreach ($alertas as $alertaGenerada) {
             AlertNotificationService::enviarNotificacionAlerta($alertaGenerada);
         }
+
+        // 3. Re-enviar emails de alertas en estado 1 (ya enviadas) según intervalo_correos configurado
+        AlertNotificationService::reenviarNotificacionesPendientes();
     }
 
     private function verificarMuestrasVencidas()
