@@ -2,25 +2,25 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Freezer;
 use App\Models\Laboratorio;
+use Illuminate\Database\Seeder;
 
 class FreezerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $lab = Laboratorio::where('nombre', 'Laboratorio demo')->firstOrFail();
+        $lab = Laboratorio::whereHas('sede', fn ($q) => $q->where('nombre', 'UTEC - Fray Bentos'))
+            ->where('nombre', 'Laboratorio de Biotecnología')
+            ->firstOrFail();
+
         Freezer::updateOrCreate(
-            ['ubicacion' => 'Laboratorio Principal'],
+            ['ubicacion' => 'Freezer A1 - Biotecnología'],
             ['laboratorio_id' => $lab->id]
         );
 
         Freezer::updateOrCreate(
-            ['ubicacion' => 'Depósito de Muestras 2'],
+            ['ubicacion' => 'Freezer A2 - Biotecnología'],
             ['laboratorio_id' => $lab->id]
         );
     }

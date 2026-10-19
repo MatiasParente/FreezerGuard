@@ -381,7 +381,7 @@ Ubicado en **/configuracion**, este módulo permite vincular el hardware IoT con
 
 ---
 
-### 10.3 Canales de Despacho: Email y SMS con Prueba GSM
+### 10.3 Canales de envio: Email y SMS
 * **Canal Correo Electrónico:**
   * Casilla de activación global `Activar correos`.
   * *Asunto del correo y Plantilla del cuerpo:* Personalizables para incluir datos dinámicos.

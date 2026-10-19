@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NuevoUsuarioCreadoMail;
 use App\Mail\PasswordResetAdminMail;
+use App\Mail\PrivilegiosModificadosMail;
 use App\Mail\UsuarioAsignadoSedeMail;
 use App\Mail\UsuarioDesactivadoMail;
 use App\Mail\UsuarioRestauradoMail;
@@ -164,9 +165,19 @@ class UsuariosController extends Controller
         $nuevoRol = !$user->is_general_admin;
         $user->update(['is_general_admin' => $nuevoRol]);
 
+        //Enviar email notificando el cambio de privilegios
+        try {
+            Mail::to($user->email)->send(new PrivilegiosModificadosMail($user, $nuevoRol));
+        } catch (\Exception $e) {
+            $mensaje = $nuevoRol
+                ? "Se le han asignado permisos de Administrador General a {$user->name}, pero no se pudo enviar la notificación por correo."
+                : "Se le han retirado los permisos de Administrador General a {$user->name}, pero no se pudo enviar la notificación por correo.";
+            return redirect()->back()->with('warning', $mensaje);
+        }
+
         $mensaje = $nuevoRol
-            ? "Se le han asignado permisos de Administrador General a {$user->name}."
-            : "Se le han retirado los permisos de Administrador General a {$user->name}.";
+            ? "Se le han asignado permisos de Administrador General a {$user->name} y se le ha notificado por correo."
+            : "Se le han retirado los permisos de Administrador General a {$user->name} y se le ha notificado por correo.";
 
         return redirect()->back()->with('success', $mensaje);
     }
@@ -218,7 +229,6 @@ class UsuariosController extends Controller
         try {
             Mail::to($userEmail)->send(new UsuarioEliminadoDefinitivoMail($user));
         } catch (\Exception $e) {
-            // Continuar con la eliminación
         }
 
         $user->forceDelete();

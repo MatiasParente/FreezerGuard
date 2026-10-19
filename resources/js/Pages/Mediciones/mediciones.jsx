@@ -70,7 +70,7 @@ export default function mediciones({ mediciones, filters, dispositivos }) {
                                     <thead className="bg-slate-100/70 text-xs uppercase tracking-wider text-slate-700 font-semibold border-b border-slate-200">
                                         <tr>
                                             <th className="px-6 py-4">Fecha y Hora</th>
-                                            <th className="px-6 py-4">Dispositivo / Laboratorio</th>
+                                            <th className="px-6 py-4">Dispositivo / Freezer</th>
                                             <th className="px-6 py-4">Temperatura</th>
                                             <th className="px-6 py-4">Corriente Eléctrica</th>
                                             <th className="px-6 py-4 text-right">Acciones</th>

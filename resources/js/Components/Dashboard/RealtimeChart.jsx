@@ -3,12 +3,12 @@ import { Thermometer, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const DEVICE_STYLES = [
-    { color: '#3b82f6', dash: '6 4' },     // Azul punteado largo
-    { color: '#ef4444', dash: '3 3' },     // Rojo punteado corto
-    { color: '#10b981', dash: '8 4' },     // Verde esmeralda
-    { color: '#8b5cf6', dash: '4 4 2 4' }, // Púrpura trazo guion-punto
-    { color: '#f59e0b', dash: '10 5' },    // Ámbar guion largo
-    { color: '#ec4899', dash: '2 2' },     // Rosa fino
+    { color: '#3b82f6', dash: '6 4' },
+    { color: '#ef4444', dash: '3 3' },
+    { color: '#10b981', dash: '8 4' },
+    { color: '#8b5cf6', dash: '4 4 2 4' },
+    { color: '#f59e0b', dash: '10 5' },
+    { color: '#ec4899', dash: '2 2' },
 ];
 
 export default function RealtimeChart({ ultimasMediciones = [] }) {
