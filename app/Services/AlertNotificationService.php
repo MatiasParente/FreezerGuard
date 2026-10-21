@@ -29,18 +29,15 @@ class AlertNotificationService
         $freezer = $dispositivo?->freezer;
         if ($freezer) {
             $sedeId = $freezer->laboratorio?->sede_id;
-            // Admins del freezer
+            // Admins/docentes del freezer
             foreach ($freezer->users as $u) {
                 if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
             }
 
-            // Usuarios asignados a las muestras activas del freezer
+            // Docentes asignados a las muestras activas del freezer (NO participantes/estudiantes)
             foreach ($freezer->muestras as $muestra) {
                 if ($muestra->estado !== 'activo') continue;
                 foreach ($muestra->users as $u) {
-                    if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
-                }
-                foreach ($muestra->usuarios as $u) {
                     if ($sedeId && $u->sedes()->whereKey($sedeId)->exists() && !empty($u->email)) $emails->push($u->email);
                 }
             }

@@ -101,8 +101,8 @@ function ParticipantForm({ sedes, usuario }) {
                 <input id={`${prefix}-nombre`} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" value={form.data.nombre} onChange={e => form.setData('nombre', e.target.value)} required />
             </div>
             <div>
-                <label className="block text-sm font-medium text-slate-700" htmlFor={`${prefix}-email`}>Correo electrónico</label>
-                <input id={`${prefix}-email`} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" type="email" value={form.data.email} onChange={e => form.setData('email', e.target.value)} required />
+                <label className="block text-sm font-medium text-slate-700" htmlFor={`${prefix}-email`}>Correo electrónico (opcional)</label>
+                <input id={`${prefix}-email`} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" type="email" value={form.data.email} onChange={e => form.setData('email', e.target.value)} />
             </div>
             <div>
                 <label className="block text-sm font-medium text-slate-700" htmlFor={`${prefix}-telefono`}>Teléfono (opcional)</label>
@@ -441,7 +441,7 @@ export default function Index({ sedes, freezersSinLaboratorio, usuarios, filtros
                                                         {usuarios.data.map(u => (
                                                             <tr key={u.id} className="hover:bg-slate-50 transition-colors cursor-pointer group">
                                                                 <td className="px-4 py-3 font-medium text-slate-900">{u.nombre}</td>
-                                                                <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                                                                <td className="px-4 py-3 text-slate-600">{u.email || '—'}</td>
                                                                 <td className="px-4 py-3 text-slate-600">{u.telefono || '—'}</td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="flex flex-wrap gap-1">

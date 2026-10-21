@@ -119,7 +119,8 @@ class SedesController extends Controller
 
     public function storeParticipante(Request $request)
     {
-        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]);
+        $email = $request->input('email');
+        $request->merge(['email' => $email ? mb_strtolower(trim($email)) : null]);
         $data = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
             'email' => $this->participantEmailRules(),
@@ -132,12 +133,13 @@ class SedesController extends Controller
             $usuario->sedes()->sync($data['sede_ids']);
         });
         $response = back()->with('success', 'Participante creado.');
-        return $this->warnIfLoginSharesEmail($response, $data['email']);
+        return $this->warnIfLoginSharesEmail($response, $data['email'] ?? null);
     }
 
     public function updateParticipante(Request $request, Usuario $usuario)
     {
-        $request->merge(['email' => mb_strtolower(trim((string) $request->input('email')))]);
+        $email = $request->input('email');
+        $request->merge(['email' => $email ? mb_strtolower(trim($email)) : null]);
         $data = $request->validate([
             'nombre' => ['required', 'string', 'max:255'],
             'email' => $this->participantEmailRules($usuario),
@@ -151,12 +153,13 @@ class SedesController extends Controller
             $usuario->sedes()->sync($data['sede_ids']);
         });
         $response = back()->with('success', 'Participante actualizado.');
-        return $this->warnIfLoginSharesEmail($response, $data['email']);
+        return $this->warnIfLoginSharesEmail($response, $data['email'] ?? null);
     }
 
     private function participantEmailRules(?Usuario $ignore = null): array
     {
-        return ['required', 'email', 'max:255', function ($attribute, $value, $fail) use ($ignore) {
+        return ['nullable', 'email', 'max:255', function ($attribute, $value, $fail) use ($ignore) {
+            if (empty($value)) return;
             $query = Usuario::whereRaw('LOWER(email) = ?', [mb_strtolower($value)]);
             if ($ignore) {
                 $query->where('id', '!=', $ignore->id);
@@ -167,9 +170,9 @@ class SedesController extends Controller
         }];
     }
 
-    private function warnIfLoginSharesEmail($response, string $email)
+    private function warnIfLoginSharesEmail($response, ?string $email)
     {
-        if (User::withTrashed()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+        if ($email && User::withTrashed()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
             $response->with('warning', 'Este correo también pertenece a una cuenta de acceso. Se permitió porque son registros diferentes.');
         }
 
