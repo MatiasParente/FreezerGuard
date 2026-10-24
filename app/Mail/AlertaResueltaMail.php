@@ -18,6 +18,7 @@ class AlertaResueltaMail extends Mailable
     public $fechaYHoraResueluta;
     public $temperatura;
     public $observacion;
+    public $esAutoResolucion;
     public $cuerpoRenderizado;
     public $asuntoRenderizado;
 
@@ -29,6 +30,7 @@ class AlertaResueltaMail extends Mailable
         $this->fechaYHoraResueluta = $fechaYHoraResueluta ?? now();
         $this->temperatura = $temperatura;
         $this->observacion = $observacion ?? 'Resuelto por el usuario';
+        $this->esAutoResolucion = str_contains($this->observacion, 'automáticamente');
         $this->evaluarPlantilla();
     }
 
@@ -42,8 +44,13 @@ class AlertaResueltaMail extends Mailable
         $tipoAlerta = $this->alerta->tipo ?? 'Anomalía';
         $tempStr = $this->temperatura !== null ? number_format((float)$this->temperatura, 2) : 'N/A';
 
-        $this->asuntoRenderizado = "¡Alerta Resuelta! - {$tipoAlerta} en {$dispositivoNombre}";
-        $this->cuerpoRenderizado = "Confirmación: La alerta '{$tipoAlerta}' registrada en el dispositivo '{$dispositivoNombre}' ha sido RESUELTA con éxito. Fecha de resolución: {$fechaStr}. Temperatura actual: {$tempStr} °C. Nota: {$this->observacion}.";
+        if ($this->esAutoResolucion) {
+            $this->asuntoRenderizado = "Alerta Auto-Resuelta - {$tipoAlerta} en {$dispositivoNombre} (Revisión recomendada)";
+            $this->cuerpoRenderizado = "El sistema detectó que la condición que generó la alerta '{$tipoAlerta}' en el dispositivo '{$dispositivoNombre}' ha vuelto a la normalidad y la alerta fue RESUELTA AUTOMÁTICAMENTE. Fecha de resolución: {$fechaStr}. Temperatura actual: {$tempStr} °C.";
+        } else {
+            $this->asuntoRenderizado = "¡Alerta Resuelta! - {$tipoAlerta} en {$dispositivoNombre}";
+            $this->cuerpoRenderizado = "Confirmación: La alerta '{$tipoAlerta}' registrada en el dispositivo '{$dispositivoNombre}' ha sido RESUELTA con éxito. Fecha de resolución: {$fechaStr}. Temperatura actual: {$tempStr} °C. Nota: {$this->observacion}.";
+        }
     }
 
     public function envelope(): Envelope
@@ -65,6 +72,7 @@ class AlertaResueltaMail extends Mailable
                 'alerta' => $this->alerta,
                 'fechaYHoraResueluta' => $this->fechaYHoraResueluta,
                 'observacion' => $this->observacion,
+                'esAutoResolucion' => $this->esAutoResolucion,
                 'cuerpoRenderizado' => $this->cuerpoRenderizado,
                 'asuntoRenderizado' => $this->asuntoRenderizado,
             ],

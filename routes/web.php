@@ -55,6 +55,7 @@ Route::middleware(['auth', 'admin.general'])->controller(ConfiguracionController
     Route::post('/configuracion/dispositivo/{id}/restore', 'restoreDispositivo')->name('configuracion.dispositivo.restore');
     Route::delete('/configuracion/dispositivo/{id}/force', 'forceDeleteDispositivo')->name('configuracion.dispositivo.forceDelete');
     Route::put('/configuracion/sistema', 'updateSistemaConfig')->name('configuracion.sistema.update');
+    Route::put('/configuracion/purga', 'updatePurgaConfig')->name('configuracion.purga.update');
     Route::post('/configuracion/probar-sms/{dispositivo}', 'probarSMS')->name('configuracion.probar-sms');
     Route::get('/configuracion/{configuracion}', 'show')->name('configuracion.show');
 });

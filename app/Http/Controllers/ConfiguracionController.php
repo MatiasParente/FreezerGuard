@@ -148,6 +148,8 @@ class ConfiguracionController extends Controller
             'email_default' => 'nullable|email|max:255',
             'envio_email_activo' => 'required|boolean',
             'envio_sms_activo' => 'required|boolean',
+            'auto_resolucion_activa' => 'required|boolean',
+            'lecturas_para_auto_resolucion' => 'required|integer|min:2|max:50',
             'plantilla_email_asunto' => 'required|string|max:255',
             'plantilla_email_cuerpo' => 'required|string',
             'plantilla_sms_cuerpo' => 'required|string|max:1000',
@@ -157,6 +159,20 @@ class ConfiguracionController extends Controller
         $config->update($validated);
 
         return redirect()->back()->with('success', 'Configuración del sistema, canales y plantillas de alerta actualizadas.');
+    }
+
+    public function updatePurgaConfig(Request $request)
+    {
+        $validated = $request->validate([
+            'purga_automatica_activa' => 'required|boolean',
+            'purga_dias_antiguedad' => 'required|integer|min:7|max:365',
+            'purga_hora' => ['required', 'string', 'regex:/^([01]\d|2[0-3]):([0-5]\d)$/'],
+        ]);
+
+        $config = \App\Models\ConfiguracionSistema::getSolo();
+        $config->update($validated);
+
+        return redirect()->back()->with('success', 'Configuración de mantenimiento de base de datos actualizada.');
     }
 
     public function probarSMS(Request $request, Dispositivo $dispositivo): RedirectResponse

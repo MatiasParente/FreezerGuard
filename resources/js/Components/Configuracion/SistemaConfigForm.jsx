@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { Mail, MessageSquare } from 'lucide-react';
+import { Mail, MessageSquare, Zap, Settings2 } from 'lucide-react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -11,6 +11,8 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
         email_default: configuracionSistema?.email_default ?? '',
         envio_email_activo: configuracionSistema?.envio_email_activo ?? true,
         envio_sms_activo: configuracionSistema?.envio_sms_activo ?? true,
+        auto_resolucion_activa: configuracionSistema?.auto_resolucion_activa ?? true,
+        lecturas_para_auto_resolucion: configuracionSistema?.lecturas_para_auto_resolucion ?? 5,
         plantilla_email_asunto: configuracionSistema?.plantilla_email_asunto ?? '¡Alerta Crítica! - FreezerGuard',
         plantilla_email_cuerpo: configuracionSistema?.plantilla_email_cuerpo ?? 'Se ha detectado una anomalía crítica ({tipo_alerta} en {dispositivo}). Temperatura: {temperatura} °C. Fecha: {fecha}.',
         plantilla_sms_cuerpo: configuracionSistema?.plantilla_sms_cuerpo ?? 'ALERTA FREEZERGUARD: Se detectó {tipo_alerta} en {dispositivo}. Temp: {temperatura} C. Fecha: {fecha}',
@@ -55,6 +57,70 @@ export default function SistemaConfigForm({ configuracionSistema = {} }) {
                             onChange={e => sistemaForm.setData('email_default', e.target.value)} 
                         />
                         <InputError message={sistemaForm.errors.email_default} className="mt-1" />
+                    </div>
+                </div>
+
+                {/* Auto-resolución de alertas */}
+                <div className="bg-indigo-50/40 p-4 rounded-xl border border-indigo-200">
+                    <div className="flex justify-between items-center border-b border-indigo-200 pb-3 mb-4">
+                        <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            Auto-resolución de alertas
+                        </h4>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-indigo-900 bg-white px-2.5 py-1 rounded-md border border-indigo-300">
+                            <input
+                                type="checkbox"
+                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                checked={sistemaForm.data.auto_resolucion_activa}
+                                onChange={e => sistemaForm.setData('auto_resolucion_activa', e.target.checked)}
+                            />
+                            Activar
+                        </label>
+                    </div>
+
+                    <div className={`transition-opacity duration-200 ${!sistemaForm.data.auto_resolucion_activa ? 'opacity-40 pointer-events-none' : ''}`}>
+                        <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
+                            Cuando está activo, el sistema resuelve automáticamente las alertas si detecta que la condición que las generó
+                            volvió a la normalidad durante <strong>N lecturas consecutivas</strong>. Se envía una notificación indicando que
+                            la alerta fue resuelta automáticamente y se recomienda revisar el dispositivo.
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <InputLabel htmlFor="lecturas_para_auto_resolucion" value="Lecturas consecutivas necesarias" className="font-semibold text-gray-800 text-xs" />
+                                <p className="text-[11px] text-gray-600 mb-1.5">
+                                    Cantidad de mediciones positivas seguidas para que una alerta se clasifique como resuelta automáticamente.
+                                </p>
+                                <div className="flex items-center gap-2 max-w-xs">
+                                    <TextInput 
+                                        id="lecturas_para_auto_resolucion" 
+                                        type="number" 
+                                        min="2" 
+                                        max="50" 
+                                        className="w-full text-xs" 
+                                        value={sistemaForm.data.lecturas_para_auto_resolucion} 
+                                        onChange={e => sistemaForm.setData('lecturas_para_auto_resolucion', e.target.value)} 
+                                        required 
+                                    />
+                                    <span className="text-xs font-semibold text-emerald-900">lecturas</span>
+                                </div>
+                                <InputError message={sistemaForm.errors.lecturas_para_auto_resolucion} className="mt-1" />
+                            </div>
+
+                            <div className="flex items-end">
+                                <div className="bg-white rounded-lg border border-emerald-200 p-3 text-[11px] text-emerald-800 leading-relaxed w-full">
+                                    <div className="flex items-center gap-1.5 font-bold mb-1.5 text-emerald-900">
+                                        <Settings2 className="w-3.5 h-3.5" /> Tipos de alerta auto-resolubles
+                                    </div>
+                                    <ul className="space-y-0.5 text-gray-700">
+                                        <li>Corte de Energía — {sistemaForm.data.lecturas_para_auto_resolucion} lecturas sin corte + temp. normal</li>
+                                        <li>Temperatura — {sistemaForm.data.lecturas_para_auto_resolucion} lecturas en rango correcto</li>
+                                        <li>Inactividad — Al retomar transmisión dentro del umbral</li>
+                                        <li>Fallo SMS — {sistemaForm.data.lecturas_para_auto_resolucion} lecturas con módulo operativo</li>
+                                        <li>Muestra Vencida — Al eliminar/actualizar la muestra</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

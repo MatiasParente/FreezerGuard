@@ -22,14 +22,14 @@ export default function Dashboard({
     useEffect(() => {
         const interval = setInterval(() => {
             if (document.visibilityState === 'visible' && !document.hidden) {
-                 router.reload({ 
+                router.reload({ 
                     only: ['ultimasMediciones', 'dispositivosConEstado', 'alertasSinResolverCount', 'configuracionSistema', 'alertas', 'muestras'], 
                     preserveState: true, 
                     preserveScroll: true,
                     replace: true 
                 }); 
             }
-        }, 100000);
+        }, 4000);
 
         return () => clearInterval(interval);
     }, []); 

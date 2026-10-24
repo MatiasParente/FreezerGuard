@@ -10,5 +10,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:process-pending-alerts')->everyMinute()->withoutOverlapping();
 
-// Purgar mediciones antiguas el 1 de cada mes a las 03:00 AM
-Schedule::command('app:purge-mediciones --force')->monthlyOn(1, '03:00')->withoutOverlapping();
+// Purgar datos antiguos según configuración del sistema (hora y días configurables desde la UI)
+Schedule::command('app:purge-mediciones --force')->hourly()->withoutOverlapping();
