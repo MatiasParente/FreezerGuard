@@ -205,11 +205,11 @@ export default function alertas({ alertas, filters, dispositivos, tipos }) {
                                                                         <>
                                                                             {alerta.observacion.includes('automáticamente') ? (
                                                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200">
-                                                                                    ⚙️ Resolución automática
+                                                                                    Resolución automática
                                                                                 </span>
                                                                             ) : alerta.estado === 2 ? (
                                                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 mb-1.5 rounded-full text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200">
-                                                                                    👤 Resolución manual
+                                                                                    Resolución manual
                                                                                 </span>
                                                                             ) : null}
                                                                             <p className="text-slate-700 whitespace-pre-wrap break-words leading-relaxed">{alerta.observacion}</p>

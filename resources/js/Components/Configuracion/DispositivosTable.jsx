@@ -157,9 +157,6 @@ export default function DispositivosTable({
                                                     {dispositivo.alerta_modem_activa && (
                                                         <span className="px-2 py-0.5 text-xs font-medium bg-teal-50 text-teal-700 rounded border border-teal-100">Módulo SMS</span>
                                                     )}
-                                                    {dispositivo.telefonos_sms && (
-                                                        <span className="px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700 rounded border border-green-100">SMS</span>
-                                                    )}
                                                 </div>
                                             ) : (
                                                 <span className="text-xs font-mono text-slate-500">
