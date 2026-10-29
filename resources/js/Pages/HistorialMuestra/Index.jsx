@@ -55,7 +55,6 @@ export default function Index({ updates, filters, freezers }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-bold leading-tight text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                    <History className="w-6 h-6 text-indigo-600" />
                     Historial de Auditoría de Muestras
                 </h2>
             }

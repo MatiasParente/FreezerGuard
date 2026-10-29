@@ -55,7 +55,7 @@ export default function configuracion({
                             <div className="flex items-center gap-3">
                                 <Cpu className="w-5 h-5 text-indigo-600" />
                                 <h3 className="text-lg font-bold text-slate-900">
-                                    {isInactiveMode ? 'Historial de Dispositivos Inactivos' : 'Dispositivos y Sensores Activos'}
+                                    {isInactiveMode ? 'Historial de Dispositivos Inactivos' : 'Dispositivos Activos'}
                                 </h3>
                                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                                     {isInactiveMode ? `${dispositivos?.total || 0} inactivos` : `${dispositivos?.total || 0} activos`}

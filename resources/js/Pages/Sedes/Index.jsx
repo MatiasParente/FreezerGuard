@@ -407,7 +407,7 @@ export default function Index({ sedes, freezersSinLaboratorio, usuarios, filtros
                                         </div>
                                     </div>
                                     <button type="submit" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs uppercase tracking-widest px-4 py-2.5 rounded-lg shadow-sm transition ease-in-out duration-150">
-                                        <Search className="w-4 h-4" /> Buscar
+                                        <Search className="w-4 h-4" />
                                     </button>
                                 </form>
                             </div>
